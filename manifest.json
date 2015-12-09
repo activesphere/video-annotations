@@ -1,0 +1,22 @@
+{
+	"manifest_version": 2,
+
+  "name": "Video Annotation",
+  "description": "Allow to add annotation",
+  "version": "1.0",
+
+  "browser_action": {
+		"default_icon": "icon.png"
+  },
+  "content_scripts": [
+  	{
+  		"matches": ["https://www.youtube.com/*"],
+  		"js": ["js/jquery.min.js", "js/underscore-min.js", "js/my_script.js"]
+  	}
+  ],
+  "permissions": [
+    "activeTab",
+    "storage",
+    "https://ajax.googleapis.com/"
+  ]
+}
