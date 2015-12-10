@@ -17,10 +17,11 @@
 	padding: 5px;
 	font-size: 14px;
 	display: inline-block;
+	width: 190px;
 }
 #video-annotations div#annotations_list ul li .description{
 	float:left;
-	width: 170px;
+	width: 150px;
 }
 #video-annotations div#annotations_list ul li .description a{
 	color: #333;

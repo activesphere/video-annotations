@@ -9,7 +9,8 @@ var video_app = video_app || {};
 		},
 
 		initialize: function(){
-
+			this.start_seconds = 0;//second
+			this.that_seconds = false;
 		},
 
 		render: function(){
@@ -27,12 +28,21 @@ var video_app = video_app || {};
 			if (event.keyCode == 13 && event.ctrlKey){
 				console.log('Trigged');
 				var uid = Date.now();
-				var c_time = parseInt(video_tag.currentTime);
-				ann_obj = {id: uid, time: c_time, annotation: event.target.value}
-				ann_model = new video_app.Annotation(ann_obj);
-				video_app.Annotations.add(ann_model);
+				var end_seconds = parseInt(video_tag.currentTime);
+				var annotation_obj = {id: uid, start_seconds: this.start_seconds, end_seconds: end_seconds, annotation: event.target.value};
+
+				if(this.that_seconds){
+					annotation_obj['start_seconds'] = end_seconds;
+					annotation_obj['end_seconds'] = null;
+				}
+
+				annotation_model = new video_app.Annotation(annotation_obj);
+				video_app.Annotations.add(annotation_model);
 				video_tag.play();
-				this.$el.unbind();
+
+				this.start_seconds = end_seconds;
+				this.that_seconds = false;
+
 				this.$el.empty();
 			}
 		}
