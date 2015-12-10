@@ -1,0 +1,33 @@
+#video-annotations div#annotations_list{
+	position:absolute;
+	right: 0px;
+	width:200px;
+	color:black;
+	background: white;
+	padding: 5px 0 0 0;
+}
+#video-annotations #new_annotation{
+	position: absolute;
+}
+#video-annotations div#annotations_list .search_annotations{
+	margin-left: 24px;
+	width: 150px;
+}
+#video-annotations div#annotations_list ul li{
+	padding: 5px;
+	font-size: 14px;
+	display: inline-block;
+}
+#video-annotations div#annotations_list ul li .description{
+	float:left;
+	width: 170px;
+}
+#video-annotations div#annotations_list ul li .description a{
+	color: #333;
+	&:hover{
+		color: #333;
+	}
+}
+#video-annotations div#annotations_list .center{
+	text-align: center;
+}

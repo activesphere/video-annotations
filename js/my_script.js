@@ -8,9 +8,10 @@ var video_tag = $('video')[0];
 		console.log('rendered');
 	}, 'html');
 
-	var app_template = "\
-									<div id='new_annotation' style='position:absolute;'></div>\
-									<ul id='annotations_list' style='position:absolute;right: 0px;width:200px;color:black;background: white;'></ul>";
+	var app_template = "<div id='video-annotations'>\
+												<div id='new_annotation'></div>\
+												<div id='annotations_list'></div>\
+											</div>";
 	// var video_status = 'play', , video_id = null, annotations = {};
 
 	// //Trigger Ctrl + n

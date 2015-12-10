@@ -1,5 +1,14 @@
 <div class='video-annotation-templates'>
 	<script type="text/template" id="annotation-template">
-		<li><a href=#t={{time}}><span>{{annotation}}</span></a></li>
+		<div class='description'>
+			<a href=#t={{time}}><span>{{annotation}}</span></a>
+		</div>
+		<div style='float:right;'>
+			<span>{{time}}</span>
+		</div>
+	</script>
+	<script type="text/template" id="annotations-template">
+		<input type='textfield' class='search_annotations' placeholder='search'>
+		<ul class='annotations'></ul>
 	</script>
 </div>
