@@ -25,7 +25,7 @@ var video_app = video_app || {};
 
 		create: function(event){
 			this.ignore(event);
-			if (event.keyCode == 13 && event.ctrlKey){
+			if (event.keyCode == 13 && event.altKey){
 				console.log('Trigged');
 				var uid = Date.now();
 				var end_seconds = parseInt(video_tag.currentTime);
@@ -34,17 +34,22 @@ var video_app = video_app || {};
 				if(this.that_seconds){
 					annotation_obj['start_seconds'] = end_seconds;
 					annotation_obj['end_seconds'] = null;
+					this.that_seconds = false;
+				} else {
+					this.start_seconds = end_seconds;
 				}
+				this.updateStartFrame(this.start_seconds);
 
 				annotation_model = new video_app.Annotation(annotation_obj);
 				video_app.Annotations.add(annotation_model);
 				video_tag.play();
 
-				this.start_seconds = end_seconds;
-				this.that_seconds = false;
-
-				this.$el.empty();
+				this.clear();
 			}
+		},
+
+		clear: function(){
+			this.$el.empty();
 		}
 	});
 })(jQuery);

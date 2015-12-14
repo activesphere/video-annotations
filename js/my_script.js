@@ -11,28 +11,51 @@ var video_tag = $('video')[0];
 
 	var app_template = "<div id='video-annotations'>\
 												<div id='new_annotation'></div>\
-												<div id='annotations_list'></div>\
+												<span class='left_arrow'>></span>\
+												<div class='left_alignment hide'>\
+													<div id='start_time'>\
+														<span>Start Time: </span>\
+														<span class='start_frame'></span>\
+													</div>\
+													<div id='annotations_list'></div>\
+												</div>\
 											</div>";
 
 	// //Trigger Ctrl + n
 	function triggerEvents(e) {
 		var evtobj = window.event? event : e
 		//Control + E to annota b/w start and end
-		if (evtobj.keyCode == 69 && evtobj.ctrlKey){
+		if (evtobj.keyCode == 69 && evtobj.altKey){
 			video_tag.pause();
 			new_video_view.render();
 		//Control + S to start from that frame
-		} else if (evtobj.keyCode == 83 && evtobj.ctrlKey){
-			if(new_video_view && video_tag)
+		} else if (evtobj.keyCode == 83 && evtobj.altKey){
+			if(new_video_view && video_tag){
 				new_video_view.start_seconds = parseInt(video_tag.currentTime);
+				updateStartFrame(new_video_view.start_seconds);
+			}
 			//Control + D to do quick annotation for that frame
-		} else if (evtobj.keyCode == 68 && evtobj.ctrlKey){
+		} else if (evtobj.keyCode == 68 && evtobj.altKey){
 			if(new_video_view && video_tag){
 				video_tag.pause();
 				new_video_view.that_seconds = true;
 				new_video_view.render();
+				return false;
 			}
+		} else if (evtobj.keyCode == 87 && evtobj.altKey){
+			new_video_view.clear();
+			video_tag.play();
 		}
+	}
+
+	function updateStartFrame(time){
+		if(time != null){
+			minutes = Math.floor(time / 60);
+			seconds = time - minutes * 60;
+			time = minutes + '.' + seconds;
+		}
+
+		$('#video-annotations span.start_frame').html(time);
 	}
 
 	function getVideoId(){
@@ -42,19 +65,30 @@ var video_tag = $('video')[0];
 		video_id = query['v']
 	}
 
-	//Keyup events
-	document.onkeydown = triggerEvents;
 	//Get Video Id
 	getVideoId();
 
 	//Inject template to DOM
-	$('video').parent().append(app_template);
-	//Create new annotation
-	var new_video_view = new video_app.newAnnotationView()
+	if($(".player-api video")){
+		//Keyup events
+		document.onkeydown = triggerEvents;
 
-	//Load annotations
-	annotations_view = new video_app.annotationsView({collection: video_app.Annotations});
-	annotations_view.render();
+		$('video').parents('.player-api').append(app_template);
+
+		//Create new annotation
+		var new_video_view = new video_app.newAnnotationView()
+		new_video_view.updateStartFrame = updateStartFrame;
+
+		//Load annotations
+		annotations_view = new video_app.annotationsView({collection: video_app.Annotations});
+		annotations_view.render();
+		updateStartFrame(new_video_view.start_seconds);
+	}
+
+	$('#video-annotations span.left_arrow').on('click', function(e){
+		$(this).fadeOut();
+		$('#video-annotations .left_alignment').toggle( "slide" );
+	});
 
 	function renderStatus(statusText) {
 		console.log('Success');

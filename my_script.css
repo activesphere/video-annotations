@@ -1,34 +1,91 @@
+#video-annotations{
+	position: absolute;
+	right: 0;
+	top: 0;
+	width: initial;
+}
+#video-annotations div#start_time{
+	position: absolute;
+	width:145px;
+	margin-left: 15px;
+	color: black;
+	z-index: 1000;
+	margin-top: 10px;
+	padding-left: 5px;
+}
 #video-annotations div#annotations_list{
+	top: 0;
 	position:absolute;
-	right: 0px;
-	width:200px;
-	color:black;
+	width:405px;
+	color: black;
 	background: white;
-	padding: 5px 0 0 0;
+	padding: 5px;
+	margin-left: 10px;
+	min-height: 255px;
+	border: 1px solid #ccc;
 }
 #video-annotations #new_annotation{
 	position: absolute;
+	z-index: 1001;
+	margin-left: 10px;
 }
 #video-annotations div#annotations_list .search_annotations{
-	margin-left: 24px;
+	margin-left: 140px;
 	width: 150px;
+}
+#video-annotations div#annotations_list ul{
+	color: #006dae;
+	width: 100%;
+	overflow-x:scroll;
+	max-height: 225px;
 }
 #video-annotations div#annotations_list ul li{
 	padding: 5px;
 	font-size: 14px;
 	display: inline-block;
-	width: 190px;
+	width: 98%;
 }
 #video-annotations div#annotations_list ul li .description{
 	float:left;
-	width: 150px;
+	width: 80%;
 }
-#video-annotations div#annotations_list ul li .description a{
-	color: #333;
-	&:hover{
-		color: #333;
-	}
+#video-annotations div#annotations_list ul li .description a:hover{
+	text-decoration: none;
 }
 #video-annotations div#annotations_list .center{
 	text-align: center;
+}
+#video-annotations .hide{
+	display: none;
+}
+#video-annotations .left_arrow{
+	color: black;
+	position: absolute;
+	font-size: 20px;
+	padding: 10px 15px;
+	background: #fff;
+	border: 1px solid black;
+	cursor: pointer;
+}
+#video-annotations a.close_annotations{
+	float: right;
+	color: #006dae;
+	font-size: 15px;
+	border: 1px solid #006dae;
+	border-radius: 5px 5px;
+	text-align: center;
+	-moz-border-radius: 50px;
+	-webkit-border-radius: 50px;
+	border-radius: 50px;
+	width: 20px;
+	height: 20px;
+	position: absolute;
+	right: -11px;
+	top: -11px;
+}
+#video-annotations a.close_annotations:hover{
+	text-decoration: none;
+}
+#video-annotations .mt5{
+	margin-top: 5px;
 }

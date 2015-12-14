@@ -19,7 +19,7 @@ var video_app = video_app || {};
 		secondsToMinutes: function(name, field){
 			time = this.model.get(field);
 			r = null;
-			if(time){
+			if(time != null){
 				minutes = Math.floor(time / 60);
 				seconds = time - minutes * 60;
 				r = minutes + '.' + seconds;

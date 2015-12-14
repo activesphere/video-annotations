@@ -6,6 +6,7 @@ var video_app = video_app || {};
 			'click input.search_annotations': 'ignore',
 			'keyup input.search_annotations': 'search',
 			'keydown .search_annotations': 'ignore',
+			'click a.close_annotations': 'closeAnntations'
 		},
 
 		initialize: function(){
@@ -18,9 +19,9 @@ var video_app = video_app || {};
 			this.$el.empty();
 			if(!_.isEmpty(this.collection.models)){
 				$(this.el).html(Mustache.to_html($('#annotations-template').html()));
-				this.addAll(this.collection.models);
+				this.addAll(this.collection.sort('start_seconds'));
 			} else {
-				$(this.el).html('<h3 class=center>No Annotations</h3>')
+				$(this.el).html("<a href='#' class='close_annotations'>x</a><h3 class='center mt5'>No Annotations</h3>")
 			}
 		},
 
@@ -29,7 +30,7 @@ var video_app = video_app || {};
 			if(!_.isEmpty(models)){
 				_.each(models, function (annotation) { self.addOne(annotation); });
 			} else {
-				this.$el.find('ul.annotations').html('<h3 class=center>No Annotations</h3>')
+				this.$el.find('ul.annotations').html("<a href='#' class='close_annotations'>x</a><h3 class='center mt5'>No Annotations</h3>")
 			}
 		},
 
@@ -48,6 +49,11 @@ var video_app = video_app || {};
 
 		ignore: function(event) {
 			event.stopPropagation();
+		},
+
+		closeAnntations: function(event){
+			$('#video-annotations .left_alignment').toggle( "slide" );
+			$('#video-annotations span.left_arrow').fadeIn('slow');
 		}
 	});
 })(jQuery);
