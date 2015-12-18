@@ -17,20 +17,20 @@ var video_app = video_app || {};
 
 		render: function(){
 			this.$el.empty();
-			if(!_.isEmpty(this.collection.models)){
+			if (!_.isEmpty(this.collection.models)){
 				$(this.el).html(Mustache.to_html($('#annotations-template').html()));
 				this.addAll(this.collection.sort('start_seconds'));
 			} else {
-				$(this.el).html("<a href='#' class='close_annotations'>x</a><h3 class='center mt5'>No Annotations</h3>")
+				$(this.el).html($('#no-annotation-template').html());
 			}
 		},
 
 		addAll: function(models){
 			var self = this;
-			if(!_.isEmpty(models)){
+			if (!_.isEmpty(models)){
 				_.each(models, function (annotation) { self.addOne(annotation); });
 			} else {
-				this.$el.find('ul.annotations').html("<a href='#' class='close_annotations'>x</a><h3 class='center mt5'>No Annotations</h3>")
+				this.$el.find('ul.annotations').html($('#no-annotation-template').html());
 			}
 		},
 

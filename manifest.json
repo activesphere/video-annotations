@@ -8,16 +8,35 @@
 	"browser_action": {
 		"default_icon": "icon.png"
 	},
+	"permissions": [
+		"activeTab",
+		"https://ajax.googleapis.com/",
+		"<all_urls>",
+		"contextMenus",
+		"storage",
+		"unlimitedStorage"
+	],
 	"content_scripts": [
 		{
 			"matches": ["https://www.youtube.com/*"],
 			"css": ["my_script.css"],
-			"js": ["js/lib/jquery-min.js", "js/lib/underscore-min.js", "js/lib/backbone-min.js", "js/lib/mustache-min.js","js/backbone/models.js", "js/backbone/collections.js", "js/backbone/views/annotations-view.js", "js/backbone/views/annotation-view.js", "js/backbone/views/new-annotation-view.js", "js/my_script.js"]
+			"js": [
+				"js/lib/jquery-min.js",
+				"js/lib/underscore-min.js",
+				"js/lib/backbone-min.js",
+				"js/lib/mustache-min.js",
+				"js/lib/jquery.hotkeys.js",
+
+				"js/utils.js",
+				"js/backbone/models.js",
+				"js/backbone/collections.js",
+				"js/backbone/views/annotations-view.js",
+				"js/backbone/views/annotation-view.js",
+				"js/backbone/views/new-annotation-view.js",
+				"js/backbone/views/app-view.js",
+				"js/my_script.js"
+			]
 		}
 	],
-	"permissions": [
-		"activeTab",
-		"https://ajax.googleapis.com/"
-	],
-	"web_accessible_resources": ["templates.html"]
+	"web_accessible_resources": ["templates.html", "html/chrome_oauth_receiver.html"]
 }
