@@ -13,7 +13,7 @@
 	margin-top: 10px;
 	padding-left: 5px;
 }
-#video-annotations div#annotations_list{
+#video-annotations div.annotations_list{
 	top: 0;
 	position:absolute;
 	width:405px;
@@ -24,35 +24,35 @@
 	min-height: 255px;
 	border: 1px solid #ccc;
 }
-#video-annotations #new_annotation{
+#video-annotations .create-annotation{
 	position: absolute;
 	z-index: 1001;
 	margin-left: 10px;
 }
-#video-annotations div#annotations_list .search_annotations{
+#video-annotations div.annotations_list .search_annotations{
 	margin-left: 140px;
 	width: 150px;
 }
-#video-annotations div#annotations_list ul{
+#video-annotations div.annotations_list ul{
 	color: #006dae;
 	width: 100%;
 	overflow-x:scroll;
 	max-height: 225px;
 }
-#video-annotations div#annotations_list ul li{
+#video-annotations div.annotations_list ul li{
 	padding: 5px;
 	font-size: 14px;
 	display: inline-block;
 	width: 98%;
 }
-#video-annotations div#annotations_list ul li .description{
+#video-annotations div.annotations_list ul li .description{
 	float:left;
 	width: 80%;
 }
-#video-annotations div#annotations_list ul li .description a:hover{
+#video-annotations div.annotations_list ul li .description a:hover{
 	text-decoration: none;
 }
-#video-annotations div#annotations_list .center{
+#video-annotations div.annotations_list .center{
 	text-align: center;
 }
 #video-annotations .hide{

@@ -1,7 +1,8 @@
 var video_app = video_app || {};
 (function ($) {
 	video_app.annotationsView = Backbone.View.extend({
-		el: 'div#annotations_list',
+		tagName:'div',
+		className: 'annotations_list',
 		events: {
 			'click input.search_annotations': 'ignore',
 			'keyup input.search_annotations': 'search',
@@ -23,6 +24,7 @@ var video_app = video_app || {};
 			} else {
 				$(this.el).html($('#no-annotation-template').html());
 			}
+			return this;
 		},
 
 		addAll: function(models){

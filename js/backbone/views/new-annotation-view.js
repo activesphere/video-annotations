@@ -1,21 +1,24 @@
 var video_app = video_app || {};
 (function ($) {
 	video_app.newAnnotationView = Backbone.View.extend({
-		el: '#new_annotation',
+		tagName: 'div',
+		className: 'create-annotation',
 		events: {
 			'keyup textarea.annotation_text': 'create'
 		},
 
-		initialize: function(){
+		initialize: function(options){
 			this.start_seconds = 0;//second
 			this.that_seconds = false;
+			this.frameName = options.frameName;
+			this.video_tag = options.video_tag;
 		},
 
 		render: function(){
 			var template = "<textarea  class='annotation_text' rows='4'" +
 				" cols='20'></textarea>";
 			this.$el.html(template);
-			this.$el.find('.annotation_text').focus();
+			return this;
 		},
 
 		create: function(event){
@@ -37,8 +40,7 @@ var video_app = video_app || {};
 				} else {
 					this.start_seconds = end_seconds;
 				}
-				$('#video-annotations span.start_frame')
-					.html(Utils.minuteSeconds(this.start_seconds));
+				$(this.frameName).html(Utils.minuteSeconds(this.start_seconds));
 
 				annotation_model = new video_app.Annotation(annotation_obj);
 				video_app.Annotations.add(annotation_model);

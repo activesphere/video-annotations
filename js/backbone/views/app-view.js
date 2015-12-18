@@ -10,24 +10,26 @@ var video_app = video_app || {};
 		initialize: function(){
 			_.bindAll(this, 'render');
 			this.video_tag = $('video')[0];
-
-		},
-
-		render: function(){
-			$(this.el).html($('#app-template').html());
 			this.initializeView();
 			this.getVideoId();
 			this.bindEvents();
 		},
 
+		render: function(){
+			$(this.el).html($('#app-template').html());
+			this.$el.find('.left_alignment').append(this.annotations_view.render().el);
+		},
+
 		initializeView: function(){
-			this.new_video_view = new video_app.newAnnotationView();
-			this.new_video_view.video_tag = this.video_tag;
+			this.new_video_view = new video_app.newAnnotationView({
+				frameName: '#video-annotations span.start_frame',
+				video_tag: this.video_tag
+			});
 
 			this.annotations_view = new video_app.annotationsView({
 				collection: video_app.Annotations
 			});
-			this.annotations_view.render();
+
 			this.updateStartFrame(this.new_video_view.start_seconds);
 		},
 
@@ -56,7 +58,8 @@ var video_app = video_app || {};
 
 		createAnnotation: function(){
 			this.video_tag.pause();
-			this.new_video_view.render();
+			this.$el.append(this.new_video_view.render().el);
+			this.focusText();
 		},
 
 		changeframe: function(e){
@@ -70,8 +73,13 @@ var video_app = video_app || {};
 			if (this.new_video_view && this.video_tag){
 				this.video_tag.pause();
 				this.new_video_view.that_seconds = true;
-				this.new_video_view.render();
+				this.$el.append(this.new_video_view.render().el);
+				this.focusText();
 			}
+		},
+
+		focusText: function(){
+			this.$el.find('.annotation_text').focus();
 		},
 
 		closeAnnotation: function(e){
