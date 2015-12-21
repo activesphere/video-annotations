@@ -10,6 +10,7 @@ var video_app = video_app || {};
 		initialize: function(){
 			_.bindAll(this, 'render');
 			this.video_tag = $('video')[0];
+			this.video_frame = new video_app.Frame({start_seconds: 0});
 			this.initializeView();
 			this.getVideoId();
 			this.bindEvents();
@@ -17,7 +18,8 @@ var video_app = video_app || {};
 
 		render: function(){
 			$(this.el).html($('#app-template').html());
-			this.$el.find('.left_alignment').append(this.annotations_view.render().el);
+			this.$el.append($(this.annotations_view.render().el).hide());
+			this.annotations_view.updateFrame();
 		},
 
 		initializeView: function(){
@@ -27,10 +29,10 @@ var video_app = video_app || {};
 			});
 
 			this.annotations_view = new video_app.annotationsView({
-				collection: video_app.Annotations
+				collection: video_app.Annotations,
+				video_frame: this.video_frame,
+				arrowTag: '#video-annotations span.left_arrow'
 			});
-
-			this.updateStartFrame(this.new_video_view.start_seconds);
 		},
 
 		bindEvents: function(){
@@ -65,7 +67,7 @@ var video_app = video_app || {};
 		changeframe: function(e){
 			if (this.new_video_view && this.video_tag){
 				this.new_video_view.start_seconds = parseInt(this.video_tag.currentTime);
-				this.updateStartFrame(this.new_video_view.start_seconds);
+				this.video_frame.set('start_seconds', this.new_video_view.start_seconds)
 			}
 		},
 
@@ -87,13 +89,9 @@ var video_app = video_app || {};
 			this.video_tag.play();
 		},
 
-		updateStartFrame: function(time){
-			this.$el.find('span.start_frame').html(Utils.minuteSeconds(time));
-		},
-
 		showList: function(e){
 			$(e.target).fadeOut();
-			this.$el.find('.left_alignment').toggle( "slide" );
+			this.$el.find('.left_side').toggle( "slide" );
 		},
 
 		getVideoId: function(){

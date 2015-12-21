@@ -2,28 +2,27 @@ var video_app = video_app || {};
 (function ($) {
 	video_app.annotationsView = Backbone.View.extend({
 		tagName:'div',
-		className: 'annotations_list',
+		className: 'left_side',
 		events: {
-			'click input.search_annotations': 'ignore',
 			'keyup input.search_annotations': 'search',
-			'keydown .search_annotations': 'ignore',
 			'click a.close_annotations': 'closeAnntations'
 		},
 
-		initialize: function(){
+		initialize: function(options){
 			_.bindAll(this, 'render');
+			_.bindAll(this, 'updateFrame');
+
+			this.arrowTag = options.arrowTag;
+			this.video_frame = options.video_frame;
+
 			this.collection.on('reset', this.render);
 			this.collection.on('add', this.render);
+			this.video_frame.on('change', this.updateFrame);
 		},
 
 		render: function(){
-			this.$el.empty();
-			if (!_.isEmpty(this.collection.models)){
-				$(this.el).html(Mustache.to_html($('#annotations-template').html()));
-				this.addAll(this.collection.sort('start_seconds'));
-			} else {
-				$(this.el).html($('#no-annotation-template').html());
-			}
+			$(this.el).html(Mustache.to_html($('#annotations-template').html()));
+			this.addAll(this.collection.sort('start_seconds'));
 			return this;
 		},
 
@@ -42,20 +41,20 @@ var video_app = video_app || {};
 		},
 
 		search: function(e){
-			this.ignore(e);
 			var keyword = $(e.target).val();
 			search_result = this.collection.search(keyword);
 			this.$el.find('ul.annotations').empty();
 			this.addAll(search_result);
 		},
 
-		ignore: function(event) {
-			event.stopPropagation();
+		closeAnntations: function(event){
+			this.$el.toggle( "slide" );
+			$(this.arrowTag).fadeIn('slow');
 		},
 
-		closeAnntations: function(event){
-			$('#video-annotations .left_alignment').toggle( "slide" );
-			$('#video-annotations span.left_arrow').fadeIn('slow');
+		updateFrame: function(){
+			this.$el.find('span.start_frame')
+					.html(Utils.minuteSeconds(this.video_frame.get('start_seconds')));
 		}
 	});
 })(jQuery);

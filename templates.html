@@ -12,22 +12,25 @@
 	</script>
 
 	<script type="text/template" id="annotations-template">
-		<a href='#' class='close_annotations'>x</a>
-		<input type='textfield' class='search_annotations' placeholder='Search'>
-		<ul class='annotations'></ul>
+		<div id='start_time'>
+			<span>Start Time: </span>
+			<span class='start_frame'></span>
+		</div>
+		<div class="annotations_list">
+			<a href='#' class='close_annotations'>x</a>
+			<input type='textfield' class='search_annotations' placeholder='Search'>
+			<ul class='annotations'></ul>
+		</div>
 	</script>
+
 	<script type="text/template" id="video-main-template">
 		<div id='video-annotations'></div>
 	</script>
+
 	<script type="text/template" id="app-template">
 		<span class='left_arrow'>></span>
-		<div class='left_alignment hide'>
-			<div id='start_time'>
-				<span>Start Time: </span>
-				<span class='start_frame'></span>
-			</div>
-		</div>
 	</script>
+
 	<script type="text/template" id="no-annotation-template">
 		<a href='#' class='close_annotations'>x</a><h3 class='center mt5'>No Annotations</h3>
 	</script>
