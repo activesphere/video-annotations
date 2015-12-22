@@ -9,8 +9,12 @@ var video_app = video_app || {};
 
 		initialize: function(){
 			_.bindAll(this, 'render');
-			this.video_tag = $('video')[0];
+			_.bindAll(this, 'updateFrame');
+
 			this.video_frame = new video_app.Frame({start_seconds: 0});
+			this.video_frame.on('change', this.updateFrame);
+
+			this.video_tag = $('video')[0];
 			this.initializeView();
 			this.getVideoId();
 			this.bindEvents();
@@ -19,18 +23,18 @@ var video_app = video_app || {};
 		render: function(){
 			$(this.el).html($('#app-template').html());
 			this.$el.append($(this.annotations_view.render().el).hide());
-			this.annotations_view.updateFrame();
+			this.updateFrame();
 		},
 
 		initializeView: function(){
 			this.new_video_view = new video_app.newAnnotationView({
-				frameName: '#video-annotations span.start_frame',
 				video_tag: this.video_tag
 			});
 
+			this.new_video_view.video_frame = this.video_frame;
+
 			this.annotations_view = new video_app.annotationsView({
 				collection: video_app.Annotations,
-				video_frame: this.video_frame,
 				arrowTag: '#video-annotations span.left_arrow'
 			});
 		},
@@ -102,6 +106,11 @@ var video_app = video_app || {};
 					query[i.split('=')[0]]=i.split('=')[1];
 				});
 			this.video_id = query['v']
+		},
+
+		updateFrame: function(){
+			this.$el.find('span.start_frame')
+					.html(Utils.minuteSeconds(this.video_frame.get('start_seconds')));
 		}
 	});
 })();

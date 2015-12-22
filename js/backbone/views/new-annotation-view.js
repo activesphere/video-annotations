@@ -10,7 +10,7 @@ var video_app = video_app || {};
 		initialize: function(options){
 			this.start_seconds = 0;//second
 			this.that_seconds = false;
-			this.frameName = options.frameName;
+			this.video_frame = options.video_frame;
 			this.video_tag = options.video_tag;
 		},
 
@@ -40,10 +40,11 @@ var video_app = video_app || {};
 				} else {
 					this.start_seconds = end_seconds;
 				}
-				$(this.frameName).html(Utils.minuteSeconds(this.start_seconds));
 
 				annotation_model = new video_app.Annotation(annotation_obj);
 				video_app.Annotations.add(annotation_model);
+
+				this.video_frame.set('start_seconds', this.start_seconds);
 				this.video_tag.play();
 
 				this.clear();

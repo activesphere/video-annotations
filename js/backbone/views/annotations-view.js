@@ -3,6 +3,12 @@ var video_app = video_app || {};
 	video_app.annotationsView = Backbone.View.extend({
 		tagName:'div',
 		className: 'left_side',
+		template: function () {
+			return $('#annotations-template').html()
+		},
+		noAnnotationTemplate: function () {
+			return $('#no-annotation-template').html()
+		},
 		events: {
 			'keyup input.search_annotations': 'search',
 			'click a.close_annotations': 'closeAnntations'
@@ -10,18 +16,15 @@ var video_app = video_app || {};
 
 		initialize: function(options){
 			_.bindAll(this, 'render');
-			_.bindAll(this, 'updateFrame');
 
 			this.arrowTag = options.arrowTag;
-			this.video_frame = options.video_frame;
 
 			this.collection.on('reset', this.render);
 			this.collection.on('add', this.render);
-			this.video_frame.on('change', this.updateFrame);
 		},
 
 		render: function(){
-			$(this.el).html(Mustache.to_html($('#annotations-template').html()));
+			$(this.el).html(this.template());
 			this.addAll(this.collection.sort('start_seconds'));
 			return this;
 		},
@@ -31,7 +34,7 @@ var video_app = video_app || {};
 			if (!_.isEmpty(models)){
 				_.each(models, function (annotation) { self.addOne(annotation); });
 			} else {
-				this.$el.find('ul.annotations').html($('#no-annotation-template').html());
+				this.$el.find('ul.annotations').html(this.noAnnotationTemplate());
 			}
 		},
 
@@ -50,11 +53,6 @@ var video_app = video_app || {};
 		closeAnntations: function(event){
 			this.$el.toggle( "slide" );
 			$(this.arrowTag).fadeIn('slow');
-		},
-
-		updateFrame: function(){
-			this.$el.find('span.start_frame')
-					.html(Utils.minuteSeconds(this.video_frame.get('start_seconds')));
 		}
 	});
 })(jQuery);
