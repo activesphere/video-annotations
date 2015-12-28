@@ -8,16 +8,22 @@ var video_app = video_app || {};
 		},
 
 		initialize: function(){
+			this.getVideoId();
+
 			_.bindAll(this, 'render');
 			_.bindAll(this, 'updateFrame');
 
 			this.video_frame = new video_app.Frame({start_seconds: 0});
 			this.video_frame.on('change', this.updateFrame);
+			this.storage = new video_app.AppStorage({name: 'youtube_'+this.video_id})
 
 			this.video_tag = $('video')[0];
 			this.initializeView();
-			this.getVideoId();
 			this.bindEvents();
+
+			this.storage.get(function(annotations){
+				video_app.Annotations.reset(annotations);
+			});
 		},
 
 		render: function(){
@@ -28,7 +34,8 @@ var video_app = video_app || {};
 
 		initializeView: function(){
 			this.new_video_view = new video_app.newAnnotationView({
-				video_tag: this.video_tag
+				video_tag: this.video_tag,
+				storage: this.storage
 			});
 
 			this.new_video_view.video_frame = this.video_frame;

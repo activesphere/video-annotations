@@ -26,6 +26,7 @@
 				"js/lib/backbone-min.js",
 				"js/lib/mustache-min.js",
 				"js/lib/jquery.hotkeys.js",
+				"js/storage.js",
 
 				"js/utils.js",
 				"js/backbone/models.js",
