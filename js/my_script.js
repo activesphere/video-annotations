@@ -9,6 +9,17 @@ var video_app = video_app || {};
 		$('video').parents('.player-api').append($('#video-main-template').html());
 		app_view = new video_app.appView();
 		app_view.render();
+
+		var currentSearch = window.location.search;
+		setInterval(function() {
+				if (window.location.search !== currentSearch) {
+					currentSearch = window.location.search;
+					console.log("loca: ", app_view);
+					app_view.getVideoKey();
+					app_view.fetch();
+	       }
+		}, 100);
+
 	}, 'html');
 
 	console.log('Success');

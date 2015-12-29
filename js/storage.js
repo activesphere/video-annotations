@@ -17,17 +17,10 @@ var video_app = video_app || {};
 	AppStorage.prototype.get = function(callback){
 		chrome.storage.local.get(this.name, (function(_this) {
 			return function(collection){
-				annotations = collection[_this.name] || {};
+				annotations = collection[_this.name] || [];
 				return callback(annotations);
 			};
 		})(this));
-
-		var self = this;
-		chrome.storage.local.get(this.name, function(collection){
-				annotations = collection[self.name] || {};
-				return callback(annotations);
-		});
-
 	}
 
 	video_app.AppStorage = AppStorage;

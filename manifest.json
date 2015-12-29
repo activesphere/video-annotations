@@ -39,5 +39,5 @@
 			]
 		}
 	],
-	"web_accessible_resources": ["templates.html", "html/chrome_oauth_receiver.html"]
+	"web_accessible_resources": ["templates.html", "html/chrome_oauth_receiver.html", "images/edit.png"]
 }

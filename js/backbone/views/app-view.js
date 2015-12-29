@@ -22,10 +22,8 @@ var video_app = video_app || {};
 			this.video_tag = $('video')[0];
 			this.initializeView();
 			this.bindEvents();
+			this.fetch();
 
-			this.storage.get(function(annotations){
-				video_app.Annotations.reset(annotations);
-			});
 		},
 
 		render: function(){
@@ -45,6 +43,13 @@ var video_app = video_app || {};
 				collection: video_app.Annotations,
 				storage: this.storage,
 				arrowTag: '#video-annotations span.left_arrow'
+			});
+		},
+
+		fetch: function(){
+			this.storage.name = this.video_key;
+			this.storage.get(function(annotations){
+				video_app.Annotations.reset(annotations);
 			});
 		},
 
