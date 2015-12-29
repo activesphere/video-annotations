@@ -1,5 +1,5 @@
 var video_app = video_app || {};
-(function() {
+(function(video_app) {
 	var AppStorage = function(options){
 		this.name = options.name;
 	}
@@ -21,8 +21,14 @@ var video_app = video_app || {};
 				return callback(annotations);
 			};
 		})(this));
-		return this;
+
+		var self = this;
+		chrome.storage.local.get(this.name, function(collection){
+				annotations = collection[self.name] || {};
+				return callback(annotations);
+		});
+
 	}
 
 	video_app.AppStorage = AppStorage;
-}).call(this);
+})(video_app);

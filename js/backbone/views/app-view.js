@@ -1,5 +1,6 @@
 var video_app = video_app || {};
-(function() {
+
+(function($, _, video_app) {
 	video_app.appView = Backbone.View.extend({
 		el: 'div#video-annotations',
 
@@ -8,14 +9,15 @@ var video_app = video_app || {};
 		},
 
 		initialize: function(){
-			this.getVideoId();
+			this.getVideoKey();
 
 			_.bindAll(this, 'render');
 			_.bindAll(this, 'updateFrame');
 
 			this.video_frame = new video_app.Frame({start_seconds: 0});
+			this.storage = new video_app.AppStorage({name: this.video_key})
+
 			this.video_frame.on('change', this.updateFrame);
-			this.storage = new video_app.AppStorage({name: 'youtube_'+this.video_id})
 
 			this.video_tag = $('video')[0];
 			this.initializeView();
@@ -34,14 +36,14 @@ var video_app = video_app || {};
 
 		initializeView: function(){
 			this.new_video_view = new video_app.newAnnotationView({
-				video_tag: this.video_tag,
-				storage: this.storage
+				video_tag: this.video_tag
 			});
 
 			this.new_video_view.video_frame = this.video_frame;
 
 			this.annotations_view = new video_app.annotationsView({
 				collection: video_app.Annotations,
+				storage: this.storage,
 				arrowTag: '#video-annotations span.left_arrow'
 			});
 		},
@@ -105,14 +107,23 @@ var video_app = video_app || {};
 			this.$el.find('.left_side').toggle( "slide" );
 		},
 
-		getVideoId: function(){
+		getVideoKey: function(){
 			var current_url = window.location;
 			query={};
 			current_url.search.split('?')[1].split('&')
 				.forEach(function(i){
 					query[i.split('=')[0]]=i.split('=')[1];
 				});
-			this.video_id = query['v']
+
+			var name = Utils.hosts[current_url.hostname] || '';
+
+			this.getVideoId(name, query);
+		},
+
+		getVideoId: function(name, query){
+			if (name == 'youtube'){
+				this.video_key = name + "_" + query['v'];
+			}
 		},
 
 		updateFrame: function(){
@@ -120,4 +131,4 @@ var video_app = video_app || {};
 					.html(Utils.minuteSeconds(this.video_frame.get('start_seconds')));
 		}
 	});
-})();
+})($, _, video_app);

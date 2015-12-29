@@ -3,6 +3,7 @@ var video_app = video_app || {};
 	video_app.annotationView = Backbone.View.extend({
 		tagName: 'li',
 		events: {
+			'click a.delete': 'delete'
 		},
 
 		initialize: function(){
@@ -20,6 +21,11 @@ var video_app = video_app || {};
 			time = this.model.get(field);
 			r = Utils.minuteSeconds(time);
 			this.model.set(name, r);
+		},
+
+		delete: function(e){
+			var curre_model = video_app.Annotations.findWhere(this.model);
+			video_app.Annotations.remove(curre_model);
 		}
 	});
 })();

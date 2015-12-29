@@ -9,4 +9,10 @@ var Utils = {};
 		}
 		return time;
 	};
+
+	Utils.hosts = (function(){
+		return {
+			"www.youtube.com": "youtube"
+		}
+	})();
 })();

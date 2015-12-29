@@ -16,11 +16,18 @@ var video_app = video_app || {};
 
 		initialize: function(options){
 			_.bindAll(this, 'render');
+			_.bindAll(this, 'syncAnnotations');
 
 			this.arrowTag = options.arrowTag;
+			this.storage = options.storage;
 
 			this.collection.on('reset', this.render);
 			this.collection.on('add', this.render);
+			this.collection.on('remove', this.render);
+
+			this.collection.on('reset', this.syncAnnotations);
+			this.collection.on('add', this.syncAnnotations);
+			this.collection.on('remove', this.syncAnnotations);
 		},
 
 		render: function(){
@@ -53,6 +60,10 @@ var video_app = video_app || {};
 		closeAnntations: function(event){
 			this.$el.toggle( "slide" );
 			$(this.arrowTag).fadeIn('slow');
+		},
+
+		syncAnnotations: function(){
+			this.storage.save(this.collection);
 		}
 	});
 })(jQuery);

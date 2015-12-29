@@ -11,7 +11,6 @@ var video_app = video_app || {};
 			this.start_seconds = 0;//second
 			this.that_seconds = false;
 			this.video_tag = options.video_tag;
-			this.storage = options.storage;
 		},
 
 		render: function(){
@@ -22,7 +21,6 @@ var video_app = video_app || {};
 		},
 
 		create: function(event){
-			var self = this;
 			if (event.keyCode == 13 && event.altKey){
 				console.log('Trigged');
 				var uid = Date.now();
@@ -45,8 +43,6 @@ var video_app = video_app || {};
 				annotation_model = new video_app.Annotation(annotation_obj);
 				video_app.Annotations
 					.add(annotation_model);
-
-				self.storage.save(video_app.Annotations);
 
 				this.video_frame.set('start_seconds', this.start_seconds);
 				this.video_tag.play();
