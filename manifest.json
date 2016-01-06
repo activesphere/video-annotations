@@ -16,6 +16,12 @@
 		"storage",
 		"unlimitedStorage"
 	],
+	"background": {
+		"scripts": [
+			"js/utils.js", "js/lib/dropbox.js", "js/dropbox_chrome.js", "js/events.js"
+		],
+		"persistent": false
+	},
 	"content_scripts": [
 		{
 			"matches": ["https://www.youtube.com/*"],

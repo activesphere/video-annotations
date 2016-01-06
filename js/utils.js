@@ -15,4 +15,6 @@ var Utils = {};
 			"www.youtube.com": "youtube"
 		}
 	})();
+
+	Utils.userInfo = 'dropbox_userinfo';
 })();

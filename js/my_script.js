@@ -12,14 +12,13 @@ var video_app = video_app || {};
 
 		var currentSearch = window.location.search;
 		setInterval(function() {
-				if (window.location.search !== currentSearch) {
-					currentSearch = window.location.search;
-					console.log("loca: ", app_view);
-					app_view.getVideoKey();
-					app_view.fetch();
-	       }
-		}, 100);
-
+			if (window.location.search !== currentSearch) {
+				currentSearch = window.location.search;
+				console.log("loca: ", app_view);
+				app_view.getVideoKey();
+				app_view.fetch();
+			}
+		}, 1000);
 	}, 'html');
 
 	console.log('Success');

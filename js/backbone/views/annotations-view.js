@@ -58,6 +58,7 @@ var video_app = video_app || {};
 		},
 
 		closeAnntations: function(event){
+			event.preventDefault();
 			this.$el.toggle( "slide" );
 			$(this.arrowTag).fadeIn('slow');
 		},
