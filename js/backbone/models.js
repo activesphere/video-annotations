@@ -4,4 +4,6 @@ var video_app = video_app || {};
 	});
 
 	video_app.Frame = Backbone.Model.extend({});
+
+	video_app.userInfo = Backbone.Model.extend({});
 })();

@@ -13,6 +13,7 @@ var video_app = video_app || {};
 
 	AppStorage.prototype.set = function(data, callback){
 		var opt = {};
+		var self = this;
 		opt[this.name] = data;
 		chrome.storage.local.set(opt, function() {
 			console.log('Data Saved');
@@ -22,9 +23,17 @@ var video_app = video_app || {};
 
 	AppStorage.prototype.get = function(callback){
 		chrome.storage.local.get(this.name, (function(_this) {
-			return function(collection){
-				data = collection[_this.name] || [];
-				return callback(data);
+			return function(items){
+				if (items && items[_this.name]) {
+					try {
+						return callback(items[_this.name]);
+					} catch (error){
+
+					}
+				} else {
+				}
+
+				return callback(null);
 			};
 		})(this));
 	}

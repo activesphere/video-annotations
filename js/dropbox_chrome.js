@@ -13,13 +13,13 @@ var video_app = video_app || {};
 		client.authDriver(new Dropbox.AuthDriver.ChromeExtension({
 			receiverPath: 'html/chrome_oauth_receiver.html'
 		}));
-		client.authenticate({interactive: false}, function(auth){
+		client.authenticate({interactive: false}, function(error){
 			client.onAuthStepChange.addListener(function() {
 				return _this._userInfo = null;
 			});
 
-		_this.onClient.dispatch(client);
-			callback(client);
+			_this.onClient.dispatch(client);
+			return callback(client);
 		});
 	}
 
@@ -31,7 +31,7 @@ var video_app = video_app || {};
 				if (items && items[Utils.userInfo]) {
 					try {
 						_this._userInfo = Dropbox.AccountInfo.parse(items[Utils.userInfo]);
-						return true
+						return true;
 					} catch (error1) {
 						parseError = error1;
 						_this._userInfo = null;
@@ -56,6 +56,22 @@ var video_app = video_app || {};
 				});
 			};
 		})(this));
+	}
+
+	Chrome.prototype.signOut = function(callback) {
+		return this.client((function(_this) {
+			return function(client) {
+				if (!client.isAuthenticated()) {
+					return callback();
+				}
+				return client.signOut(function() {
+					_this._userInfo = null;
+					return chrome.storage.local.remove(Utils.userInfo, function() {
+						return callback();
+					});
+				});
+			};
+	  })(this));
 	}
 
 	Dropbox.Chrome = Chrome;

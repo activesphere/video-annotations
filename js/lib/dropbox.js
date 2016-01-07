@@ -803,7 +803,11 @@
           if (_this.locationStateParam(receiverHref) === stateParam) {
             stateParam = false;
             if (oauthTab) {
-              chrome.tabs.remove(oauthTab.id);
+              chrome.tabs.get(oauthTab.id, function(tab) {
+                if (!chrome.runtime.lastError && tab) {
+                  chrome.tabs.remove(oauthTab.id);
+                }
+              });
             }
             chrome.runtime.onMessage.removeListener(listener);
             return callback(Dropbox.Util.Oauth.queryParamsFromUrl(receiverHref));
@@ -825,7 +829,6 @@
         var pageUrl;
         pageUrl = window.location.href;
         window.location.hash = '';
-        debugger;
         chrome.runtime.sendMessage({
           dropbox_oauth_receiver_href: pageUrl
         });

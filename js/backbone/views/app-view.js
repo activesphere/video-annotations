@@ -10,6 +10,7 @@ var video_app = video_app || {};
 
 		initialize: function(){
 			this.getVideoKey();
+			this.dropbox();
 
 			_.bindAll(this, 'render');
 			_.bindAll(this, 'updateFrame');
@@ -22,8 +23,8 @@ var video_app = video_app || {};
 			this.video_tag = $('video')[0];
 			this.initializeView();
 			this.bindEvents();
+			this.syncData();
 			this.fetch();
-
 		},
 
 		render: function(){
@@ -42,14 +43,23 @@ var video_app = video_app || {};
 			this.annotations_view = new video_app.annotationsView({
 				collection: video_app.Annotations,
 				storage: this.storage,
+				dropbox_file: this.dropbox_file,
 				arrowTag: '#video-annotations span.left_arrow'
 			});
 		},
 
 		fetch: function(){
+			var self = this;
 			this.storage.name = this.video_key;
-			this.storage.get(function(annotations){
-				video_app.Annotations.reset(annotations);
+			self.dropbox_file.read(function(error, annotations){
+				if (!error) {
+					video_app.Annotations.reset(annotations);
+					self.storage.save(video_app.Annotations);
+				} else {
+					self.storage.get(function(annotations){
+						video_app.Annotations.reset(annotations || []);
+					});
+				}
 			});
 		},
 
@@ -134,6 +144,25 @@ var video_app = video_app || {};
 		updateFrame: function(){
 			this.$el.find('span.start_frame')
 					.html(Utils.minuteSeconds(this.video_frame.get('start_seconds')));
+		},
+
+		dropbox: function(){
+			var dropboxChrome = new Dropbox.Chrome({
+				key: 'zhu541eif1aph15'
+			});
+			this.dropbox_file = new video_app.DropboxFile({
+				dropboxObj: dropboxChrome,
+				name: this.video_key
+			})
+		},
+
+		syncData: function(){
+			var self = this;
+			self.storage.get(function(annotations){
+				if (annotations) {
+					self.dropbox_file.write(annotations);
+				}
+			});
 		}
 	});
 })($, _, video_app);

@@ -10,6 +10,16 @@ var video_app = video_app || {};
 					return _this.onBrowserAction();
 				}
 			})(this));
+      this.dropboxChrome.onClient.addListener((function(_this) {
+        return function(client) {
+          client.onAuthStepChange.addListener(function() {
+            return _this.onDropboxAuthChange(client);
+          });
+          return client.onError.addListener(function(error) {
+            return _this.onDropboxError(client, error);
+          });
+        };
+      })(this));
 		}
 
 		EventPageController.prototype.signIn = function(callback) {
@@ -20,6 +30,12 @@ var video_app = video_app || {};
 				}
 					return callback();
 				});
+			});
+		};
+
+		EventPageController.prototype.signOut = function(callback) {
+			return this.dropboxChrome.signOut(function() {
+				return callback();
 			});
 		};
 
@@ -45,6 +61,56 @@ var video_app = video_app || {};
 				};
 			})(this));
 		};
+
+    EventPageController.prototype.onDropboxAuthChange = function(client) {
+      var credentials;
+      if (client.isAuthenticated()) {
+      	debugger;
+        chrome.browserAction.setPopup({
+          popup: 'html/popup.html'
+        });
+        chrome.browserAction.setTitle({
+          title: "Signed in"
+        });
+        chrome.browserAction.setBadgeText({
+          text: ''
+        });
+      } else {
+        chrome.browserAction.setPopup({
+          popup: ''
+        });
+        credentials = client.credentials();
+        if (credentials.authState) {
+          chrome.browserAction.setTitle({
+            title: 'Signing in...'
+          });
+          chrome.browserAction.setBadgeText({
+            text: '...'
+          });
+          chrome.browserAction.setBadgeBackgroundColor({
+            color: '#DFBF20'
+          });
+        } else {
+          chrome.browserAction.setTitle({
+            title: 'Click to sign into Dropbox'
+          });
+          chrome.browserAction.setBadgeText({
+            text: '?'
+          });
+          chrome.browserAction.setBadgeBackgroundColor({
+            color: '#DF2020'
+          });
+        }
+      }
+      return chrome.extension.sendMessage({
+        notice: 'dropbox_auth'
+      });
+    };
+
+    EventPageController.prototype.onDropboxError = function(client, error) {
+      return this.errorNotice("Something went wrong while talking to Dropbox: " + error);
+    };
+
 
 		return EventPageController;
 	})();

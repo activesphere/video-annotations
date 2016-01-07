@@ -4,10 +4,10 @@ var video_app = video_app || {};
 		tagName:'div',
 		className: 'left_side',
 		template: function () {
-			return $('#annotations-template').html()
+			return $('#annotations-template').html();
 		},
 		noAnnotationTemplate: function () {
-			return $('#no-annotation-template').html()
+			return $('#no-annotation-template').html();
 		},
 		events: {
 			'keyup input.search_annotations': 'search',
@@ -20,6 +20,7 @@ var video_app = video_app || {};
 
 			this.arrowTag = options.arrowTag;
 			this.storage = options.storage;
+			this.dropbox_file = options.dropbox_file;
 
 			this.collection.on('reset', this.render);
 			this.collection.on('add', this.render);
@@ -65,6 +66,9 @@ var video_app = video_app || {};
 
 		syncAnnotations: function(){
 			this.storage.save(this.collection);
+			json_data = _.map(this.collection.models, function(model){ return model.toJSON() });
+			this.dropbox_file.write(json_data);
 		}
+
 	});
 })(jQuery);

@@ -14,7 +14,8 @@
 		"<all_urls>",
 		"contextMenus",
 		"storage",
-		"unlimitedStorage"
+		"unlimitedStorage",
+		"tabs"
 	],
 	"background": {
 		"scripts": [
@@ -32,8 +33,11 @@
 				"js/lib/backbone-min.js",
 				"js/lib/mustache-min.js",
 				"js/lib/jquery.hotkeys.js",
+				"js/lib/dropbox.js",
+				"js/dropbox_chrome.js",
 				"js/storage.js",
 
+				"js/dropbox-file.js",
 				"js/utils.js",
 				"js/backbone/models.js",
 				"js/backbone/collections.js",
