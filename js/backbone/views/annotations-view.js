@@ -9,34 +9,48 @@ var video_app = video_app || {};
 		noAnnotationTemplate: function () {
 			return $('#no-annotation-template').html();
 		},
+		userInfoTemplate: function () {
+			return $('#user-main-template').html();
+		},
 		events: {
 			'keyup input.search_annotations': 'search',
 			'click a.close_annotations': 'closeAnntations'
 		},
 
 		initialize: function(options){
-			_.bindAll(this, 'render');
+			_.bindAll(this, 'renderList');
 			_.bindAll(this, 'syncAnnotations');
+			_.bindAll(this, 'updateUserInfo');
 
 			this.arrowTag = options.arrowTag;
 			this.storage = options.storage;
 			this.dropbox_file = options.dropbox_file;
 			this.video_tag =  options.video_tag;
+			this.userInfo = options.user_info;
 
-			this.collection.on('reset', this.render);
-			this.collection.on('add', this.render);
-			this.collection.on('remove', this.render);
+			this.collection.on('reset', this.renderList);
+			this.collection.on('add', this.renderList);
+			this.collection.on('remove', this.renderList);
 
 			this.collection.on('reset', this.syncAnnotations);
 			this.collection.on('add', this.syncAnnotations);
 			this.collection.on('remove', this.syncAnnotations);
+
+			this.userInfo.on('change', this.updateUserInfo);
+
 			this.close_url = chrome.extension.getURL('images/close.png');
 		},
 
 		render: function(){
 			$(this.el).html(Mustache.to_html(this.template(), {close_url: this.close_url}));
-			this.addAll(this.collection.sort('start_seconds'));
+			this.renderList();
 			return this;
+		},
+
+		renderList: function(){
+			this.$el.find('.search_annotations').val('');
+			this.$el.find('ul.annotations').empty();
+			this.addAll(this.collection.sort('start_seconds'));
 		},
 
 		addAll: function(models){
@@ -71,6 +85,18 @@ var video_app = video_app || {};
 			this.storage.save(this.collection);
 			json_data = _.map(this.collection.models, function(model){ return model.toJSON() });
 			this.dropbox_file.write(json_data);
+		},
+
+		updateUserInfo: function(){
+			console.log('User Info triggerd');
+			var name = this.userInfo.get('display_name');
+			var short_name = '';
+			_.each(name.split(' '), function(name){ short_name = short_name + name.charAt(0)})
+			this.$el.find('.user_info_detail')
+				.html(Mustache.to_html(this.userInfoTemplate(), _.extend(
+					this.userInfo.toJSON(),
+					{short_name: short_name})
+				));
 		},
 
 		highlight: function(){

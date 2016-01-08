@@ -39,10 +39,15 @@
 		<div class="annotations_list">
 			<a href='#' class='close_annotations'><img src='{{close_url}}'></a>
 			<input type='textfield' class='search_annotations' placeholder='Search Annotation'>
+			<div class='user_info_detail pull-right'></div>
 			<div class='clear'></div>
 			<div class='border-line'></div>
 			<ul class='annotations'></ul>
 		</div>
+	</script>
+
+	<script type="text/template" id="user-main-template">
+		<span class='short-name' title='{{display_name}}'>{{short_name}}</span>
 	</script>
 
 	<script type="text/template" id="video-main-template">

@@ -101,6 +101,14 @@
 #video-annotations div.annotations_list ul li.video-annotation span.label.time{
 	background: #26A5C7;
 }
+#video-annotations div.annotations_list .user_info_detail .short-name{
+	cursor: pointer;
+	font-size: 15px;
+	font-weight: 600;
+	margin-right: 20px;
+	text-transform: uppercase;
+	padding: 5px;
+}
 #video-annotations div.annotations_list ul li.video-annotation .description a:hover{
 	text-decoration: none;
 }

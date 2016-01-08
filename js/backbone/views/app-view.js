@@ -17,7 +17,9 @@ var video_app = video_app || {};
 
 			this.video_frame = new video_app.Frame({start_seconds: 0});
 			this.storage = new video_app.AppStorage({name: this.video_key})
+			this.userInfo = new video_app.userInfo({});
 
+			this.fetchUser();
 			this.updateVideoKey();
 			this.syncData();
 
@@ -33,9 +35,7 @@ var video_app = video_app || {};
 			var _this = this;
 			$(this.el).html($('#app-template').html());
 			this.$el.append($(this.annotations_view.render().el).hide());
-			setTimeout(function() {
-				_this.updateFrame();
-			}, 2000);
+			_this.updateFrame();
 		},
 
 		initializeView: function(){
@@ -49,6 +49,7 @@ var video_app = video_app || {};
 				collection: video_app.Annotations,
 				storage: this.storage,
 				video_tag: this.video_tag,
+				user_info: this.userInfo,
 				dropbox_file: this.dropbox_file,
 				arrowTag: '#video-annotations span.left_arrow'
 			});
@@ -178,6 +179,14 @@ var video_app = video_app || {};
 		updateVideoKey: function(){
 			this.storage.name = this.video_key;
 			this.dropbox_file.name = this.video_key;
+		},
+
+		fetchUser: function(){
+			var self = this, user_storage = new video_app.AppStorage({name: Utils.userInfo});
+			user_storage.get(function(user_info){
+				console.log("User Info Fetch: ", user_info);
+				self.user_info === null ? self.userInfo.clear() : self.userInfo.set(user_info);
+			});
 		},
 
 		highlight: function(){
