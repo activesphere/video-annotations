@@ -23,8 +23,10 @@ var video_app = video_app || {};
 
 			this.video_frame.on('change', this.updateFrame);
 			this.video_tag = $('video')[0];
+
 			this.initializeView();
 			this.bindEvents();
+			this.highlight();
 		},
 
 		render: function(){
@@ -46,6 +48,7 @@ var video_app = video_app || {};
 			this.annotations_view = new video_app.annotationsView({
 				collection: video_app.Annotations,
 				storage: this.storage,
+				video_tag: this.video_tag,
 				dropbox_file: this.dropbox_file,
 				arrowTag: '#video-annotations span.left_arrow'
 			});
@@ -162,10 +165,12 @@ var video_app = video_app || {};
 		syncData: function(){
 			var self = this;
 			self.storage.get(function(annotations){
-				if (annotations) {
+				if ( !_.isEmpty(annotations) ) {
 					self.dropbox_file.write(annotations, function(){
 						self.fetch();
 					});
+				} else {
+					self.fetch();
 				}
 			});
 		},
@@ -173,6 +178,17 @@ var video_app = video_app || {};
 		updateVideoKey: function(){
 			this.storage.name = this.video_key;
 			this.dropbox_file.name = this.video_key;
+		},
+
+		highlight: function(){
+			var self = this;
+
+			$(this.video_tag).on("loadeddata", function(e){
+				console.log('Loaded Data');
+				setInterval(function(){
+					self.annotations_view.highlight();
+				}, 1000);
+			});
 		}
 	});
 })($, _, video_app);

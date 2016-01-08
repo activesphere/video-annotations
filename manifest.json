@@ -26,7 +26,7 @@
 	"content_scripts": [
 		{
 			"matches": ["https://www.youtube.com/*"],
-			"css": ["my_script.css"],
+			"css": ["my_script.css", "icono.min.css"],
 			"js": [
 				"js/lib/jquery-min.js",
 				"js/lib/underscore-min.js",

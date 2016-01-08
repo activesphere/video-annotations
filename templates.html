@@ -1,9 +1,9 @@
 <div class='video-annotation-templates'>
 	<script type="text/template" id="annotation-template">
 		<div class='description pull-left'>
-			<a href=#t={{start_seconds}}>
-				<span class='annotation-title'>{{title}}</span>
-				<span class='annotation-description'>{{description}}</span>
+			<span class='icono-caretRightCircle pull-left icon-title' data-type='auto'></span>
+			<a href=#t={{start_seconds}} class='pull-left ml10'>
+				<strong class='annotation-title'>{{title}}</strong>
 			</a>
 		</div>
 		<div class='right-pane'>
@@ -19,6 +19,15 @@
 				<a href='#' class='delete' title='Delete'><img src='{{delete_url}}' style='width: 15px;'></a>
 				<a href='#' class='edit' title='Edit'><img src='{{edit_url}}' style='width: 15px;'></a>
 			</div>
+		</div>
+		<div class='clear'></div>
+		<div class='annotation-description' style='display: none;'>
+			{{#description}}
+			<span>{{description}}</span>
+			{{/description}}
+			{{^description}}
+			<span>No Description</span>
+			{{/description}}
 		</div>
 	</script>
 

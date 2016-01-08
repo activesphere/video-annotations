@@ -4,6 +4,8 @@
 	right: 0;
 	top: 0;
 	width: initial;
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
 }
 #video-annotations .clear{
 	clear: both;
@@ -56,22 +58,36 @@
 #video-annotations div.annotations_list ul li:last{
 	border-bottom: none;
 }
-#video-annotations div.annotations_list ul li .description{
+#video-annotations div.annotations_list ul li.video-annotation .description{
 	width: 70%;
 }
-#video-annotations div.annotations_list ul li .right-pane{
+#video-annotations div.annotations_list ul li.video-annotation .description span.icon-title{
+	cursor: pointer;
+}
+#video-annotations div.annotations_list ul li.video-annotation .right-pane{
 	float:right;
 	width: 28%;
 }
-#video-annotations div.annotations_list ul li .description .annotation-title{
-	font-weight: 500;
+#video-annotations div.annotations_list ul li.video-annotation .annotation-title{
+	font-weight: 600;
+	font-size: 14px;
 	color: #222C36;
 	text-transform: capitalize;
 }
-#video-annotations div.annotations_list ul li span.label{
+#video-annotations div.annotations_list ul li.video-annotation .annotation-description{
+	margin-top: 5px;
+	margin-left: 27px;
+}
+#video-annotations div.annotations_list ul li.video-annotation .annotation-description span{
+	line-height: 18px;
+	letter-spacing: 0.7px;
+	color: #666;
+	font-size: 14px;
+}
+#video-annotations div.annotations_list ul li.video-annotation span.label{
 	border-radius: 10px;
 	color: #fff;
-	font-size: 13px;
+	font-size: 14px;
 	padding: 1px 6px;
 	margin-right: 3px;
 }
@@ -79,13 +95,13 @@
 	padding: 5px 0px;
 	border-bottom: solid 1px #F1F1F1;
 }
-#video-annotations div.annotations_list ul li span.label.quick{
+#video-annotations div.annotations_list ul li.video-annotation span.label.quick{
 	background: #F5A623;
 }
-#video-annotations div.annotations_list ul li span.label.time{
+#video-annotations div.annotations_list ul li.video-annotation span.label.time{
 	background: #26A5C7;
 }
-#video-annotations div.annotations_list ul li .description a:hover{
+#video-annotations div.annotations_list ul li.video-annotation .description a:hover{
 	text-decoration: none;
 }
 #video-annotations div.annotations_list .center{
@@ -125,4 +141,10 @@
 }
 #video-annotations .pull-right{
 	float: right;
+}
+#video-annotations .ml10{
+	margin-left: 10px;
+}
+#video-annotations .none{
+	display: none;
 }

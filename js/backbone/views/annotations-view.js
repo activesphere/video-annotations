@@ -21,6 +21,7 @@ var video_app = video_app || {};
 			this.arrowTag = options.arrowTag;
 			this.storage = options.storage;
 			this.dropbox_file = options.dropbox_file;
+			this.video_tag =  options.video_tag;
 
 			this.collection.on('reset', this.render);
 			this.collection.on('add', this.render);
@@ -69,7 +70,37 @@ var video_app = video_app || {};
 			this.storage.save(this.collection);
 			json_data = _.map(this.collection.models, function(model){ return model.toJSON() });
 			this.dropbox_file.write(json_data);
-		}
+		},
 
+		highlight: function(){
+			var self = this;
+			if ( !self.video_tag.paused  && !_.isEmpty(self.collection.models) ) {
+				var current_seconds = parseInt(self.video_tag.currentTime);
+				_.each($(self.$el).find('li'), function($li){
+					//Check if type auto and window opened
+					if( ($($li).find('span.icon-title').hasClass('icono-caretDownCircle')
+						&& $($li).find('span.icon-title').data('type') == 'auto'
+						&& $($li).find('div.annotation-description').css('display') == 'block') ) {
+
+						$($li).find('span.icon-title');
+							.removeClass('icono-caretDownCircle')
+							.addClass('icono-caretRightCircle');
+						$($li).find('.annotation-description').hide();
+					}
+				});
+
+				_.each(self.collection.models, function(model){
+					if ( (model.get('end_seconds') != null
+						&& current_seconds >= model.get('start_seconds')
+						&& current_seconds <= model.get('end_seconds'))
+						|| model.get('start_seconds') == current_seconds ) {
+						self.$el.find('li.' + model.get('id') + ' .icon-title')
+							.removeClass('icono-caretRightCircle')
+							.addClass('icono-caretDownCircle');
+						self.$el.find('li.' + model.get('id') + ' .annotation-description').show();
+					}
+				});
+			}
+		}
 	});
 })(jQuery);
