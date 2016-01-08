@@ -105,19 +105,14 @@
 }
 #video-annotations a.close_annotations{
 	float: right;
-	color: #006dae;
-	font-size: 15px;
-	border: 1px solid #006dae;
-	border-radius: 5px 5px;
-	text-align: center;
 	-moz-border-radius: 50px;
 	-webkit-border-radius: 50px;
 	border-radius: 50px;
-	width: 20px;
-	height: 20px;
+	width: 28px;
+	height: 28px;
 	position: absolute;
-	right: -11px;
-	top: -11px;
+	right: -14px;
+	top: -14px;
 }
 #video-annotations a.close_annotations:hover{
 	text-decoration: none;

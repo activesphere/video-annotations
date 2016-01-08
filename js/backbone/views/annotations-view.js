@@ -32,7 +32,8 @@ var video_app = video_app || {};
 		},
 
 		render: function(){
-			$(this.el).html(this.template());
+			close_url = chrome.extension.getURL('images/close.png');
+			$(this.el).html(Mustache.to_html(this.template(), {close_url: close_url}));
 			this.addAll(this.collection.sort('start_seconds'));
 			return this;
 		},

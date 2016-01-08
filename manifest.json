@@ -49,5 +49,11 @@
 			]
 		}
 	],
-	"web_accessible_resources": ["templates.html", "html/chrome_oauth_receiver.html", "images/edit.png", "images/delete.png"]
+	"web_accessible_resources": [
+		"templates.html",
+		"html/chrome_oauth_receiver.html",
+		"images/edit.png",
+		"images/delete.png",
+		"images/close.png"
+	]
 }
