@@ -30,11 +30,11 @@ var video_app = video_app || {};
 			this.collection.on('reset', this.syncAnnotations);
 			this.collection.on('add', this.syncAnnotations);
 			this.collection.on('remove', this.syncAnnotations);
+			this.close_url = chrome.extension.getURL('images/close.png');
 		},
 
 		render: function(){
-			close_url = chrome.extension.getURL('images/close.png');
-			$(this.el).html(Mustache.to_html(this.template(), {close_url: close_url}));
+			$(this.el).html(Mustache.to_html(this.template(), {close_url: this.close_url}));
 			this.addAll(this.collection.sort('start_seconds'));
 			return this;
 		},
@@ -44,7 +44,8 @@ var video_app = video_app || {};
 			if (!_.isEmpty(models)){
 				_.each(models, function (annotation) { self.addOne(annotation); });
 			} else {
-				this.$el.find('ul.annotations').html(this.noAnnotationTemplate());
+				this.$el.find('ul.annotations').html(Mustache.to_html(this.noAnnotationTemplate()
+					, {close_url: this.close_url}));
 			}
 		},
 
@@ -82,7 +83,7 @@ var video_app = video_app || {};
 						&& $($li).find('span.icon-title').data('type') == 'auto'
 						&& $($li).find('div.annotation-description').css('display') == 'block') ) {
 
-						$($li).find('span.icon-title');
+						$($li).find('span.icon-title')
 							.removeClass('icono-caretDownCircle')
 							.addClass('icono-caretRightCircle');
 						$($li).find('.annotation-description').hide();
