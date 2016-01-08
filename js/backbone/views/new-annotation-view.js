@@ -25,12 +25,11 @@ var video_app = video_app || {};
 				console.log('Trigged');
 				var uid = Date.now();
 				var end_seconds = parseInt(this.video_tag.currentTime);
-				var annotation_obj = {
+				var annotation_obj = _.extend({
 					id: uid,
 					start_seconds: this.start_seconds,
-					end_seconds: end_seconds,
-					annotation: event.target.value
-				};
+					end_seconds: end_seconds
+				}, this.splitAnnotation(event.target.value));
 
 				if (this.that_seconds){
 					annotation_obj['start_seconds'] = end_seconds;
@@ -49,6 +48,13 @@ var video_app = video_app || {};
 
 				this.clear();
 			}
+		},
+
+		splitAnnotation: function(annotation){
+			var list = annotation.split('\n');
+			var title = list.shift();
+			var description = _.compact(list).join('\n');
+			return {title: title, description: description, annotation: annotation};
 		},
 
 		clear: function(){

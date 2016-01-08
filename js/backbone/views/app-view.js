@@ -18,19 +18,22 @@ var video_app = video_app || {};
 			this.video_frame = new video_app.Frame({start_seconds: 0});
 			this.storage = new video_app.AppStorage({name: this.video_key})
 
-			this.video_frame.on('change', this.updateFrame);
+			this.updateVideoKey();
+			this.syncData();
 
+			this.video_frame.on('change', this.updateFrame);
 			this.video_tag = $('video')[0];
 			this.initializeView();
 			this.bindEvents();
-			this.syncData();
-			this.fetch();
 		},
 
 		render: function(){
+			var _this = this;
 			$(this.el).html($('#app-template').html());
 			this.$el.append($(this.annotations_view.render().el).hide());
-			this.updateFrame();
+			setTimeout(function() {
+				_this.updateFrame();
+			}, 2000);
 		},
 
 		initializeView: function(){
@@ -50,7 +53,6 @@ var video_app = video_app || {};
 
 		fetch: function(){
 			var self = this;
-			this.storage.name = this.video_key;
 			self.dropbox_file.read(function(error, annotations){
 				if (!error) {
 					video_app.Annotations.reset(annotations);
@@ -60,6 +62,7 @@ var video_app = video_app || {};
 						video_app.Annotations.reset(annotations || []);
 					});
 				}
+				self.updateFrame();
 			});
 		},
 
@@ -160,9 +163,16 @@ var video_app = video_app || {};
 			var self = this;
 			self.storage.get(function(annotations){
 				if (annotations) {
-					self.dropbox_file.write(annotations);
+					self.dropbox_file.write(annotations, function(){
+						self.fetch();
+					});
 				}
 			});
+		},
+
+		updateVideoKey: function(){
+			this.storage.name = this.video_key;
+			this.dropbox_file.name = this.video_key;
 		}
 	});
 })($, _, video_app);

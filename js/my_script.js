@@ -16,7 +16,8 @@ var video_app = video_app || {};
 				currentSearch = window.location.search;
 				console.log("loca: ", app_view);
 				app_view.getVideoKey();
-				app_view.fetch();
+				app_view.updateVideoKey();
+				app_view.syncData();
 			}
 		}, 1000);
 	}, 'html');

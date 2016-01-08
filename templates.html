@@ -1,16 +1,24 @@
 <div class='video-annotation-templates'>
 	<script type="text/template" id="annotation-template">
-		<div class='description'>
-			<a href=#t={{start_seconds}}><span>{{annotation}}</span></a>
-		</div>
-		<div style='float:right;'>
-			<a href='#' class='delete'>
-			<span>{{start_minutes}}</span>
-			{{#end_minutes}}
-			- <span>{{end_minutes}}</span>
-			{{/end_minutes}}
+		<div class='description pull-left'>
+			<a href=#t={{start_seconds}}>
+				<span class='annotation-title'>{{title}}</span>
+				<span class='annotation-description'>{{description}}</span>
 			</a>
-			<a href='#' class='edit'><img src='{{img_url}}' style='width: 15px;'></a>
+		</div>
+		<div class='right-pane'>
+			<div class='pull-left'>
+				{{#end_minutes}}
+				<span class='label time'>{{start_minutes}} - {{end_minutes}}</span>
+				{{/end_minutes}}
+				{{^end_minutes}}
+				<span class='label quick'>{{start_minutes}}</span>
+				{{/end_minutes}}
+			</div>
+			<div class='pull-right'>
+				<a href='#' class='delete' title='Delete'><img src='{{delete_url}}' style='width: 15px;'></a>
+				<a href='#' class='edit' title='Edit'><img src='{{edit_url}}' style='width: 15px;'></a>
+			</div>
 		</div>
 	</script>
 
@@ -21,7 +29,9 @@
 		</div>
 		<div class="annotations_list">
 			<a href='#' class='close_annotations'>x</a>
-			<input type='textfield' class='search_annotations' placeholder='Search'>
+			<input type='textfield' class='search_annotations' placeholder='Search Annotation'>
+			<div class='clear'></div>
+			<div class='border-line'></div>
 			<ul class='annotations'></ul>
 		</div>
 	</script>

@@ -27,7 +27,7 @@ var video_app = video_app || {};
 				return client.authenticate(function(error) {
 					if (error) {
 						client.reset();
-				}
+					}
 					return callback();
 				});
 			});

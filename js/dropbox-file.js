@@ -5,7 +5,7 @@ var video_app = video_app || {};
 		this.name = options.name
 	}
 
-	DropboxFile.prototype.write = function(json_data){
+	DropboxFile.prototype.write = function(json_data, callback){
 		var _this = this;
 		json_string = JSON.stringify(json_data);
 		this.dropboxObj.client(function(client){
@@ -13,9 +13,15 @@ var video_app = video_app || {};
 				_this.dropboxObj.userInfo();
 				client.writeFile(_this.name+'.json', json_string, function(){
 					console.log('Data saved in dropbox');
+					if ( callback ) {
+						callback();
+					}
 				});
 			} else {
 				console.log('Write: Not authendicated');
+				if ( callback ) {
+					callback();
+				}
 			}
 		});
 	}

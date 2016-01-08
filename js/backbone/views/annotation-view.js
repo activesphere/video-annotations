@@ -11,11 +11,16 @@ var video_app = video_app || {};
 		},
 
 		render: function(){
-			url = chrome.extension.getURL('images/edit.png');
+			edit_url = chrome.extension.getURL('images/edit.png');
+			delete_url = chrome.extension.getURL('images/delete.png');
 			this.secondsToMinutes('start_minutes', 'start_seconds');
 			this.secondsToMinutes('end_minutes', 'end_seconds');
 			$(this.el)
-			.html(Mustache.to_html($('#annotation-template').html(), _.extend(this.model.toJSON(), {img_url: url})));
+			.html(Mustache.to_html($('#annotation-template').html(), _.extend(
+				this.model.toJSON(),
+				{edit_url: edit_url},
+				{delete_url: delete_url})
+			));
 			return this;
 		},
 
