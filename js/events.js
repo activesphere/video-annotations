@@ -64,6 +64,7 @@ var video_app = video_app || {};
 
     EventPageController.prototype.onDropboxAuthChange = function(client) {
       var credentials;
+      var _this = this;
       if (client.isAuthenticated()) {
       	debugger;
         chrome.browserAction.setPopup({
@@ -75,6 +76,7 @@ var video_app = video_app || {};
         chrome.browserAction.setBadgeText({
           text: ''
         });
+        _this.dropboxChrome.userInfo();
       } else {
         chrome.browserAction.setPopup({
           popup: ''
