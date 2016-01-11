@@ -11,6 +11,7 @@ var video_app = video_app || {};
 		initialize: function(){
 			this.getVideoKey();
 			this.dropbox();
+			this.registerStorageChange();
 
 			_.bindAll(this, 'render');
 			_.bindAll(this, 'updateFrame');
@@ -185,7 +186,7 @@ var video_app = video_app || {};
 			var self = this, user_storage = new video_app.AppStorage({name: Utils.userInfo});
 			user_storage.get(function(user_info){
 				console.log("User Info Fetch: ", user_info);
-				self.user_info === null ? self.userInfo.clear() : self.userInfo.set(user_info);
+				_.isEmpty(user_info) ? self.userInfo.clear() : self.userInfo.set(user_info);
 			});
 		},
 
@@ -197,6 +198,18 @@ var video_app = video_app || {};
 				setInterval(function(){
 					self.annotations_view.highlight();
 				}, 1000);
+			});
+		},
+
+		registerStorageChange: function(){ //when changes happen in storage, this get trigger
+			var self = this;
+			chrome.storage.onChanged.addListener(function(changes, namespace) {
+				for (key in changes) {
+					var storageChange = changes[key];
+					if (key === Utils.userInfo) {
+						self.fetchUser();
+					}
+				}
 			});
 		}
 	});

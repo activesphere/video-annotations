@@ -20,6 +20,16 @@ var video_app = video_app || {};
           });
         };
       })(this));
+			var _this = this;
+			chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
+				if (request.type == 'signIn') {
+					return _this.onBrowserAction();
+				} else if (request.type == 'signOut') {
+					return _this.signOut(function(){
+						sendResponse();
+					});
+				}
+			});
 		}
 
 		EventPageController.prototype.signIn = function(callback) {
@@ -45,10 +55,8 @@ var video_app = video_app || {};
 					var credentials;
 					if (client.isAuthenticated()) {
 						_this.dropboxChrome.userInfo();
-						chrome.tabs.create({
-							url: 'html/popup.html',
-							active: true,
-							pinned: false
+						chrome.browserAction.setPopup({
+							popup: 'html/popup.html'
 						});
 					}
 					credentials = client.credentials();
@@ -66,7 +74,6 @@ var video_app = video_app || {};
       var credentials;
       var _this = this;
       if (client.isAuthenticated()) {
-      	debugger;
         chrome.browserAction.setPopup({
           popup: 'html/popup.html'
         });

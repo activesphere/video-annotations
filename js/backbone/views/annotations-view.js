@@ -14,13 +14,15 @@ var video_app = video_app || {};
 		},
 		events: {
 			'keyup input.search_annotations': 'search',
-			'click a.close_annotations': 'closeAnntations'
+			'click a.close_annotations': 'closeAnntations',
+			'click a.sign_in': 'signIn',
+			'click a.sign_out': 'signOut'
 		},
 
 		initialize: function(options){
 			_.bindAll(this, 'renderList');
 			_.bindAll(this, 'syncAnnotations');
-			_.bindAll(this, 'updateUserInfo');
+			_.bindAll(this, 'renderUserInfo');
 
 			this.arrowTag = options.arrowTag;
 			this.storage = options.storage;
@@ -36,7 +38,7 @@ var video_app = video_app || {};
 			this.collection.on('add', this.syncAnnotations);
 			this.collection.on('remove', this.syncAnnotations);
 
-			this.userInfo.on('change', this.updateUserInfo);
+			this.userInfo.on('change', this.renderUserInfo);
 
 			this.close_url = chrome.extension.getURL('images/close.png');
 		},
@@ -44,6 +46,7 @@ var video_app = video_app || {};
 		render: function(){
 			$(this.el).html(Mustache.to_html(this.template(), {close_url: this.close_url}));
 			this.renderList();
+			this.renderUserInfo();
 			return this;
 		},
 
@@ -87,15 +90,13 @@ var video_app = video_app || {};
 			this.dropbox_file.write(json_data);
 		},
 
-		updateUserInfo: function(){
+		renderUserInfo: function(){
 			console.log('User Info triggerd');
 			var name = this.userInfo.get('display_name');
-			var short_name = '';
-			_.each(name.split(' '), function(name){ short_name = short_name + name.charAt(0)})
+			var short_name = name && name[0] || 'D';
 			this.$el.find('.user_info_detail')
 				.html(Mustache.to_html(this.userInfoTemplate(), _.extend(
-					this.userInfo.toJSON(),
-					{short_name: short_name})
+					this.userInfo.toJSON(), {short_name: short_name})
 				));
 		},
 
@@ -128,6 +129,20 @@ var video_app = video_app || {};
 					}
 				});
 			}
+		},
+
+		signIn: function(e){
+			e.preventDefault();
+			chrome.runtime.sendMessage({type: "signIn"}, function(response) {
+				console.log('Success');
+			});
+		},
+
+		signOut: function(e){
+			e.preventDefault();
+			chrome.runtime.sendMessage({type: "signOut"}, function(response) {
+				console.log('foreground signout');
+			});
 		}
 	});
 })(jQuery);

@@ -40,12 +40,10 @@ var video_app = video_app || {};
 			event.preventDefault();
 			var self = this;
 			chrome.runtime.getBackgroundPage(function(eventPage) {
-				return eventPage.controller.signOut((function(_this) {
-					return function() {
-						self.fetch();
-						return null;
-					};
-				})(this));
+				return eventPage.controller.signOut(function() {
+					self.fetch();
+					return null;
+				});
 			});
 		},
 
