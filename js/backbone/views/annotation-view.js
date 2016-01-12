@@ -6,10 +6,14 @@ var video_app = video_app || {};
 		events: {
 			'click a.delete': 'delete',
 			'click a.edit': 'edit',
+			'click a.update': 'update',
+			'click a.cancel-update': 'cancelUpdate',
 			'click span.icon-title': 'changeIcon'
 		},
 
 		initialize: function(){
+			_.bindAll(this, 'render');
+			this.model.on('change', this.render);
 		},
 
 		render: function(){
@@ -27,15 +31,46 @@ var video_app = video_app || {};
 			return this;
 		},
 
+		renderEdit: function(annotation){
+			this.$el.find('.edit-annotation').html(
+				Mustache.to_html($('#annotation-edit-template').html(), {annotation: annotation})
+			);
+		},
+
 		secondsToMinutes: function(name, field){
 			time = this.model.get(field);
 			r = Utils.minuteSeconds(time);
 			this.model.set(name, r);
 		},
 
+		update: function(e){
+			e.preventDefault();
+			var annotation = $(e.target).parent().siblings('textarea')[0].value;
+			this.model.set(Utils.splitAnnotation(annotation));
+			video_app.Annotations.add([this.model], {merge: true, silent: true});
+			video_app.Annotations.saveDropbox();
+		},
+
 		delete: function(e){
+			e.preventDefault();
 			var curre_model = video_app.Annotations.findWhere(this.model);
-			video_app.Annotations.remove(curre_model);
+			if (curre_model) {
+				this.$el.remove();
+				video_app.Annotations.remove(curre_model);
+			}
+		},
+
+		edit: function(e){
+			e.preventDefault();
+			this.$el.find('.annotation-detail').hide();
+			this.$el.find('.edit-annotation').show();
+			this.renderEdit(this.model.get('annotation'));
+		},
+
+		cancelUpdate: function(e){
+			e.preventDefault();
+			this.$el.find('.edit-annotation').hide();
+			this.$el.find('.annotation-detail').show();
 		},
 
 		changeIcon: function(e){

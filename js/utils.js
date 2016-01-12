@@ -16,5 +16,12 @@ var Utils = {};
 		}
 	})();
 
+	Utils.splitAnnotation = function(annotation){
+		var list = annotation.split('\n');
+		var title = list.shift();
+		var description = _.compact(list).join('\n');
+		return {title: title, description: description, annotation: annotation};
+	};
+
 	Utils.userInfo = 'dropbox_userinfo';
 })();

@@ -1,33 +1,45 @@
 <div class='video-annotation-templates'>
 	<script type="text/template" id="annotation-template">
-		<div class='description pull-left'>
-			<span class='icono-caretRightCircle pull-left icon-title' data-type='auto'></span>
-			<a href=#t={{start_seconds}} class='pull-left ml10'>
-				<strong class='annotation-title'>{{title}}</strong>
-			</a>
-		</div>
-		<div class='right-pane'>
-			<div class='pull-left'>
-				{{#end_minutes}}
-				<span class='label time'>{{start_minutes}} - {{end_minutes}}</span>
-				{{/end_minutes}}
-				{{^end_minutes}}
-				<span class='label quick'>{{start_minutes}}</span>
-				{{/end_minutes}}
+		<div class='annotation-detail'>
+			<div class='description pull-left'>
+				<span class='icono-caretRightCircle pull-left icon-title' data-type='auto'></span>
+				<a href=#t={{start_seconds}} class='pull-left ml10'>
+					<strong class='annotation-title'>{{title}}</strong>
+				</a>
 			</div>
-			<div class='pull-right'>
-				<a href='#' class='delete' title='Delete'><img src='{{delete_url}}' style='width: 15px;'></a>
-				<a href='#' class='edit' title='Edit'><img src='{{edit_url}}' style='width: 15px;'></a>
+			<div class='right-pane'>
+				<div class='pull-left'>
+					{{#end_minutes}}
+					<span class='label time'>{{start_minutes}} - {{end_minutes}}</span>
+					{{/end_minutes}}
+					{{^end_minutes}}
+					<span class='label quick'>{{start_minutes}}</span>
+					{{/end_minutes}}
+				</div>
+				<div class='pull-right'>
+					<a href='#' class='delete' title='Delete'><img src='{{delete_url}}' style='width: 15px;'></a>
+					<a href='#' class='edit' title='Edit'><img src='{{edit_url}}' style='width: 15px;'></a>
+				</div>
+			</div>
+			<div class='clear'></div>
+			<div class='annotation-description' style='display: none;'>
+				{{#description}}
+				<span>{{description}}</span>
+				{{/description}}
+				{{^description}}
+				<span>No Description</span>
+				{{/description}}
 			</div>
 		</div>
+		<div class='edit-annotation hide'></div>
+	</script>
+
+	<script type="text/template" id='annotation-edit-template'>
+		<textarea class='edit-annotation-text' rows='5'>{{annotation}}</textarea>
 		<div class='clear'></div>
-		<div class='annotation-description' style='display: none;'>
-			{{#description}}
-			<span>{{description}}</span>
-			{{/description}}
-			{{^description}}
-			<span>No Description</span>
-			{{/description}}
+		<div class='pull-right'>
+			<a href='#' class='button success update'>Update</a>
+			<a href='#' class='button danger cancel-update'>Cancel</a>
 		</div>
 	</script>
 

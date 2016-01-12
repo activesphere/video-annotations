@@ -64,7 +64,13 @@ var video_app = video_app || {};
 					self.storage.save(video_app.Annotations);
 				} else {
 					self.storage.get(function(annotations){
-						video_app.Annotations.reset(annotations || []);
+						if (annotations) {
+							video_app.Annotations.reset(annotations);
+						} else {
+							// if no data present, update collection sliently.
+							video_app.Annotations.reset([], {silent: true});
+							self.annotations_view.render();
+						}
 					});
 				}
 				self.updateFrame();
@@ -180,12 +186,15 @@ var video_app = video_app || {};
 		updateVideoKey: function(){
 			this.storage.name = this.video_key;
 			this.dropbox_file.name = this.video_key;
+
+			//refresh object
+			video_app.Annotations.storage = this.storage;
+			video_app.Annotations.dropbox_file = this.dropbox_file;
 		},
 
 		fetchUser: function(){
 			var self = this, user_storage = new video_app.AppStorage({name: Utils.userInfo});
 			user_storage.get(function(user_info){
-				console.log("User Info Fetch: ", user_info);
 				_.isEmpty(user_info) ? self.userInfo.clear() : self.userInfo.set(user_info);
 			});
 		},
@@ -194,7 +203,7 @@ var video_app = video_app || {};
 			var self = this;
 
 			$(this.video_tag).on("loadeddata", function(e){
-				console.log('Loaded Data');
+				console.log('Loaded Video');
 				setInterval(function(){
 					self.annotations_view.highlight();
 				}, 1000);

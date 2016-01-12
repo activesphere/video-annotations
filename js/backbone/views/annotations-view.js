@@ -85,9 +85,7 @@ var video_app = video_app || {};
 		},
 
 		syncAnnotations: function(){
-			this.storage.save(this.collection);
-			json_data = _.map(this.collection.models, function(model){ return model.toJSON() });
-			this.dropbox_file.write(json_data);
+			this.collection.saveDropbox();
 		},
 
 		renderUserInfo: function(){

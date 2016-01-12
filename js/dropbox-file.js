@@ -34,10 +34,10 @@ var video_app = video_app || {};
 				client.readFile(_this.name+'.json', function(error, data){
 					if (error) {
 						if (error.status == 404) {
-							return {}
+							callback(true, {});
 						}
 					} else {
-						callback(null, JSON.parse(data));
+						callback(false, JSON.parse(data));
 					}
 				});
 			} else {
