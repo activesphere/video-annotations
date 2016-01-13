@@ -34,9 +34,22 @@
 	box-shadow: 1px 1px 10px 1px rgba(0,0,0,0.3);
 }
 #video-annotations .create-annotation{
+	padding: 1px;
 	position: absolute;
 	z-index: 1001;
-	margin-left: 10px;
+	background: #fff;
+	border-radius: 4px;
+	border: 1px solid #ccc;
+	-webkit-box-shadow: 1px 1px 10px 1px rgba(0,0,0,0.3);
+	-moz-box-shadow: 1px 1px 10px 1px rgba(0,0,0,0.3);
+	box-shadow: 1px 1px 10px 1px rgba(0,0,0,0.3);
+}
+#video-annotations .create-annotation .annotation_text{
+	resize: none;
+	outline: none;
+	width: 150px;
+	height: 60px;
+	border: 1px solid #fff;
 }
 #video-annotations div.annotations_list .search_annotations{
 	margin-left: 140px;
