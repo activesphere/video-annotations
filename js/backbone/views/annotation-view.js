@@ -65,6 +65,7 @@ var video_app = video_app || {};
 			this.$el.find('.annotation-detail').hide();
 			this.$el.find('.edit-annotation').show();
 			this.renderEdit(this.model.get('annotation'));
+			this.$el.find('.edit-annotation .edit-annotation-text').focus();
 		},
 
 		cancelUpdate: function(e){
