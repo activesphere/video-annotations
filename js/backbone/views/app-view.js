@@ -138,11 +138,11 @@ var video_app = video_app || {};
 
     getVideoKey: function(){
       var current_url = window.location;
-      query={};
-      current_url.search.split('?')[1].split('&')
-        .forEach(function(i){
-          query[i.split('=')[0]]=i.split('=')[1];
-        });
+      // query={};
+      // current_url.search.split('?')[1].split('&')
+      //   .forEach(function(i){
+      //     query[i.split('=')[0]]=i.split('=')[1];
+      //   });
 
       this.hostname = Utils.hosts[current_url.hostname] || '';
       this.video_key = this.base64Url(current_url.href);
@@ -158,8 +158,6 @@ var video_app = video_app || {};
     getVideoId: function(name, query){
       if (name == 'youtube'){
         this.video_key = name + "_" + query['v'];
-      } elsif (name == 'coursera') {
-
       }
     },
 

@@ -1,3 +1,3 @@
 (function() {
-	Dropbox.AuthDriver.ChromeExtension.oauthReceiver();
+  Dropbox.AuthDriver.ChromeExtension.oauthReceiver();
 }).call(this);

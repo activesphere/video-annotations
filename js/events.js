@@ -1,15 +1,15 @@
 var video_app = video_app || {};
 (function() {
-	var EventPageController, dropboxChrome, hasProp = {}.hasOwnProperty;
+  var EventPageController, dropboxChrome, hasProp = {}.hasOwnProperty;
 
-	EventPageController = (function() {
-		function EventPageController(dropboxChrome1) {
-			this.dropboxChrome = dropboxChrome1;
-			chrome.browserAction.onClicked.addListener((function(_this) {
-				return function() {
-					return _this.onBrowserAction();
-				}
-			})(this));
+  EventPageController = (function() {
+    function EventPageController(dropboxChrome1) {
+      this.dropboxChrome = dropboxChrome1;
+      chrome.browserAction.onClicked.addListener((function(_this) {
+        return function() {
+          return _this.onBrowserAction();
+        }
+      })(this));
       this.dropboxChrome.onClient.addListener((function(_this) {
         return function(client) {
           client.onAuthStepChange.addListener(function() {
@@ -20,55 +20,55 @@ var video_app = video_app || {};
           });
         };
       })(this));
-			var _this = this;
-			chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
-				if (request.type == 'signIn') {
-					return _this.onBrowserAction();
-				} else if (request.type == 'signOut') {
-					return _this.signOut(function(){
-						sendResponse();
-					});
-				}
-			});
-		}
+      var _this = this;
+      chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
+        if (request.type == 'signIn') {
+          return _this.onBrowserAction();
+        } else if (request.type == 'signOut') {
+          return _this.signOut(function(){
+            sendResponse();
+          });
+        }
+      });
+    }
 
-		EventPageController.prototype.signIn = function(callback) {
-			return this.dropboxChrome.client(function(client) {
-				return client.authenticate(function(error) {
-					if (error) {
-						client.reset();
-					}
-					return callback();
-				});
-			});
-		};
+    EventPageController.prototype.signIn = function(callback) {
+      return this.dropboxChrome.client(function(client) {
+        return client.authenticate(function(error) {
+          if (error) {
+            client.reset();
+          }
+          return callback();
+        });
+      });
+    };
 
-		EventPageController.prototype.signOut = function(callback) {
-			return this.dropboxChrome.signOut(function() {
-				return callback();
-			});
-		};
+    EventPageController.prototype.signOut = function(callback) {
+      return this.dropboxChrome.signOut(function() {
+        return callback();
+      });
+    };
 
-		EventPageController.prototype.onBrowserAction = function() {
-			return this.dropboxChrome.client((function(_this) {
-				return function(client) {
-					var credentials;
-					if (client.isAuthenticated()) {
-						_this.dropboxChrome.userInfo();
-						chrome.browserAction.setPopup({
-							popup: 'html/popup.html'
-						});
-					}
-					credentials = client.credentials();
-					if (credentials.authState) {
-						client.reset();
-					}
-					return _this.signIn(function() {
-						return null;
-					});
-				};
-			})(this));
-		};
+    EventPageController.prototype.onBrowserAction = function() {
+      return this.dropboxChrome.client((function(_this) {
+        return function(client) {
+          var credentials;
+          if (client.isAuthenticated()) {
+            _this.dropboxChrome.userInfo();
+            chrome.browserAction.setPopup({
+              popup: 'html/popup.html'
+            });
+          }
+          credentials = client.credentials();
+          if (credentials.authState) {
+            client.reset();
+          }
+          return _this.signIn(function() {
+            return null;
+          });
+        };
+      })(this));
+    };
 
     EventPageController.prototype.onDropboxAuthChange = function(client) {
       var credentials;
@@ -121,12 +121,12 @@ var video_app = video_app || {};
     };
 
 
-		return EventPageController;
-	})();
+    return EventPageController;
+  })();
 
-	dropboxChrome = new Dropbox.Chrome({
-		key: 'zhu541eif1aph15'
-	});
+  dropboxChrome = new Dropbox.Chrome({
+    key: 'zhu541eif1aph15'
+  });
 
-	window.controller = new EventPageController(dropboxChrome);
+  window.controller = new EventPageController(dropboxChrome);
 }).call(this);

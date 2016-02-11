@@ -1,102 +1,102 @@
 <div class='video-annotation-templates'>
-	<script type="text/template" id="annotation-template">
-		<div class='annotation-detail'>
-			<div class='description pull-left'>
-				<span class='icono-caretRightCircle pull-left icon-title' data-type='auto'></span>
-				<a href=#t={{start_seconds}} class='pull-left ml10'>
-					<strong class='annotation-title'>{{title}}</strong>
-				</a>
-			</div>
-			<div class='right-pane'>
-				<div class='pull-left'>
-					{{#end_minutes}}
-					<span class='label time'>{{start_minutes}} - {{end_minutes}}</span>
-					{{/end_minutes}}
-					{{^end_minutes}}
-					<span class='label quick'>{{start_minutes}}</span>
-					{{/end_minutes}}
-				</div>
-				<div class='pull-right'>
-					<a href='#' class='delete' title='Delete'><img src='{{delete_url}}' style='width: 15px;'></a>
-					<a href='#' class='edit' title='Edit'><img src='{{edit_url}}' style='width: 15px;'></a>
-				</div>
-			</div>
-			<div class='clear'></div>
-			<div class='annotation-description' style='display: none;'>
-				{{#description}}
-				<span>{{description}}</span>
-				{{/description}}
-				{{^description}}
-				<span>No Description</span>
-				{{/description}}
-			</div>
-		</div>
-		<div class='edit-annotation hide'></div>
-	</script>
+  <script type="text/template" id="annotation-template">
+    <div class='annotation-detail'>
+      <div class='description pull-left'>
+        <span class='icono-caretRightCircle pull-left icon-title' data-type='auto'></span>
+        <a href=#t={{start_seconds}} class='pull-left ml10'>
+          <strong class='annotation-title'>{{title}}</strong>
+        </a>
+      </div>
+      <div class='right-pane'>
+        <div class='pull-left'>
+          {{#end_minutes}}
+          <span class='label time'>{{start_minutes}} - {{end_minutes}}</span>
+          {{/end_minutes}}
+          {{^end_minutes}}
+          <span class='label quick'>{{start_minutes}}</span>
+          {{/end_minutes}}
+        </div>
+        <div class='pull-right'>
+          <a href='#' class='delete' title='Delete'><img src='{{delete_url}}' style='width: 15px;'></a>
+          <a href='#' class='edit' title='Edit'><img src='{{edit_url}}' style='width: 15px;'></a>
+        </div>
+      </div>
+      <div class='clear'></div>
+      <div class='annotation-description' style='display: none;'>
+        {{#description}}
+        <span>{{description}}</span>
+        {{/description}}
+        {{^description}}
+        <span>No Description</span>
+        {{/description}}
+      </div>
+    </div>
+    <div class='edit-annotation hide'></div>
+  </script>
 
-	<script type="text/template" id='new-annotation-template'>
-		<textarea  class='annotation_text' style='width: 150px;height: 60px;' placeholder='Annotation'></textarea>
-		<a href='#' class='create button success pull-left'>Create</a>
-		<a href='#' class='cancel button danger pull-right'>Cancel</a>
-	</script>
-	<script type="text/template" id='annotation-edit-template'>
-		<textarea class='edit-annotation-text' rows='5'>{{annotation}}</textarea>
-		<div class='clear'></div>
-		<div class='pull-right'>
-			<a href='#' class='button success update'>Update</a>
-			<a href='#' class='button danger cancel-update'>Cancel</a>
-		</div>
-	</script>
+  <script type="text/template" id='new-annotation-template'>
+    <textarea  class='annotation_text' style='width: 150px;height: 60px;' placeholder='Annotation'></textarea>
+    <a href='#' class='create button success pull-left'>Create</a>
+    <a href='#' class='cancel button danger pull-right'>Cancel</a>
+  </script>
+  <script type="text/template" id='annotation-edit-template'>
+    <textarea class='edit-annotation-text' rows='5'>{{annotation}}</textarea>
+    <div class='clear'></div>
+    <div class='pull-right'>
+      <a href='#' class='button success update'>Update</a>
+      <a href='#' class='button danger cancel-update'>Cancel</a>
+    </div>
+  </script>
 
-	<script type="text/template" id="annotations-template">
-		<div id='start_time'>
-			<span>Start Time: </span>
-			<span class='start_frame'></span>
-		</div>
-		<div class="annotations_list">
-			<a href='#' class='close_annotations'><img src='{{close_url}}'></a>
-			<input type='textfield' class='search_annotations' placeholder='Search Annotation'>
-			<div class='user_info_detail pull-right'></div>
-			<div class='clear'></div>
-			<div class='border-line'></div>
-			<ul class='annotations'></ul>
-		</div>
-	</script>
+  <script type="text/template" id="annotations-template">
+    <div id='start_time'>
+      <span>Start Time: </span>
+      <span class='start_frame'></span>
+    </div>
+    <div class="annotations_list">
+      <a href='#' class='close_annotations'><img src='{{close_url}}'></a>
+      <input type='textfield' class='search_annotations' placeholder='Search Annotation'>
+      <div class='user_info_detail pull-right'></div>
+      <div class='clear'></div>
+      <div class='border-line'></div>
+      <ul class='annotations'></ul>
+    </div>
+  </script>
 
-	<script type="text/template" id="user-main-template">
-		<div class='short-name'>
-			{{#display_name}}
-			<p class='name pull-left' title='{{display_name}}'>{{short_name}}</p>
-			{{/display_name}}
-			{{^display_name}}
-			<p class='name pull-left' title='Dropbox'>{{short_name}}</p>
-			{{/display_name}}
-			<span class='pull-right' style='margin-top: 8px;'>&#9662;</span>
-		</div>
-		<div class='dropdown-menu'>
-			<ul>
-				{{#display_name}}
-				<li class='user-name'>{{display_name}}</li>
-				<li class='user-name'>{{email}}</li>
-				<li><a href='#' class='sign_out'>Sign Out</a></li>
-				{{/display_name}}
-				{{^display_name}}
-				<li><a href='#' class='sign_in'>Sign In</a></li>
-				{{/display_name}}
-			</ul>
-		</div>
-	</script>
+  <script type="text/template" id="user-main-template">
+    <div class='short-name'>
+      {{#display_name}}
+      <p class='name pull-left' title='{{display_name}}'>{{short_name}}</p>
+      {{/display_name}}
+      {{^display_name}}
+      <p class='name pull-left' title='Dropbox'>{{short_name}}</p>
+      {{/display_name}}
+      <span class='pull-right' style='margin-top: 8px;'>&#9662;</span>
+    </div>
+    <div class='dropdown-menu'>
+      <ul>
+        {{#display_name}}
+        <li class='user-name'>{{display_name}}</li>
+        <li class='user-name'>{{email}}</li>
+        <li><a href='#' class='sign_out'>Sign Out</a></li>
+        {{/display_name}}
+        {{^display_name}}
+        <li><a href='#' class='sign_in'>Sign In</a></li>
+        {{/display_name}}
+      </ul>
+    </div>
+  </script>
 
-	<script type="text/template" id="video-main-template">
-		<div id='video-annotations'></div>
-	</script>
+  <script type="text/template" id="video-main-template">
+    <div id='video-annotations'></div>
+  </script>
 
-	<script type="text/template" id="app-template">
-		<span class='left_arrow'>></span>
-	</script>
+  <script type="text/template" id="app-template">
+    <span class='left_arrow'><  </span>
+  </script>
 
-	<script type="text/template" id="no-annotation-template">
-		<a href='#' class='close_annotations'><img src='{{close_url}}'></a>
-		<h3 class='center mt5'>No Annotations</h3>
-	</script>
+  <script type="text/template" id="no-annotation-template">
+    <a href='#' class='close_annotations'><img src='{{close_url}}'></a>
+    <h3 class='center mt5'>No Annotations</h3>
+  </script>
 </div>
