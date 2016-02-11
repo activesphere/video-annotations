@@ -65,8 +65,10 @@ var video_app = video_app || {};
       this.clear();
     },
 
-    cancel: function(){
+    cancel: function(e){
+      e.preventDefault();
       this.video_tag.play();
+      this.$el.attr({style: "right: 0px;top: 0px"});
       this.clear();
     },
 
