@@ -17,7 +17,7 @@ var video_app = video_app || {};
         app_view.render();
         clearInterval(video);
       }
-    }, 1000);
+    }, 1500);
 
     var currentSearch = window.location.search;
     setInterval(function() {
