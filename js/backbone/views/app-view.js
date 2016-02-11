@@ -208,12 +208,12 @@ var video_app = video_app || {};
     highlight: function(){
       var self = this;
 
-      $(this.video_tag).on("loadeddata", function(e){
+      // $(this.video_tag).on("loadeddata", function(e){
         console.log('Loaded Video');
         setInterval(function(){
           self.annotations_view.highlight();
         }, 1000);
-      });
+      // });
     },
 
     registerStorageChange: function(){ //when changes happen in storage, this get trigger

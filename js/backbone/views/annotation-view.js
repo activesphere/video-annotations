@@ -1,18 +1,21 @@
 var video_app = video_app || {};
 (function() {
   video_app.annotationView = Backbone.View.extend({
+    template: '#annotation-template',
     tagName: 'li',
     className: 'video-annotation',
     events: {
       'click a.delete': 'delete',
       'click a.edit': 'edit',
       'click a.update': 'update',
+      'click a.seek': 'seek',
       'click a.cancel-update': 'cancelUpdate',
       'click span.icon-title': 'changeIcon'
     },
 
-    initialize: function(){
+    initialize: function(options){
       _.bindAll(this, 'render');
+      this.video_tag = options.video_tag;
       this.model.on('change', this.render);
     },
 
@@ -22,7 +25,7 @@ var video_app = video_app || {};
       this.secondsToMinutes('start_minutes', 'start_seconds');
       this.secondsToMinutes('end_minutes', 'end_seconds');
       $(this.el)
-      .html(Mustache.to_html($('#annotation-template').html(), _.extend(
+      .html(Mustache.to_html($(this.template).html(), _.extend(
         this.model.toJSON(),
         {edit_url: edit_url},
         {delete_url: delete_url})
@@ -35,6 +38,13 @@ var video_app = video_app || {};
       this.$el.find('.edit-annotation').html(
         Mustache.to_html($('#annotation-edit-template').html(), {annotation: annotation})
       );
+    },
+
+    seek: function(e){
+      e.preventDefault();
+      if (this.video_tag) {
+        this.video_tag.currentTime = this.model.get('start_seconds');
+      }
     },
 
     secondsToMinutes: function(name, field){

@@ -67,7 +67,7 @@ var video_app = video_app || {};
     },
 
     addOne: function(annotation){
-      var view = new video_app.annotationView({model: annotation});
+      var view = new video_app.annotationView({model: annotation, video_tag: this.video_tag});
       this.$el.find('ul.annotations').append(view.render().el);
     },
 

@@ -3,7 +3,7 @@
     <div class='annotation-detail'>
       <div class='description pull-left'>
         <span class='icono-caretRightCircle pull-left icon-title' data-type='auto'></span>
-        <a href=#t={{start_seconds}} class='pull-left ml10'>
+        <a href='#' class='pull-left ml10 seek'>
           <strong class='annotation-title'>{{title}}</strong>
         </a>
       </div>
@@ -65,13 +65,14 @@
 
   <script type="text/template" id="user-main-template">
     <div class='short-name'>
-      {{#display_name}}
-      <p class='name pull-left' title='{{display_name}}'>{{short_name}}</p>
-      {{/display_name}}
-      {{^display_name}}
-      <p class='name pull-left' title='Dropbox'>{{short_name}}</p>
-      {{/display_name}}
-      <span class='pull-right' style='margin-top: 8px;'>&#9662;</span>
+      <div class='name pull-left'>
+        {{#display_name}}
+        <p title='{{display_name}}'>{{short_name}}</p>
+        {{/display_name}}
+        {{^display_name}}
+        <p title='Dropbox'>{{short_name}}</p>
+        {{/display_name}}
+      </div>
     </div>
     <div class='dropdown-menu'>
       <ul>
