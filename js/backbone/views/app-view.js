@@ -109,9 +109,7 @@ var video_app = video_app || {};
 
     createAnnotation: function(){
       this.video_tag.pause();
-      var new_annotation_view = this.new_video_view.render();
-      this.$el.append(new_annotation_view.el);
-      new_annotation_view.updatePosition();
+      this.$el.append(this.new_video_view.render().el);
       this.focusText();
     },
 

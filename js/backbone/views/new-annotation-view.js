@@ -21,6 +21,10 @@ var video_app = video_app || {};
 
     render: function(){
       this.$el.html(this.template());
+      var self = this;
+      setTimeout(function() {
+          self.updatePosition();
+      }, 20);
       return this;
     },
 
