@@ -99,6 +99,12 @@ var video_app = video_app || {};
         e.stopPropagation();
         self.closeAnnotation();
       });
+
+      $(document).bind('keydown', 'esc', function(e){
+        console.log("esc caught");
+        e.stopPropagation();
+        self.closeAnnotation();
+      });
     },
 
     createAnnotation: function(){
