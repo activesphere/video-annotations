@@ -91,14 +91,20 @@ var video_app = video_app || {};
     updatePosition: function(){
       if (this.$el.find('textarea.annotation_text')) {
         var style_attr = this.getStyleAttr();
+        var height_of_chevron = 6;
+        // heigtht of video controls + progress bar + paddings + their borders and paddings
+        var video_controls_heigtht = 57;
+        // youtube video controls and progress bar are 24px less wide than video element
+        // we need to adjust by 12px
+        var adjust_for_smaller_controls = 12;
         var total_duration = this.video_tag.duration;
         var current_duration = this.video_tag.currentTime;
         var video_height = parseInt(style_attr['height']);
-        var input_height = this.$el.find('textarea.annotation_text').height() + 6;
-        var input_width = this.$el.find('textarea.annotation_text').width() + 8;
+        var input_height = this.$el.height() + height_of_chevron;
+        var input_width = this.$el.width() + adjust_for_smaller_controls;
         var  pt = parseInt(style_attr['width']) / total_duration;
         var input_center_position = input_width / 2;
-        var height = (video_height - input_height) - 95;
+        var height = (video_height - input_height) - video_controls_heigtht;
         var width = 0;
 
         if ((current_duration * pt) <= input_center_position) {
@@ -114,8 +120,6 @@ var video_app = video_app || {};
             + Math.floor(width) + "px;top: "
             + Math.floor(height) + 'px'
           }
-        );
-      }
     },
 
     resize: function(){
