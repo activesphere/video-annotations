@@ -21,7 +21,6 @@ var video_app = video_app || {};
 
     render: function(){
       this.$el.html(this.template());
-      this.updatePosition();
       return this;
     },
 
@@ -120,6 +119,8 @@ var video_app = video_app || {};
             + Math.floor(width) + "px;top: "
             + Math.floor(height) + 'px'
           }
+        );
+      }
     },
 
     resize: function(){
