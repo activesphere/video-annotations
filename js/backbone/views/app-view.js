@@ -79,22 +79,23 @@ var video_app = video_app || {};
 
     bindEvents: function(){
       var self = this;
-      $(document).bind('keyup','alt+s', function(e){
+      $(document).bind('keydown','alt+s', function(e){
         e.stopPropagation();
         self.changeframe();
       });
 
-      $(document).bind('keyup', 'alt+e', function(e){
+      $(document).bind('keydown', 'alt+e', function(e){
         e.stopPropagation();
         self.createAnnotation();
+        return false;
       });
 
-      $(document).bind('keyup', 'alt+d', function(e){
+      $(document).bind('keydown', 'alt+d', function(e){
         e.stopPropagation();
         self.quickAnnotation();
       });
 
-      $(document).bind('keyup', 'alt+w', function(e){
+      $(document).bind('keydown', 'alt+w', function(e){
         e.stopPropagation();
         self.closeAnnotation();
       });
