@@ -52,7 +52,7 @@
         "js/backbone/views/annotation-view.js",
         "js/backbone/views/new-annotation-view.js",
         "js/backbone/views/app-view.js",
-        "js/my_script.js"
+        "js/videoDetectionService.js"
       ]
     }
   ],
