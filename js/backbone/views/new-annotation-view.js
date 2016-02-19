@@ -1,6 +1,6 @@
 var video_app = video_app || {};
 (function ($) {
-  video_app.newAnnotationView = Backbone.View.extend({
+  video_app.NewAnnotationView = Backbone.View.extend({
     tagName: 'div',
     className: 'create-annotation',
     template: function () {

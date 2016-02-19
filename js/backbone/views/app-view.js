@@ -5,7 +5,7 @@ var video_app = video_app || {};
     el: 'div#video-annotations',
 
     events: {
-      'click span.left_arrow': 'showList'
+      'click span.left_arrow': 'showSidebar',
     },
 
     initialize: function(){
@@ -34,19 +34,20 @@ var video_app = video_app || {};
 
     render: function(){
       var _this = this;
-      $(this.el).html($('#app-template').html());
-      this.$el.append($(this.annotations_view.render().el).hide());
+      this.$el.html(this.sidebarHiddenView.render().el);
+      this.$el.append($(this.sidebarVisibleView.render().el).hide());
       _this.updateFrame();
     },
 
     initializeView: function(){
-      this.new_video_view = new video_app.newAnnotationView({
+      this.newAnnotationView = new video_app.NewAnnotationView({
         video_tag: this.video_tag
       });
 
-      this.new_video_view.video_frame = this.video_frame;
+      this.newAnnotationView.video_frame = this.video_frame;
 
-      this.annotations_view = new video_app.annotationsView({
+      this.sidebarHiddenView = new video_app.SidebarHiddenView();
+      this.sidebarVisibleView = new video_app.SidebarVisibleView({
         collection: video_app.Annotations,
         storage: this.storage,
         video_tag: this.video_tag,
@@ -69,7 +70,7 @@ var video_app = video_app || {};
             } else {
               // if no data present, update collection sliently.
               video_app.Annotations.reset([], {silent: true});
-              self.annotations_view.render();
+              self.sidebarVisibleView.render();
             }
           });
         }
@@ -107,24 +108,28 @@ var video_app = video_app || {};
       });
     },
 
+    clear: function () {
+      this.$el.html("");
+    },
+
     createAnnotation: function(){
       this.video_tag.pause();
-      this.$el.append(this.new_video_view.render().el);
+      this.$el.append(this.newAnnotationView.render().el);
       this.focusText();
     },
 
     changeframe: function(e){
-      if (this.new_video_view && this.video_tag){
-        this.new_video_view.start_seconds = parseInt(this.video_tag.currentTime);
-        this.video_frame.set('start_seconds', this.new_video_view.start_seconds)
+      if (this.newAnnotationView && this.video_tag){
+        this.newAnnotationView.start_seconds = parseInt(this.video_tag.currentTime);
+        this.video_frame.set('start_seconds', this.newAnnotationView.start_seconds)
       }
     },
 
     quickAnnotation: function(e){
-      if (this.new_video_view && this.video_tag){
+      if (this.newAnnotationView && this.video_tag){
         this.video_tag.pause();
-        this.new_video_view.that_seconds = true;
-        this.$el.append(this.new_video_view.render().el);
+        this.newAnnotationView.that_seconds = true;
+        this.$el.append(this.newAnnotationView.render().el);
         this.focusText();
       }
     },
@@ -134,13 +139,14 @@ var video_app = video_app || {};
     },
 
     closeAnnotation: function(e){
-      this.new_video_view.clear();
+      this.newAnnotationView.clear();
       this.video_tag.play();
     },
 
-    showList: function(e){
+    showSidebar: function(e){
       $(e.target).fadeOut();
       this.$el.find('.left_side').toggle( "slide" );
+
     },
 
     getVideoKey: function(){
@@ -175,7 +181,7 @@ var video_app = video_app || {};
 
     dropbox: function(){
       var dropboxChrome = new Dropbox.Chrome({
-        key: 'zhu541eif1aph15'
+        key: '7kdufmc3hipiizy'
       });
       this.dropbox_file = new video_app.DropboxFile({
         dropboxObj: dropboxChrome,
@@ -218,7 +224,7 @@ var video_app = video_app || {};
       // $(this.video_tag).on("loadeddata", function(e){
         console.log('Loaded Video');
         setInterval(function(){
-          self.annotations_view.highlight();
+          self.sidebarVisibleView.highlight();
         }, 1000);
       // });
     },

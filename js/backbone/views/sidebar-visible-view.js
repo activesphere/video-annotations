@@ -1,10 +1,10 @@
 var video_app = video_app || {};
 (function ($) {
-  video_app.annotationsView = Backbone.View.extend({
+  video_app.SidebarVisibleView = Backbone.View.extend({
     tagName:'div',
     className: 'left_side',
     template: function () {
-      return $('#annotations-template').html();
+      return $('#sidebar-visible-template').html();
     },
     noAnnotationTemplate: function () {
       return $('#no-annotation-template').html();
@@ -14,7 +14,7 @@ var video_app = video_app || {};
     },
     events: {
       'keyup input.search_annotations': 'search',
-      'click a.close_annotations': 'closeAnntations',
+      'click a.close_annotations': 'hideSidebar',
       'click a.sign_in': 'signIn',
       'click a.sign_out': 'signOut'
     },
@@ -78,7 +78,7 @@ var video_app = video_app || {};
       this.addAll(search_result);
     },
 
-    closeAnntations: function(event){
+    hideSidebar: function(event){
       event.preventDefault();
       this.$el.toggle( "slide" );
       $(this.arrowTag).fadeIn('slow');

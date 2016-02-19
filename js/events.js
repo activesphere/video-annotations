@@ -125,7 +125,7 @@ var video_app = video_app || {};
   })();
 
   dropboxChrome = new Dropbox.Chrome({
-    key: 'zhu541eif1aph15'
+    key: '7kdufmc3hipiizy'
   });
 
   window.controller = new EventPageController(dropboxChrome);

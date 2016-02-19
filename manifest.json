@@ -48,11 +48,12 @@
         "js/utils.js",
         "js/backbone/models.js",
         "js/backbone/collections.js",
-        "js/backbone/views/annotations-view.js",
+        "js/backbone/views/sidebar-hidden-view.js",
+        "js/backbone/views/sidebar-visible-view.js",
         "js/backbone/views/annotation-view.js",
         "js/backbone/views/new-annotation-view.js",
         "js/backbone/views/app-view.js",
-        "js/my_script.js"
+        "js/videoDetectionService.js"
       ]
     }
   ],
