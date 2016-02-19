@@ -76,7 +76,7 @@ var video_app = video_app || {};
     },
 
     clear: function(){
-      this.$el.remove();
+      this.$el.empty();
     },
 
     getStyleAttr: function(){

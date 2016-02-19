@@ -32,25 +32,11 @@ var video_app = video_app || {};
       this.highlight();
     },
 
-    isRendered: function () {
-        if (_.isEmpty(this.$el.children())) {
-            return false;
-        }
-        return true;
-    },
-
-    render: function () {
+    render: function(){
       var _this = this;
-           this.getVideoKey();
-        this.updateVideoKey();
-        this.syncData();
       $(this.el).html($('#app-template').html());
       this.$el.append($(this.annotations_view.render().el).hide());
       _this.updateFrame();
-    },
-
-    clear: function () {
-        $(this.el).html("");
     },
 
     initializeView: function(){
@@ -89,12 +75,6 @@ var video_app = video_app || {};
         }
         self.updateFrame();
       });
-    },
-
-    sync: function () {
-        this.getVideoKey();
-        this.updateVideoKey();
-        this.syncData();
     },
 
     bindEvents: function(){
