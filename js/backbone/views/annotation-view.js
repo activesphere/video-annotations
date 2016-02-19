@@ -9,7 +9,7 @@ var video_app = video_app || {};
       'click a.edit': 'edit',
       'click a.update': 'update',
       'click a.seek': 'seek',
-      'click a.cancel-update': 'cancelUpdate',
+      'click a.cancel': 'cancelUpdate',
       'click span.icon-title': 'changeIcon'
     },
 
