@@ -56,33 +56,25 @@
   -moz-box-shadow: 1px 1px 10px 1px rgba(0,0,0,0.3);
   box-shadow: 1px 1px 10px 1px rgba(0,0,0,0.3);
 }
-#video-annotations .create-annotation:after, #video-annotations .create-annotation:before {
+
+.chevron {
+  position: absolute;
+  width: 0;
+  height: 0;
   top: 100%;
   left: 50%;
-  border: solid transparent;
-  content: " ";
-  height: 0;
-  width: 0;
-  position: absolute;
-  pointer-events: none;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid #fff;
+  margin-left: -8px;
 }
+
 #video-annotations .create-annotation textarea.annotation_text{
   width: 150px;
   height: 60px;
   font-size: 13px;
 }
-#video-annotations .create-annotation:after {
-  border-color: rgba(255, 255, 255, 0);
-  border-top-color: #fff;
-  border-width: 8px;
-  margin-left: -8px;
-}
-#video-annotations .create-annotation:before {
-  border-color: rgba(204, 204, 204, 0);
-  border-top-color: #ccc;
-  border-width: 9px;
-  margin-left: -9px;
-}
+
 #video-annotations .create-annotation .annotation_text{
   resize: none;
   outline: none;

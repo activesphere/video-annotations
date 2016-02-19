@@ -112,10 +112,13 @@ var video_app = video_app || {};
 
         if ((current_duration * pt) <= input_center_position) {
           width = parseInt(style_attr['width']) - input_width;
+          this.$el.find('.chevron').css("left", current_duration * pt + "px");
         } else if (((current_duration * pt) + input_center_position)>=  parseInt(style_attr['width'])) {
           width = 0;
+          this.$el.find('.chevron').css("left", this.$el.width() - (parseInt(style_attr['width']) - pt * current_duration) + "px");
         } else {
           width = (parseInt(style_attr['width']) - (current_duration * pt)) - input_center_position;
+          this.$el.find('.chevron').css("left", "50%");
         }
 
         this.$el.attr(
