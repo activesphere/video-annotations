@@ -25,4 +25,51 @@ var Utils = {};
   };
 
   Utils.userInfo = 'dropbox_userinfo';
+
+  Utils.getNewAnnotationPosition =  function (videoTag, $targetEl) {
+    var heightOfChevron = 6;
+    // heigtht of video controls + progress bar + paddings + their borders and paddings
+    var videoControlsHeight = 57;
+    var paddingForSeeker = 12;
+
+    var videoTagHeight = $(videoTag).height();
+    var videoTagWidth = $(videoTag).width();
+
+    var totalDuration = videoTag.duration;
+    var currentDuration = videoTag.currentTime;
+
+    var inputHeight = $targetEl.height() + heightOfChevron;
+    var inputWidth = $targetEl.outerWidth();
+    var inputCentrePos = inputWidth / 2;
+
+    var pixelsPerSecond = (videoTagWidth - 24) / totalDuration;
+    var seekerPosition = currentDuration * pixelsPerSecond;
+
+    var chevronEl = $targetEl.find(".chevron");
+
+    var isSeekerLeft = seekerPosition <= inputCentrePos;
+    var isSeekerRight = (seekerPosition + inputCentrePos) >= videoTagWidth;
+    function getTop() {
+      return (videoTagHeight - inputHeight) - videoControlsHeight;
+    }
+    function getRight() {
+      if (isSeekerLeft) {
+        return videoTagWidth - inputWidth;
+      } else if (isSeekerRight) {
+        return 0;
+      } else {
+        return videoTagWidth - seekerPosition - paddingForSeeker - inputCentrePos;
+      }
+    }
+    function getChevronLeft() {
+      if (isSeekerLeft) {
+        return {"left": seekerPosition + paddingForSeeker + "px"};
+      } else if (isSeekerRight) {
+        return {"left": inputWidth - (videoTagWidth - seekerPosition - paddingForSeeker) + "px"};
+      } else {
+        return {"left":  "50%"};
+      }
+    }
+    return {top: getTop(), right: getRight(), chevronLeft: getChevronLeft()};
+  }
 })();

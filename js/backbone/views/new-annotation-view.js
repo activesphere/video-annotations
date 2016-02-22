@@ -1,5 +1,7 @@
 var video_app = video_app || {};
 (function ($) {
+
+
   video_app.NewAnnotationView = Backbone.View.extend({
     tagName: 'div',
     className: 'create-annotation',
@@ -79,54 +81,17 @@ var video_app = video_app || {};
       this.$el.empty();
     },
 
-    getStyleAttr: function(){
-      // var style_list = _.compact($(this.video_tag).attr('style').split('; '));
-      var attr = {
-        width: $(this.video_tag).width(),
-        height: $(this.video_tag).height(),
-      };
-      // _.each(style_list, function(list){
-      //   attr[list.split(':')[0]] = list.split(': ')[1]
-      // });
-      return attr;
-    },
-
     updatePosition: function(){
       if (this.$el.find('textarea.annotation_text')) {
-        var style_attr = this.getStyleAttr();
-        var height_of_chevron = 6;
-        // heigtht of video controls + progress bar + paddings + their borders and paddings
-        var video_controls_heigtht = 57;
-        // youtube video controls and progress bar are 24px less wide than video element
-        // we need to adjust by 12px
-        var adjust_for_smaller_controls = 12;
-        var total_duration = this.video_tag.duration;
-        var current_duration = this.video_tag.currentTime;
-        var video_height = parseInt(style_attr['height']);
-        var input_height = this.$el.height() + height_of_chevron;
-        var input_width = this.$el.width() + adjust_for_smaller_controls;
-        var  pt = parseInt(style_attr['width']) / total_duration;
-        var input_center_position = input_width / 2;
-        var height = (video_height - input_height) - video_controls_heigtht;
-        var width = 0;
-
-        if ((current_duration * pt) <= input_center_position) {
-          width = parseInt(style_attr['width']) - input_width;
-          this.$el.find('.chevron').css("left", current_duration * pt + "px");
-        } else if (((current_duration * pt) + input_center_position)>=  parseInt(style_attr['width'])) {
-          width = 0;
-          this.$el.find('.chevron').css("left", this.$el.width() - (parseInt(style_attr['width']) - pt * current_duration) + "px");
-        } else {
-          width = (parseInt(style_attr['width']) - (current_duration * pt)) - input_center_position;
-          this.$el.find('.chevron').css("left", "50%");
-        }
+        var position = Utils.getNewAnnotationPosition(this.video_tag, this.$el);
 
         this.$el.attr(
           {style: "right: "
-            + Math.floor(width) + "px;top: "
-            + Math.floor(height) + 'px'
+            + position.right + "px;top: "
+            + position.top + 'px'
           }
         );
+        this.$el.find(".chevron").css(position.chevronLeft);
       }
     },
 
