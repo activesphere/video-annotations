@@ -42,16 +42,18 @@ var Utils = {};
     var inputWidth = $targetEl.outerWidth();
     var inputCentrePos = inputWidth / 2;
 
-    var pixelsPerSecond = (videoTagWidth - 24) / totalDuration;
+    var pixelsPerSecond = (videoTagWidth - paddingForSeeker * 2) / totalDuration;
     var seekerPosition = currentDuration * pixelsPerSecond;
 
     var chevronEl = $targetEl.find(".chevron");
 
     var isSeekerLeft = seekerPosition <= inputCentrePos;
     var isSeekerRight = (seekerPosition + inputCentrePos) >= videoTagWidth;
+
     function getTop() {
       return (videoTagHeight - inputHeight) - videoControlsHeight;
     }
+
     function getRight() {
       if (isSeekerLeft) {
         return videoTagWidth - inputWidth;
@@ -61,6 +63,7 @@ var Utils = {};
         return videoTagWidth - seekerPosition - paddingForSeeker - inputCentrePos;
       }
     }
+
     function getChevronLeft() {
       if (isSeekerLeft) {
         return {"left": seekerPosition + paddingForSeeker + "px"};
@@ -70,6 +73,7 @@ var Utils = {};
         return {"left":  "50%"};
       }
     }
+
     return {top: getTop(), right: getRight(), chevronLeft: getChevronLeft()};
-  }
+  };
 })();

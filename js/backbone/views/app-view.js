@@ -112,11 +112,11 @@ var video_app = video_app || {};
       this.$el.html("");
     },
 
-    createAnnotation: function(){
+    createAnnotation: _.debounce(function(){
       this.video_tag.pause();
       this.$el.append(this.newAnnotationView.render().el);
       this.focusText();
-    },
+    }, 20),
 
     changeframe: function(e){
       if (this.newAnnotationView && this.video_tag){
@@ -146,7 +146,6 @@ var video_app = video_app || {};
     showSidebar: function(e){
       $(e.target).fadeOut();
       this.$el.find('.left_side').toggle( "slide" );
-
     },
 
     getVideoKey: function(){
