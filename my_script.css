@@ -1,11 +1,15 @@
 #video-annotations{
   font-family: "Open Sans", sans-serif;
   position: absolute;
-  right: 0;
+  left: 0;
   top: 0;
-  width: initial;
+  width: inherit;
+  height: inherit;
+  max-width: inherit;
+  max-height: inherit;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  pointer-events: none;
 }
 #video-annotations h3{
   font-size: 16px;
@@ -55,6 +59,7 @@
   -webkit-box-shadow: 1px 1px 10px 1px rgba(0,0,0,0.3);
   -moz-box-shadow: 1px 1px 10px 1px rgba(0,0,0,0.3);
   box-shadow: 1px 1px 10px 1px rgba(0,0,0,0.3);
+  pointer-events: all;
 }
 
 .chevron {
@@ -70,8 +75,6 @@
 }
 
 #video-annotations .create-annotation textarea.annotation_text{
-  width: 150px;
-  height: 60px;
   font-size: 13px;
 }
 

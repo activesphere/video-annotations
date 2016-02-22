@@ -24,6 +24,8 @@ var video_app = video_app || {};
     render: function(){
       this.$el.html(this.template());
       var self = this;
+      this.$el.css("width", "160px");
+      this.$el.css("height", "109px");
       setTimeout(function() {
           self.updatePosition();
       }, 20);
@@ -85,12 +87,10 @@ var video_app = video_app || {};
       if (this.$el.find('textarea.annotation_text')) {
         var position = Utils.getNewAnnotationPosition(this.video_tag, this.$el);
 
-        this.$el.attr(
-          {style: "right: "
-            + position.right + "px;top: "
-            + position.top + 'px'
-          }
-        );
+        this.$el.css({
+            right: position.right + "px",
+            top: position.top + 'px'
+          });
         this.$el.find(".chevron").css(position.chevronLeft);
       }
     },
