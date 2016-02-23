@@ -1,12 +1,5 @@
-#Video Annotation
-Chome extenstion app for youtube.
+## This app is under rapid development not ready for use yet
 
-Allow to add annotations on video which is playing
-
-###Shortcuts supported:
-
-- __alt+e__ Create Annotation
-- __alt+d__ Quick Annotation
-- __alt+w__ Close Annotation
-- __esc__ Close Annotation
-- __alt+s__ Change Frame
+## Annotate videos
+A chrome extension to annotate videos & share it with others via dropbox
+Ideal for creating indices for educational content
