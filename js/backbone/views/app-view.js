@@ -10,6 +10,10 @@ var video_app = video_app || {};
 
     initialize: function(){
       this.getVideoKey();
+      if (video_app.appInstance && video_app.appInstance.video_key === this.video_key) {
+        return;
+      }
+      video_app.appInstance = this;
       this.dropbox();
       this.registerStorageChange();
 
@@ -30,6 +34,8 @@ var video_app = video_app || {};
       this.initializeView();
       this.bindEvents();
       this.highlight();
+      this.clear();
+      this.render();
     },
 
     render: function(){
@@ -102,7 +108,6 @@ var video_app = video_app || {};
       });
 
       $(document).bind('keydown', 'esc', function(e){
-        console.log("esc caught");
         e.stopPropagation();
         self.closeAnnotation();
       });
@@ -143,10 +148,10 @@ var video_app = video_app || {};
       this.video_tag.play();
     },
 
-    showSidebar: function(e){
+    showSidebar: _.debounce(function(e){
       $(e.target).fadeOut();
       this.$el.find('.left_side').toggle( "slide" );
-    },
+    }, 20),
 
     getVideoKey: function(){
       var current_url = window.location;

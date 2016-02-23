@@ -22,6 +22,8 @@
   right: 0px;
   top: 65px;
   width: 450px;
+  z-index: 1001;
+  pointer-events: all;
 }
 #video-annotations div#start_time{
   font-size: 15px;
@@ -245,6 +247,7 @@
   background: #fff;
   border: 1px solid black;
   cursor: pointer;
+  pointer-events: all;
 }
 #video-annotations a.close_annotations{
   float: right;

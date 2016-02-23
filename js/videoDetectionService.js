@@ -11,20 +11,15 @@ var video_app = video_app || {};
             function checkAndEnableFeature(video_app) {
                 return function () {
                     if ($('video').length > 0) {
-                        // TODO: This does not belong here. Move to a new view
                         if (!$("#video-annotations")[0]) {
                             var $video = getVideotag();
                             $video.append($('#video-main-template').html());
                         }
-                        // Apparently even though append is synchronous, chrome will not block dom manipulation.
-                        // Figure out a cleaner way to render app view
-                        setTimeout(function () {
-                            var app_view = new video_app.appView();
-                            app_view.clear();
-                            app_view.render();
-                        }, 500);
+                        var appView = new video_app.appView();
                     } else {
-                        app_view.clear();
+                        if ($('#video-annotations')[0]) {
+                            $('#video-annotations').remove();
+                        }
                     }
                 };
             }
@@ -39,7 +34,7 @@ var video_app = video_app || {};
             }
 
 
-            var observer = new MutationObserver(_.debounce(checkAndEnableFeature(video_app), 2000));
+            var observer = new MutationObserver(_.debounce(checkAndEnableFeature(video_app), 100));
             observer.observe(document.querySelector('body'), { childList: true });
         }, 'html');
 
