@@ -65,7 +65,7 @@ var video_app = video_app || {};
 
       this.video_frame.set('start_seconds', this.start_seconds);
       this.video_tag.play();
-
+      this.$el.attr({style: "right: 0px;top: 0px"});
       this.clear();
     },
 

@@ -9,7 +9,7 @@ var video_app = video_app || {};
       'click a.edit': 'edit',
       'click a.update': 'update',
       'click a.seek': 'seek',
-      'click a.cancel': 'cancelUpdate',
+      'click a.cancel-update': 'cancelUpdate',
       'click span.icon-title': 'changeIcon'
     },
 
@@ -59,6 +59,8 @@ var video_app = video_app || {};
       this.model.set(Utils.splitAnnotation(annotation));
       video_app.Annotations.add([this.model], {merge: true, silent: true});
       video_app.Annotations.saveDropbox();
+      this.$el.find('.edit-annotation').hide();
+      this.$el.find('.annotation-detail').show();
     },
 
     delete: function(e){
