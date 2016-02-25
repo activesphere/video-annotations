@@ -1,0 +1,29 @@
+{
+  "name": "video-annotation",
+  "description": "A chrome extension to annotate videos & share it with others via dropbox",
+  "main": "index.html",
+  "authors": [
+    ""
+  ],
+  "license": "",
+  "homepage": "https://github.com/activesphere/video-annotations",
+  "moduleType": [
+    "amd"
+  ],
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "^2.2.1",
+    "lodash": "^4.5.1",
+    "backbone": "^1.2.3",
+    "mustache.js": "mustache#^2.2.1"
+  },
+  "devDependencies": {
+  }
+}

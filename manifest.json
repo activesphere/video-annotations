@@ -20,10 +20,8 @@
   ],
   "background": {
     "scripts": [
-      "js/utils.js",
-      "js/lib/dropbox.js",
-      "js/dropbox_chrome.js",
-      "js/events.js"
+      "builds/event.bundle.js",
+      "builds/popup.bundle.js"
     ],
     "persistent": false
   },
@@ -35,25 +33,7 @@
       ],
       "css": ["my_script.css", "icono.min.css"],
       "js": [
-        "js/lib/jquery-min.js",
-        "js/lib/underscore-min.js",
-        "js/lib/backbone-min.js",
-        "js/lib/mustache-min.js",
-        "js/lib/jquery.hotkeys.js",
-        "js/lib/dropbox.js",
-        "js/dropbox_chrome.js",
-        "js/storage.js",
-
-        "js/dropbox-file.js",
-        "js/utils.js",
-        "js/backbone/models.js",
-        "js/backbone/collections.js",
-        "js/backbone/views/sidebar-hidden-view.js",
-        "js/backbone/views/sidebar-visible-view.js",
-        "js/backbone/views/annotation-view.js",
-        "js/backbone/views/new-annotation-view.js",
-        "js/backbone/views/app-view.js",
-        "js/videoDetectionService.js"
+        "builds/videoDetection.bundle.js"
       ]
     }
   ],

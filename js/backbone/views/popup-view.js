@@ -1,70 +1,81 @@
-var video_app = video_app || {};
+import Backbone from 'backbone';
+import Mustache from 'mustache.js';
+import $ from 'lib/jquery.hotkeys.js';
+import _ from 'lodash';
 
-(function($, _, video_app) {
-  video_app.popup_view = Backbone.View.extend({
-    el: 'div#popup',
+import Utils from 'utils.js';
+import UserInfo from 'backbone/models.js';
+import AppStorage from 'storage.js';
 
-    template: function () {
-      return $('#user-template').html();
-    },
+var PopupView = Backbone.View.extend({
+  el: 'div#popup',
 
-    events: {
-      'click a.signout': 'signOut',
-      'click a.signin': 'signIn'
-    },
+  template: function () {
+    return $('#user-template').html();
+  },
 
-    initialize: function(){
-      _.bindAll(this, 'render');
+  events: {
+    'click a.signout': 'signOut',
+    'click a.signin': 'signIn',
+  },
 
-      this.model.on('change', this.render);
+  initialize: function () {
+    _.bindAll(this, 'render');
 
-      this.storage = new video_app.AppStorage({name: Utils.userInfo})
-      this.fetch();
-    },
+    this.model.on('change', this.render);
 
-    render: function(){
-      console.log("Model JSON: ", this.model.toJSON());
-      $(this.el)
-      .html(Mustache.to_html(this.template(), this.model.toJSON()));
-    },
+    this.storage = new AppStorage({ name: Utils.userInfo });
+    this.fetch();
+  },
 
-    fetch: function(){
-      var self = this;
-      this.storage.get(function(user_info){
-        console.log("Fetch", user_info);
-        user_info === null ? self.model.clear() : self.model.set(user_info);
+  render: function () {
+    console.log('Model JSON: ', this.model.toJSON());
+
+    // jscs: disable
+    $(this.el).html(Mustache.to_html(this.template(), this.model.toJSON()));
+    // jscs: enable
+  },
+
+  fetch: function () {
+    var self = this;
+    this.storage.get(function (userInfo) {
+      console.log('Fetch', userInfo);
+      if (userInfo === null) {
+        self.model.clear();
+      } else {
+        self.model.set(userInfo);
+      }
+    });
+  },
+
+  signOut: function (event) {
+    event.preventDefault();
+    var self = this;
+    chrome.runtime.getBackgroundPage(function (eventPage) {
+      return eventPage.controller.signOut(function () {
+        self.fetch();
+        return null;
       });
-    },
+    });
+  },
 
-    signOut: function(event){
-      event.preventDefault();
-      var self = this;
-      chrome.runtime.getBackgroundPage(function(eventPage) {
-        return eventPage.controller.signOut(function() {
+  signIn: function (event) {
+    event.preventDefault();
+    var self = this;
+    chrome.runtime.getBackgroundPage(function (eventPage) {
+      return eventPage.controller.signIn((function (_this) {
+        return function () {
           self.fetch();
           return null;
-        });
-      });
-    },
+        };
+      })(this));
+    });
 
-    signIn: function(event){
-      event.preventDefault();
-      var self = this;
-      chrome.runtime.getBackgroundPage(function(eventPage) {
-        return eventPage.controller.signIn((function(_this) {
-          return function() {
-            self.fetch();
-            return null;
-          };
-        })(this));
-      });
-      return false;
-    }
-  });
+    return false;
+  },
+});
 
-  $('body').prepend("<div id='popup'></div>");
-  var userInfo = new video_app.userInfo({});
-  popup_view = new video_app.popup_view({model: userInfo});
-  popup_view.render();
+$('body').prepend("<div id='popup'></div>");
 
-})($, _, video_app);
+var popupView = new PopupView({ model: new UserInfo({}) });
+popupView.render();

@@ -1,9 +1,8 @@
-var video_app = video_app || {};
-(function() {
-  video_app.Annotation = Backbone.Model.extend({
-  });
+import Backbone from 'backbone';
 
-  video_app.Frame = Backbone.Model.extend({});
+var Annotation  = Backbone.Model.extend({});
+export var Frame = Backbone.Model.extend({});
 
-  video_app.userInfo = Backbone.Model.extend({});
-})();
+export var UserInfo = Backbone.Model.extend({});
+
+export default Annotation;

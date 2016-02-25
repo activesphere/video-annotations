@@ -1,39 +1,42 @@
-var video_app = video_app || {};
-(function() {
-  var Annotations = Backbone.Collection.extend({
-    model: video_app.Annotation,
+import Backbone from 'backbone';
+import _ from 'lodash';
 
-    initialize: function(){
-      this.storage = null;
-      this.dropbox_file = null;
-    },
+import Annotation from 'backbone/models.js';
+var Annotations = Backbone.Collection.extend({
+  model: Annotation,
 
-    search: function(keyword){
-      models = this.sort('start_seconds');
-      if(keyword.length != 0){
-        models = _.filter(models, function(model){
-          if(new RegExp(keyword, 'i').test(model.get('annotation'))) return model;
-        });
-      }
-      return models;
-    },
+  initialize: function () {
+    this.storage = null;
+    this.dropboxFile = null;
+  },
 
-    sort: function(field){
-      models = this.models;
-      models = _.sortBy(models, function(model){
-        return model.get(field)
+  search: function (keyword) {
+    var models = this.sort('start_seconds');
+    if (keyword.length !== 0) {
+      models = _.filter(models, function (model) {
+        if (new RegExp(keyword, 'i').test(model.get('annotation'))) return model;
       });
-      return models;
-    },
-
-    saveDropbox: function(){
-      if (this.storage && this.dropbox_file) {
-        this.storage.save(this.models);
-        json_data = _.map(this.models, function(model){ return model.toJSON() });
-        this.dropbox_file.write(json_data);
-      }
     }
-  });
 
-  video_app.Annotations = new Annotations();
-})();
+    return models;
+  },
+
+  sort: function (field) {
+    var models = _.sortBy(this.models, function (model) {
+      return model.get(field);
+    });
+
+    return models;
+  },
+
+  saveDropbox: function () {
+    if (this.storage && this.dropboxFile) {
+      this.storage.save(this.models);
+      var jsonData = _.map(this.models, function (model) { return model.toJSON();});
+
+      this.dropboxFile.write(jsonData);
+    }
+  },
+});
+
+export default new Annotations();

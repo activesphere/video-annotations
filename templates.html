@@ -17,8 +17,8 @@
           {{/end_minutes}}
         </div>
         <div class='pull-right'>
-          <a href='#' class='delete' title='Delete'><img src='{{delete_url}}' style='width: 15px;'></a>
-          <a href='#' class='edit' title='Edit'><img src='{{edit_url}}' style='width: 15px;'></a>
+          <a href='#' class='delete' title='Delete'><img src='{{deleteUrl}}' style='width: 15px;'></a>
+          <a href='#' class='edit' title='Edit'><img src='{{editUrl}}' style='width: 15px;'></a>
         </div>
       </div>
       <div class='clear'></div>
@@ -55,7 +55,7 @@
       <span class='start_frame'></span>
     </div>
     <div class="annotations_list">
-      <a href='#' class='close_annotations'><img src='{{close_url}}'></a>
+      <a href='#' class='close_annotations'><img src='{{closeUrl}}'></a>
       <input type='textfield' class='search_annotations' placeholder='Search Annotation'>
       <div class='user_info_detail pull-right'></div>
       <div class='clear'></div>
@@ -68,10 +68,10 @@
     <div class='short-name'>
       <div class='name pull-left'>
         {{#display_name}}
-        <p title='{{display_name}}'>{{short_name}}</p>
+        <p title='{{display_name}}'>{{shortName}}</p>
         {{/display_name}}
         {{^display_name}}
-        <p title='Dropbox'>{{short_name}}</p>
+        <p title='Dropbox'>{{shortName}}</p>
         {{/display_name}}
       </div>
     </div>
@@ -98,7 +98,7 @@
   </script>
 
   <script type="text/template" id="no-annotation-template">
-    <a href='#' class='close_annotations'><img src='{{close_url}}'></a>
+    <a href='#' class='close_annotations'><img src='{{closeUrl}}'></a>
     <h3 class='center mt5'>No Annotations</h3>
   </script>
 </div>

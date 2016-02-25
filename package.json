@@ -1,0 +1,36 @@
+{
+  "name": "video-annotation",
+  "version": "1.0.0",
+  "description": "A chrome extension to annotate videos & share it with others via dropbox",
+  "main": "index.html",
+  "dependencies": {
+    "jscs-loader": "^0.2.0"
+  },
+  "devDependencies": {
+    "babel-core": "^6.5.2",
+    "babel-loader": "^6.2.3",
+    "babel-preset-es2015": "^6.5.0",
+    "bower": "^1.7.7",
+    "bower-webpack-plugin": "^0.1.9",
+    "jscs": "^2.10.1",
+    "jshint": "^2.9.1",
+    "jshint-loader": "^0.8.3",
+    "less": "^2.6.0",
+    "less-loader": "^2.2.2",
+    "style-loader": "^0.13.0",
+    "webpack": "^1.12.14"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/activesphere/video-annotations.git"
+  },
+  "author": "",
+  "license": "",
+  "bugs": {
+    "url": "https://github.com/activesphere/video-annotations/issues"
+  },
+  "homepage": "https://github.com/activesphere/video-annotations#readme"
+}
