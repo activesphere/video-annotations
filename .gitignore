@@ -4,3 +4,4 @@ builds/*
 node_modules/
 .vimrc
 .bowerrc
+js/config.js
