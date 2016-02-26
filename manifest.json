@@ -20,8 +20,9 @@
   ],
   "background": {
     "scripts": [
-      "builds/popup.bundle.js",
-      "builds/event.bundle.js"
+      "builds/event.bundle.js",
+      "builds/oauth.bundle.js",
+      "builds/popup.bundle.js"
     ],
     "persistent": false
   },

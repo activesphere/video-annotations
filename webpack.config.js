@@ -6,6 +6,7 @@ module.exports = {
   entry:  {
     videoDetection: 'videoDetectionService',
     popup: 'backbone/views/popup-view',
+    oauth: 'chrome_oauth_receiver',
     event: 'events'
   },
   output: {
@@ -54,6 +55,18 @@ module.exports = {
     safeContextKeyword: ["_this", "self", "that"]
   },
   jshint: {
-    esnext: true
+    globals: {
+      chrome: false,
+      window: false,
+      document: false,
+      btoa: false,
+      setInterval: false,
+      MutationObserver: false
+    },
+    esnext: true,
+    strict: false,
+    undef: true,
+    eqeqeq: true,
+    unused : true,
   }
 };
