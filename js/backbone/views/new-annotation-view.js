@@ -21,7 +21,10 @@ var NewAnnotationView = Backbone.View.extend({
   },
 
   initialize: function (options) {
-    this.startSeconds = 0;//second
+
+    // jscs: disable
+    this.start_seconds = 0;//second
+    // jscs: enable
     this.thatSeconds = false;
     this.videoTag = options.videoTag;
     this.resize();
@@ -50,26 +53,31 @@ var NewAnnotationView = Backbone.View.extend({
   createAnnotation: function (value) {
     console.log('Trigged');
     var uid = Date.now();
-    var endSeconds = parseInt(this.videoTag.currentTime);
+
+    // jscs: disable
+    var end_seconds = parseInt(this.videoTag.currentTime);
     var annotationObj = _.extend({
       id: uid,
-      startSeconds: this.startSeconds,
-      endSeconds: endSeconds,
+      start_seconds: this.start_seconds,
+      end_seconds: end_seconds,
     }, Utils.splitAnnotation(value));
 
     // TODO: what does thatSeconds mean
     if (this.thatSeconds) {
-      annotationObj.startSeconds = endSeconds;
-      annotationObj.endSeconds = null;
+      annotationObj.start_seconds = end_seconds;
+      annotationObj.end_seconds = null;
       this.thatSeconds = false;
     } else {
-      this.startSeconds = endSeconds;
+      this.start_seconds = end_seconds;
+      // jscs: enable
     }
 
     var annotationModel = new Annotation(annotationObj);
     Annotations.add(annotationModel);
 
-    this.videoFrame.set('startSeconds', this.startSeconds);
+    // jscs: disable
+    this.videoFrame.set('start_seconds', this.start_seconds);
+    // jscs: enable
     this.videoTag.play();
     this.$el.attr({ style: 'right: 0px;top: 0px' });
     this.clear();

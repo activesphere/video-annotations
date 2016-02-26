@@ -34,7 +34,10 @@ var AppView = Backbone.View.extend({
     _.bindAll(this, 'render');
     _.bindAll(this, 'updateFrame');
 
-    this.videoFrame = new Frame({ startSeconds: 0 });
+    // jscs: disable
+    this.videoFrame = new Frame({ start_seconds: 0 });
+
+    // jscs: enable
     this.storage = new AppStorage({ name: this.videoKey });
     this.UserInfo = new UserInfo({});
 
@@ -140,8 +143,11 @@ var AppView = Backbone.View.extend({
 
   changeframe: function (e) {
     if (this.newAnnotationView && this.videoTag) {
-      this.newAnnotationView.startSeconds = parseInt(this.videoTag.currentTime);
-      this.videoFrame.set('start_seconds', this.newAnnotationView.startSeconds);
+
+      // jscs: disable
+      this.newAnnotationView.start_seconds = parseInt(this.videoTag.currentTime);
+      this.videoFrame.set('start_seconds', this.newAnnotationView.start_seconds);
+      // jscs: enable
     }
   },
 
