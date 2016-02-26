@@ -11,6 +11,7 @@ import Annotations from 'backbone/collections.js';
 import SidebarHiddenView from 'backbone/views/sidebar-hidden-view.js';
 import SidebarVisibleView from 'backbone/views/sidebar-visible-view.js';
 import NewAnnotationView from 'backbone/views/new-annotation-view.js';
+import config from '../../config';
 
 var AppView = Backbone.View.extend({
   el: 'div#video-annotations',
@@ -201,7 +202,7 @@ var AppView = Backbone.View.extend({
 
   dropbox: function () {
     var dropboxChrome = new Dropbox.Chrome({
-      key: '7kdufmc3hipiizy',
+      key: config.dropbox.key,
     });
     this.dropboxFile = new DropboxFile({
       dropboxObj: dropboxChrome,

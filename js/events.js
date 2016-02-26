@@ -1,5 +1,6 @@
 // TODO: Find a better name for this file
 import Dropbox from 'dropbox_chrome.js';
+import config from './config';
 
 var EventPageController = {}.hasOwnProperty;
 var dropboxChrome = {}.hasOwnProperty;
@@ -134,7 +135,7 @@ EventPageController = (function () {
 })();
 
 dropboxChrome = new Dropbox.Chrome({
-  key: '7kdufmc3hipiizy',
+  key: config.dropbox.key
 });
 
 window.controller = new EventPageController(dropboxChrome);
