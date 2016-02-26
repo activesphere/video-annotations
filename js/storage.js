@@ -1,10 +1,11 @@
+import _ from 'lodash';
+
 function AppStorage(options) {
   this.name = options.name;
 }
 
 AppStorage.prototype.save = function (collection) {
   var jsonData = [];
-  var opt = {};
   var models = collection.models;
   jsonData = _.map(models, function (model) { return model.toJSON(); });
 
@@ -15,7 +16,6 @@ AppStorage.prototype.set = function (data, callback) {
   var opt = {};
   opt[this.name] = data;
   chrome.storage.local.set(opt, function () {
-    console.log('Data Saved');
     callback();
   });
 };

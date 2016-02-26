@@ -141,7 +141,7 @@ var AppView = Backbone.View.extend({
     this.focusText();
   }, 20),
 
-  changeframe: function (e) {
+  changeframe: function () {
     if (this.newAnnotationView && this.videoTag) {
 
       // jscs: disable
@@ -151,7 +151,7 @@ var AppView = Backbone.View.extend({
     }
   },
 
-  quickAnnotation: function (e) {
+  quickAnnotation: function () {
     if (this.newAnnotationView && this.videoTag) {
       this.videoTag.pause();
       this.newAnnotationView.thatSeconds = true;
@@ -176,17 +176,8 @@ var AppView = Backbone.View.extend({
 
   getVideoKey: function () {
     var currentUrl = window.location;
-
-    // query={};
-    // currentUrl.search.split('?')[1].split('&')
-    //   .forEach(function(i){
-    //     query[i.split('=')[0]]=i.split('=')[1];
-    //   });
-
     this.hostname = Utils.hosts[currentUrl.hostname] || '';
     this.videoKey = this.base64Url(currentUrl.href);
-
-    // this.getVideoId(name, query);
   },
 
   base64Url: function (currentUrl) {
@@ -196,7 +187,7 @@ var AppView = Backbone.View.extend({
   },
 
   getVideoId: function (name, query) {
-    if (name == 'youtube') {
+    if (name === 'youtube') {
       this.videoKey = name + '_' + query.v;
     }
   },
@@ -253,20 +244,16 @@ var AppView = Backbone.View.extend({
   highlight: function () {
     var self = this;
 
-    // $(this.videoTag).on("loadeddata", function(e){
-    console.log('Loaded Video');
     setInterval(function () {
         self.sidebarVisibleView.highlight();
       }, 1000);
 
-    // });
   },
 
   registerStorageChange: function () { //when changes happen in storage, this get trigger
     var self = this;
-    chrome.storage.onChanged.addListener(function (changes, namespace) {
+    chrome.storage.onChanged.addListener(function (changes) {
       for (var key in changes) {
-        var storageChange = changes[key];
         if (key === Utils.UserInfo) {
           self.fetchUser();
         }

@@ -1,5 +1,5 @@
 import Utils from 'utils.js';
-var Dropbox = require('lib/dropbox.js');
+import Dropbox from 'lib/dropbox.js';
 
 var Chrome = function (clientOptions) {
   this.clientOptions = clientOptions;
@@ -14,7 +14,7 @@ Chrome.prototype.client = function (callback) {
   client.authDriver(new Dropbox.AuthDriver.ChromeExtension({
     receiverPath: 'html/chrome_oauth_receiver.html',
   }));
-  client.authenticate({ interactive: false }, function (error) {
+  client.authenticate({ interactive: false }, function () {
     client.onAuthStepChange.addListener(function () {
       return (_this._userInfo = null);
     });
@@ -24,11 +24,9 @@ Chrome.prototype.client = function (callback) {
   });
 };
 
-Chrome.prototype.userInfo = function (callback) {
-  var _this = this;
+Chrome.prototype.userInfo = function () {
   chrome.storage.local.get(Utils.userInfo, (function (_this) {
     return function (items) {
-      var error1;
       var parseError;
       if (items && items[Utils.userInfo]) {
         try {

@@ -49,8 +49,6 @@ Utils.getNewAnnotationPosition =  function (videoTag, $targetEl) {
   var pixelsPerSecond = (videoTagWidth - paddingForSeeker * 2) / totalDuration;
   var seekerPosition = currentDuration * pixelsPerSecond;
 
-  var chevronEl = $targetEl.find('.chevron');
-
   var isSeekerLeft = seekerPosition <= inputCentrePos;
   var isSeekerRight = (seekerPosition + inputCentrePos) >= videoTagWidth;
 

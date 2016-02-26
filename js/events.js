@@ -4,7 +4,6 @@ import config from './config';
 
 var EventPageController = {}.hasOwnProperty;
 var dropboxChrome = {}.hasOwnProperty;
-var hasProp = {}.hasOwnProperty;
 
 EventPageController = (function () {
   function EventPageController(dropboxChrome1) {
@@ -29,9 +28,9 @@ EventPageController = (function () {
 
     var _this = this;
     chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-      if (request.type == 'signIn') {
+      if (request.type === 'signIn') {
         return _this.onBrowserAction();
-      } else if (request.type == 'signOut') {
+      } else if (request.type === 'signOut') {
         return _this.signOut(function () {
           sendResponse();
         });

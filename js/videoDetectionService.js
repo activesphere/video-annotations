@@ -3,11 +3,8 @@ import $ from 'lib/jquery.hotkeys.js';
 
 import AppView from 'backbone/views/app-view.js';
 
-console.log('Url: ', chrome.extension.getURL('templates.html'));
-
-//decelcngdojdjceagfcjklgpfdhdmenf
 $.get(chrome.extension.getURL('templates.html'),
-function (data, textStatus, jqXHR) {
+function (data) {
   $('body').append(data);
   var appState = {};
 

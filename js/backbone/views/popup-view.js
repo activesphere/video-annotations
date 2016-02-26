@@ -29,8 +29,6 @@ var PopupView = Backbone.View.extend({
   },
 
   render: function () {
-    console.log('Model JSON: ', this.model.toJSON());
-
     // jscs: disable
     $(this.el).html(Mustache.to_html(this.template(), this.model.toJSON()));
     // jscs: enable
@@ -39,7 +37,6 @@ var PopupView = Backbone.View.extend({
   fetch: function () {
     var self = this;
     this.storage.get(function (userInfo) {
-      console.log('Fetch', userInfo);
       if (userInfo === null) {
         self.model.clear();
       } else {
@@ -63,7 +60,7 @@ var PopupView = Backbone.View.extend({
     event.preventDefault();
     var self = this;
     chrome.runtime.getBackgroundPage(function (eventPage) {
-      return eventPage.controller.signIn((function (_this) {
+      return eventPage.controller.signIn((function () {
         return function () {
           self.fetch();
           return null;

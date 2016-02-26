@@ -10,13 +10,11 @@ DropboxFile.prototype.write = function (jsonData, callback) {
     if (client.isAuthenticated()) {
       _this.dropboxObj.userInfo();
       client.writeFile(_this.name + '.json', jsonString, function () {
-        console.log('Data saved in dropbox');
         if (callback) {
           callback();
         }
       });
     } else {
-      console.log('Write: Not authendicated');
       if (callback) {
         callback();
       }
@@ -31,7 +29,7 @@ DropboxFile.prototype.read = function (callback) {
       _this.dropboxObj.userInfo();
       client.readFile(_this.name + '.json', function (error, data) {
         if (error) {
-          if (error.status == 404) {
+          if (error.status === 404) {
             callback(true, {});
           }
         } else {

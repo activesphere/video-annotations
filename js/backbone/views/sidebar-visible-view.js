@@ -85,7 +85,7 @@ var SidebarVisibleView = Backbone.View.extend({
 
   search: function (e) {
     var keyword = $(e.target).val();
-    searchResult = this.collection.search(keyword);
+    var searchResult = this.collection.search(keyword);
     this.$el.find('ul.annotations').empty();
     this.addAll(searchResult);
   },
@@ -101,7 +101,6 @@ var SidebarVisibleView = Backbone.View.extend({
   },
 
   renderUserInfo: function () {
-    console.log('User Info triggerd');
     var name = this.userInfo.get('display_name');
     var shortName = name && name[0] || 'D';
 
@@ -120,8 +119,8 @@ var SidebarVisibleView = Backbone.View.extend({
       _.each($(self.$el).find('li'), function ($li) {
         //Check if type auto and window opened
         if (($($li).find('span.icon-title').hasClass('icono-caretDownCircle') &&
-          $($li).find('span.icon-title').data('type') == 'auto' &&
-          $($li).find('div.annotation-description').css('display') == 'block')) {
+          $($li).find('span.icon-title').data('type') === 'auto' &&
+          $($li).find('div.annotation-description').css('display') === 'block')) {
 
           $($li).find('span.icon-title')
             .removeClass('icono-caretDownCircle')
@@ -134,7 +133,7 @@ var SidebarVisibleView = Backbone.View.extend({
         if ((model.get('end_seconds') !== null &&
           currentSeconds >= model.get('start_seconds') &&
           currentSeconds <= model.get('end_seconds')) ||
-          model.get('start_seconds') == currentSeconds) {
+          model.get('start_seconds') === currentSeconds) {
           self.$el.find('li.' + model.get('id') + ' .icon-title')
             .removeClass('icono-caretRightCircle')
             .addClass('icono-caretDownCircle');
@@ -146,15 +145,13 @@ var SidebarVisibleView = Backbone.View.extend({
 
   signIn: function (e) {
     e.preventDefault();
-    chrome.runtime.sendMessage({ type: 'signIn' }, function (response) {
-      console.log('Success');
+    chrome.runtime.sendMessage({ type: 'signIn' }, function () {
     });
   },
 
   signOut: function (e) {
     e.preventDefault();
-    chrome.runtime.sendMessage({ type: 'signOut' }, function (response) {
-      console.log('foreground signout');
+    chrome.runtime.sendMessage({ type: 'signOut' }, function () {
     });
   },
 });

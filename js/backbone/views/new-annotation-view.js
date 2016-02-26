@@ -1,7 +1,6 @@
 import Backbone from 'backbone';
 import _ from 'lodash';
 import $ from 'lib/jquery.hotkeys.js';
-import Mustache from 'mustache.js';
 
 import Utils from 'utils.js';
 import Annotation from 'backbone/models.js';
@@ -39,7 +38,7 @@ var NewAnnotationView = Backbone.View.extend({
   },
 
   createByEvent: function (event) {
-    if (event.keyCode == 13 && event.altKey) {
+    if (event.keyCode === 13 && event.altKey) {
       this.createAnnotation(event.target.value);
     }
   },
@@ -51,7 +50,6 @@ var NewAnnotationView = Backbone.View.extend({
   },
 
   createAnnotation: function (value) {
-    console.log('Trigged');
     var uid = Date.now();
 
     // jscs: disable
