@@ -105,6 +105,7 @@ var AppView = Backbone.View.extend({
     $(document).bind('keydown', 'alt+s', function (e) {
       e.stopPropagation();
       self.changeframe();
+      return false;
     });
 
     $(document).bind('keydown', 'alt+e', function (e) {
@@ -116,16 +117,19 @@ var AppView = Backbone.View.extend({
     $(document).bind('keydown', 'alt+d', function (e) {
       e.stopPropagation();
       self.quickAnnotation();
+      return false;
     });
 
     $(document).bind('keydown', 'alt+w', function (e) {
       e.stopPropagation();
       self.closeAnnotation(e);
+      return false;
     });
 
     $(document).bind('keydown', 'esc', function (e) {
       e.stopPropagation();
       self.closeAnnotation(e);
+      return false;
     });
   },
 

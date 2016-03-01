@@ -31,6 +31,7 @@ var NewAnnotationView = Backbone.View.extend({
 
   render: function () {
     this.$el.html(this.template());
+    this.bindEvents();
     this.$el.css('width', '160px');
     this.$el.css('height', '109px');
     this.updatePosition();
@@ -79,6 +80,11 @@ var NewAnnotationView = Backbone.View.extend({
     this.videoTag.play();
     this.$el.attr({ style: 'right: 0px;top: 0px' });
     this.clear();
+  },
+
+  bindEvents: function () {
+    this.$el.find('.annotation_text').bind('keydown', 'esc', this.cancel.bind(this));
+    this.$el.find('.annotation_text').bind('keydown', 'alt+w', this.cancel.bind(this));
   },
 
   cancel: function (e) {
