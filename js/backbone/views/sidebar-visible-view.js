@@ -30,7 +30,6 @@ var SidebarVisibleView = Backbone.View.extend({
   initialize: function (options) {
     _.bindAll(this, 'renderList');
     _.bindAll(this, 'syncAnnotations');
-    _.bindAll(this, 'renderUserInfo');
 
     this.arrowTag = options.arrowTag;
     this.storage = options.storage;
@@ -56,7 +55,6 @@ var SidebarVisibleView = Backbone.View.extend({
     $(this.el).html(Mustache.to_html(this.template(), { closeUrl: this.closeUrl }));
     // jscs: enable
     this.renderList();
-    this.renderUserInfo();
     return this;
   },
 
@@ -98,18 +96,6 @@ var SidebarVisibleView = Backbone.View.extend({
 
   syncAnnotations: function () {
     this.collection.saveDropbox();
-  },
-
-  renderUserInfo: function () {
-    var name = this.userInfo.get('display_name');
-    var shortName = name && name[0] || 'D';
-
-    // jscs: disable
-    this.$el.find('.userInfo_detail')
-    .html(Mustache.to_html(this.userInfoTemplate(), _.extend(
-    this.userInfo.toJSON(), { shortName: shortName })
-    ));
-    // jscs: enable
   },
 
   highlight: function () {
