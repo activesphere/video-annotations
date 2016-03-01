@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
+	<link rel='stylesheet' href='/popup.css'
 	</head>
 	<body>
 	</body>
@@ -12,11 +13,21 @@
 		<a href='#' class='signin'>SignIn</a>
 		{{/email}}
 		{{#display_name}}
+		<br>
 		<span>Name: {{display_name}} </span>
 		{{/display_name}}
 		{{#email}}
+		<br>
 		<span>Email: {{email}} </span>
 		{{/email}}
+		<br>
+		<div class="onoffswitch">
+		    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch" checked>
+		    <label class="onoffswitch-label" for="myonoffswitch">
+		        <span class="onoffswitch-inner"></span>
+		        <span class="onoffswitch-switch"></span>
+		    </label>
+		</div>
 	</script>
 
 	<script src="/builds/popup.bundle.js" type="text/javascript"></script>

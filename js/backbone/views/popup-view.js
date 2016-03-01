@@ -17,6 +17,7 @@ var PopupView = Backbone.View.extend({
   events: {
     'click a.signout': 'signOut',
     'click a.signin': 'signIn',
+    'click input.onoffswitch-checkbox': 'switchExtensionVisibility'
   },
 
   initialize: function () {
@@ -70,6 +71,12 @@ var PopupView = Backbone.View.extend({
 
     return false;
   },
+
+  switchExtensionVisibility: function () {
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      chrome.tabs.sendMessage(tabs[0].id, { switch: true });
+    });
+  }
 });
 
 $('body').prepend("<div id='popup'></div>");

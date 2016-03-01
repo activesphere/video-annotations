@@ -62,6 +62,13 @@ var AppView = Backbone.View.extend({
   },
 
   initializeView: function () {
+    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+      if (request.switch) {
+        this.switchExtensionVisibility();
+        sendResponse({});
+      }
+    });
+
     this.newAnnotationView = new NewAnnotationView({
       videoTag: this.videoTag,
     });
@@ -268,6 +275,15 @@ var AppView = Backbone.View.extend({
       }
     });
   },
+
+  switchExtensionVisibility: function () {
+    var $extension = $('#video-annotations');
+    if ($extension.css('display') === 'none') {
+      $extension.css('display', 'block');
+    } else {
+      $extension.css('display', 'none');
+    }
+  }
 });
 
 export default AppView;
