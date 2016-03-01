@@ -30,7 +30,7 @@
         "https://www.youtube.com/*",
         "https://www.coursera.org/*"
       ],
-      "css": ["my_script.css", "icono.min.css"],
+      "css": ["app.css", "bower_components/font-awesome/css/font-awesome.css"],
       "js": [
         "builds/videoDetection.bundle.js"
       ]
@@ -41,6 +41,7 @@
     "html/chrome_oauth_receiver.html",
     "images/edit.png",
     "images/delete.png",
-    "images/close.png"
+    "images/close.png",
+    "bower_components/font-awesome/fonts/*"
   ]
 }

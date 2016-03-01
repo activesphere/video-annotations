@@ -1,3 +1,11 @@
+@font-face {
+  font-family: 'FontAwesome';
+  src: url('chrome-extension://__MSG_@@extension_id__/bower_components/font-awesome/fonts/fontawesome-webfont.eot');
+  src: url('chrome-extension://__MSG_@@extension_id__/bower_components/font-awesome/fonts/fontawesome-webfont.eot?#iefix&v=4.5.0') format('embedded-opentype'), url('chrome-extension://__MSG_@@extension_id__/bower_components/font-awesome/fonts/fontawesome-webfont.woff2?v=4.5.0') format('woff2'), url('chrome-extension://__MSG_@@extension_id__/bower_components/font-awesome/fonts/fontawesome-webfont.woff?v=4.5.0') format('woff'), url('chrome-extension://__MSG_@@extension_id__/bower_components/font-awesome/fonts/fontawesome-webfont.ttf?v=4.5.0') format('truetype'), url('chrome-extension://__MSG_@@extension_id__/bower_components/font-awesome/fonts/fontawesome-webfont.svg?v=4.5.0#fontawesomeregular') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
 #video-annotations{
   font-family: "Open Sans", sans-serif;
   position: absolute;
@@ -19,11 +27,12 @@
 }
 #video-annotations div.left_side{
   position: fixed;
-  right: 0px;
-  top: 65px;
+  /*right: -409px;*/
+  /*top: 65px;*/
   width: 450px;
   z-index: 1001;
   pointer-events: all;
+  transition: 1s;
 }
 #video-annotations div#start_time{
   font-size: 15px;
@@ -40,16 +49,22 @@
 #video-annotations div.annotations_list{
   top: 0;
   position:absolute;
+  display: inline-block;
   width:405px;
   color: black;
   background: white;
-  padding: 5px;
-  margin-left: 10px;
+  /*padding: 5px;*/
+  /*margin-left: 10px;*/
   min-height: 255px;
   border: 1px solid #ccc;
-  -webkit-box-shadow: 1px 1px 10px 1px rgba(0,0,0,0.3);
-  -moz-box-shadow: 1px 1px 10px 1px rgba(0,0,0,0.3);
-  box-shadow: 1px 1px 10px 1px rgba(0,0,0,0.3);
+  border-radius: 4px 0px 0px 4px;
+  /*-webkit-box-shadow: 1px 1px 10px 1px rgba(0,0,0,0.3);*/
+}
+#video-annotations .sidebar-visible {
+  right: -43px;
+}
+#video-annotations .sidebar-hidden {
+  right: -450px;
 }
 #video-annotations .create-annotation{
   padding: 1px;
@@ -59,8 +74,6 @@
   border-radius: 4px;
   border: 1px solid #ccc;
   -webkit-box-shadow: 1px 1px 10px 1px rgba(0,0,0,0.3);
-  -moz-box-shadow: 1px 1px 10px 1px rgba(0,0,0,0.3);
-  box-shadow: 1px 1px 10px 1px rgba(0,0,0,0.3);
   pointer-events: all;
 }
 
@@ -90,8 +103,12 @@
 #video-annotations div.annotations_list .search_annotations{
   height: 36px;
   font-size:13px;
-  margin-left: 140px;
-  width: 150px;
+  margin: 2px 10px;
+  width: 373px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  margin-top: 10px;
+  padding-left: 10px;
 }
 #video-annotations div.annotations_list div.user_info_detail{
   height: 38px;
@@ -104,7 +121,7 @@
   -webkit-padding-start: 0px;
 }
 #video-annotations div.annotations_list ul.annotations{
-  color: #006dae;
+  color: #666;
   width: 100%;
   overflow-x:scroll;
   max-height: 225px;
@@ -127,13 +144,14 @@
 }
 #video-annotations div.annotations_list ul.annotations li.video-annotation .description span.icon-title{
   cursor: pointer;
+  padding-left: 10px;
 }
 #video-annotations div.annotations_list ul.annotations li.video-annotation .right-pane{
   float:right;
   width: 38%;
 }
 #video-annotations div.annotations_list ul.annotations li.video-annotation .annotation-title{
-  font-weight: 600;
+  font-family: Carlito, Sans-serif;
   font-size: 14px;
   color: #222C36;
   text-transform: capitalize;
@@ -160,10 +178,10 @@
   border-bottom: solid 1px #F1F1F1;
 }
 #video-annotations div.annotations_list ul.annotations li.video-annotation span.label.quick{
-  background: #F5A623;
+  background: #aaa;
 }
 #video-annotations div.annotations_list ul.annotations li.video-annotation span.label.time{
-  background: #26A5C7;
+  background: #aaa;
 }
 #video-annotations div.annotations_list .user_info_detail .short-name{
   width: 50px;
@@ -215,9 +233,7 @@
   height: 35px;
   display: block;
   background: #006DAE;
-  -moz-border-radius: 50px;
   -webkit-border-radius: 50px;
-  border-radius: 50px;
   cursor: pointer;
 }
 #video-annotations div.annotations_list .user_info_detail .short-name > .name > p{
@@ -235,25 +251,34 @@
 #video-annotations div.annotations_list .center{
   text-align: center;
 }
+#video-annotations div.annotations_list i {
+  color:#444;
+}
+#video-annotations a.delete, #video-annotations a.edit{
+  padding-right: 10px
+}
 #video-annotations .hide{
   display: none;
 }
 #video-annotations .left_arrow{
-  position: fixed;
-  right: 0px;
+  transition: 1s;
+  position: absolute;
+  top: 100px;
+  right: 449px;
+  z-index: 1002;
   color: black;
-  font-size: 20px;
-  padding: 10px 15px;
+  font-size: 18px;
+  border-radius: 10px 0px 0px 10px;
+  padding: 10px 8px 10px 10px;
   background: #fff;
-  border: 1px solid black;
+  border: 1px solid #ccc;
+  border-right: 0px;
   cursor: pointer;
   pointer-events: all;
 }
 #video-annotations a.close_annotations{
   float: right;
-  -moz-border-radius: 50px;
   -webkit-border-radius: 50px;
-  border-radius: 50px;
   width: 28px;
   height: 28px;
   position: absolute;
@@ -292,9 +317,6 @@
   touch-action: manipulation;
   cursor: pointer;
   -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
   background-image: none;
   border: 1px solid transparent;
   border-radius: 4px;

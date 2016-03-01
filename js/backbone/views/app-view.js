@@ -8,7 +8,6 @@ import DropboxFile from 'dropbox-file.js';
 import {Frame, UserInfo} from 'backbone/models.js';
 import AppStorage from 'storage.js';
 import Annotations from 'backbone/collections.js';
-import SidebarHiddenView from 'backbone/views/sidebar-hidden-view.js';
 import SidebarVisibleView from 'backbone/views/sidebar-visible-view.js';
 import NewAnnotationView from 'backbone/views/new-annotation-view.js';
 import config from '../../config';
@@ -57,8 +56,8 @@ var AppView = Backbone.View.extend({
 
   render: function () {
     var _this = this;
-    this.$el.html(this.sidebarHiddenView.render().el);
-    this.$el.append($(this.sidebarVisibleView.render().el).hide());
+    this.$el.html($(this.sidebarVisibleView.render().el));
+    this.$el.find('.left_side').addClass('sidebar-hidden');
     _this.updateFrame();
   },
 
@@ -69,7 +68,6 @@ var AppView = Backbone.View.extend({
 
     this.newAnnotationView.videoFrame = this.videoFrame;
 
-    this.sidebarHiddenView = new SidebarHiddenView();
     this.sidebarVisibleView = new SidebarVisibleView({
       collection: Annotations,
       storage: this.storage,
@@ -169,9 +167,15 @@ var AppView = Backbone.View.extend({
     this.videoTag.play();
   },
 
-  showSidebar: _.debounce(function (e) {
-    $(e.target).fadeOut();
-    this.$el.find('.left_side').toggle('slide');
+  showSidebar: _.debounce(function () {
+    var sidebar = this.$el.find('.left_side');
+    if (sidebar.hasClass('sidebar-hidden')) {
+      sidebar.removeClass('sidebar-hidden').addClass('sidebar-visible');
+      sidebar.find('.left_arrow').html('>');
+    } else {
+      sidebar.removeClass('sidebar-visible').addClass('sidebar-hidden');
+      sidebar.find('.left_arrow').html('<');
+    }
   }, 20),
 
   getVideoKey: function () {

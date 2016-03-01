@@ -2,9 +2,9 @@
   <script type="text/template" id="annotation-template">
     <div class='annotation-detail'>
       <div class='description pull-left'>
-        <span class='icono-caretRightCircle pull-left icon-title' data-type='auto'></span>
+        <span class='fa fa-caret-right pull-left icon-title' data-type='auto'></span>
         <a href='#' class='pull-left ml10 seek'>
-          <strong class='annotation-title'>{{title}}</strong>
+          <p class='annotation-title'>{{title}}</p>
         </a>
       </div>
       <div class='right-pane'>
@@ -17,8 +17,8 @@
           {{/end_minutes}}
         </div>
         <div class='pull-right'>
-          <a href='#' class='delete' title='Delete'><img src='{{deleteUrl}}' style='width: 15px;'></a>
-          <a href='#' class='edit' title='Edit'><img src='{{editUrl}}' style='width: 15px;'></a>
+          <a href='#' class='delete' title='Delete'><i class="fa fa-trash"></i></a>
+          <a href='#' class='edit' title='Edit'><i class="fa fa-pencil"></i></a>
         </div>
       </div>
       <div class='clear'></div>
@@ -50,55 +50,20 @@
   </script>
 
   <script type="text/template" id="sidebar-visible-template">
-    <div id='start_time'>
-      <span>Start Time: </span>
-      <span class='start_frame'></span>
-    </div>
-    <div class="annotations_list">
-      <a href='#' class='close_annotations'><img src='{{closeUrl}}'></a>
-      <input type='textfield' class='search_annotations' placeholder='Search Annotation'>
-      <div class='user_info_detail pull-right'></div>
-      <div class='clear'></div>
-      <div class='border-line'></div>
-      <ul class='annotations'></ul>
-    </div>
-  </script>
-
-  <script type="text/template" id="user-main-template">
-    <div class='short-name'>
-      <div class='name pull-left'>
-        {{#display_name}}
-        <p title='{{display_name}}'>{{shortName}}</p>
-        {{/display_name}}
-        {{^display_name}}
-        <p title='Dropbox'>{{shortName}}</p>
-        {{/display_name}}
+    <span class='left_arrow'><  </span>
+      <div class="annotations_list">
+        <input type='textfield' class='search_annotations' placeholder='Search Annotation'>
+        <div class='clear'></div>
+        <div class='border-line'></div>
+        <ul class='annotations'></ul>
       </div>
-    </div>
-    <div class='dropdown-menu'>
-      <ul>
-        {{#display_name}}
-        <li class='user-name'>{{display_name}}</li>
-        <li class='user-name'>{{email}}</li>
-        <li><a href='#' class='sign_out'>Sign Out</a></li>
-        {{/display_name}}
-        {{^display_name}}
-        <li><a href='#' class='sign_in'>Sign In</a></li>
-        {{/display_name}}
-      </ul>
-    </div>
   </script>
 
   <script type="text/template" id="video-main-template">
     <div id='video-annotations'></div>
   </script>
 
-  <script type="text/template" id="sidebar-hidden-template">
-    <span class='left_arrow'><  </span>
-  </script>
-
   <script type="text/template" id="no-annotation-template">
-    <a href='#' class='close_annotations'><img src='{{closeUrl}}'></a>
     <h3 class='center mt5'>No Annotations</h3>
   </script>
 </div>

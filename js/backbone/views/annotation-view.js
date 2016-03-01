@@ -98,14 +98,14 @@ var AnnotationView = Backbone.View.extend({
   },
 
   changeIcon: function (e) {
-    if ($(e.target).hasClass('icono-caretRightCircle')) {
+    if ($(e.target).hasClass('fa fa-caret-right')) {
       //Set type to manual to aviod window close automatally when video playing
       $(e.target).data('type', 'manual');
-      $(e.target).removeClass('icono-caretRightCircle').addClass('icono-caretDownCircle');
+      $(e.target).removeClass('fa fa-caret-right').addClass('fa fa-caret-down');
       this.$el.find('.annotation-description').show();
     } else {
       $(e.target).data('type', 'auto');
-      $(e.target).removeClass('icono-caretDownCircle').addClass('icono-caretRightCircle');
+      $(e.target).removeClass('fa fa-caret-down').addClass('fa fa-caret-right');
       this.$el.find('.annotation-description').hide();
     }
   },

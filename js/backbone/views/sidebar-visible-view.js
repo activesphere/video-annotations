@@ -118,13 +118,13 @@ var SidebarVisibleView = Backbone.View.extend({
       var currentSeconds = parseInt(self.videoTag.currentTime);
       _.each($(self.$el).find('li'), function ($li) {
         //Check if type auto and window opened
-        if (($($li).find('span.icon-title').hasClass('icono-caretDownCircle') &&
+        if (($($li).find('span.icon-title').hasClass('fa fa-caret-down') &&
           $($li).find('span.icon-title').data('type') === 'auto' &&
           $($li).find('div.annotation-description').css('display') === 'block')) {
 
           $($li).find('span.icon-title')
-            .removeClass('icono-caretDownCircle')
-            .addClass('icono-caretRightCircle');
+            .removeClass('fa fa-caret-down')
+            .addClass('fa fa-caret-right');
           $($li).find('.annotation-description').hide();
         }
       });
@@ -135,8 +135,8 @@ var SidebarVisibleView = Backbone.View.extend({
           currentSeconds <= model.get('end_seconds')) ||
           model.get('start_seconds') === currentSeconds) {
           self.$el.find('li.' + model.get('id') + ' .icon-title')
-            .removeClass('icono-caretRightCircle')
-            .addClass('icono-caretDownCircle');
+            .removeClass('fa fa-caret-right')
+            .addClass('fa fa-caret-down');
           self.$el.find('li.' + model.get('id') + ' .annotation-description').show();
         }
       });
