@@ -52,7 +52,8 @@ module.exports = {
   jscs: {
     preset: 'airbnb',
     emitErrors: true,
-    safeContextKeyword: ["_this", "self", "that"]
+    requireTrailingComma: false,
+    safeContextKeyword: ["_this", "self", "that"],
   },
   jshint: {
     globals: {
