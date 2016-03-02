@@ -2,6 +2,7 @@ import _ from 'lodash';
 import $ from 'lib/jquery.hotkeys.js';
 
 import AppView from 'backbone/views/app-view.js';
+import Utils from 'utils.js';
 
 $.get(chrome.extension.getURL('templates.html'),
 function (data) {
@@ -12,7 +13,7 @@ function (data) {
     return function () {
       if ($('video').length > 0) {
         if (!$('#video-annotations')[0]) {
-          var $video = getVideotag();
+          var $video = Utils.getVideoInterface();
           $video.append($('#video-main-template').html());
         }
 
@@ -24,17 +25,6 @@ function (data) {
         }
       }
     };
-  }
-
-  function getVideotag() {
-    var $video = $('video').parent();
-
-    // youtube specific stuff
-    if ($('video').parents('.player-api').length > 0) {
-      $video = $('video').parents('.player-api');
-    }
-
-    return $video;
   }
 
   var observer = new MutationObserver(_.debounce(checkAndEnableFeature(), 100));

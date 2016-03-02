@@ -45,7 +45,7 @@ var AppView = Backbone.View.extend({
     this.syncData();
 
     this.videoFrame.on('change', this.updateFrame);
-    this.videoTag = $('video')[0];
+    this.videoTag = Utils.getVideoInterface();
 
     this.initializeView();
     this.bindEvents();
@@ -134,6 +134,7 @@ var AppView = Backbone.View.extend({
     });
 
     $(document).bind('keydown', 'esc', function (e) {
+      // TODO: remove stop propogation here
       e.stopPropagation();
       self.closeAnnotation(e);
       return false;

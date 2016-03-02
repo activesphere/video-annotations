@@ -100,7 +100,7 @@ var NewAnnotationView = Backbone.View.extend({
 
   updatePosition: function () {
     if (this.$el.find('textarea.annotation_text')) {
-      var position = Utils.getNewAnnotationPosition(this.videoTag, this.$el);
+      var position = Utils.getNewAnnotationPosition(this.$el);
 
       this.$el.css({
           right: position.right + 'px',

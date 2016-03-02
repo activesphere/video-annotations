@@ -29,15 +29,61 @@ Utils.splitAnnotation = function (annotation) {
 
 Utils.userInfo = 'dropbox_userinfo';
 
-Utils.getNewAnnotationPosition =  function (videoTag, $targetEl) {
+Utils.getVideoInterface = function () {
+  function getVideoContainer() {
+    var host = window.location.host;
+    var defaultContainer = $('video').parent();
+    var hostContainers =  {
+      'www.youtube.com': $('video').parents('.player-api')
+    };
+
+    return hostContainers[host] || defaultContainer;
+  }
+
+  function buildProxy(container, player) {
+    var videoMethodsObject = {
+      get currentTime() {
+        return player.currentTime;
+      },
+
+      set currentTime(time) {
+        player.currentTime = time;
+      },
+
+      get duration () {
+        return player.duration;
+      },
+
+      play: function () {
+        return player.play();
+      },
+
+      pause: function () {
+        return player.pause();
+      }
+
+    };
+    _.extend(container, videoMethodsObject);
+    return container;
+  }
+
+  return buildProxy(getVideoContainer(), $('video')[0]);
+};
+
+Utils.getNewAnnotationPosition =  function ($targetEl) {
+  var videoTag = Utils.getVideoInterface();
   var heightOfChevron = 6;
 
   // heigtht of video controls + progress bar + paddings + their borders and paddings
   var videoControlsHeight = 57;
   var paddingForSeeker = 12;
 
-  var videoTagHeight = $(videoTag).height();
-  var videoTagWidth = $(videoTag).width();
+  // get height and width from video container instead of video tag as certain
+  // videos have video tags smaller than the video container and thus the progress
+  // bar is wider than the video element itself.
+  // eg. https://www.youtube.com/watch?v=0ax_PBfrCG8
+  var videoTagHeight = videoTag.height();
+  var videoTagWidth = videoTag.width();
 
   var totalDuration = videoTag.duration;
   var currentDuration = videoTag.currentTime;
