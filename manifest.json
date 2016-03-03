@@ -43,5 +43,6 @@
     "images/delete.png",
     "images/close.png",
     "bower_components/font-awesome/fonts/*"
-  ]
+  ],
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
 }

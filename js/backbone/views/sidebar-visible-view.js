@@ -4,6 +4,8 @@ import _ from 'lodash';
 import $ from 'jquery';
 
 import AnnotationView from 'backbone/views/annotation-view.js';
+import Utils from 'utils.js';
+import AppStorage from 'storage.js';
 
 var SidebarVisibleView = Backbone.View.extend({
   tagName:'div',
@@ -30,6 +32,7 @@ var SidebarVisibleView = Backbone.View.extend({
   initialize: function (options) {
     _.bindAll(this, 'renderList');
     _.bindAll(this, 'syncAnnotations');
+    _.bindAll(this, 'renderUserInfo');
 
     this.arrowTag = options.arrowTag;
     this.storage = options.storage;
@@ -46,7 +49,7 @@ var SidebarVisibleView = Backbone.View.extend({
     this.collection.on('remove', this.syncAnnotations);
 
     this.userInfo.on('change', this.renderUserInfo);
-
+    this.registerStorageChange();
     this.closeUrl = chrome.extension.getURL('images/close.png');
   },
 
@@ -55,6 +58,7 @@ var SidebarVisibleView = Backbone.View.extend({
     $(this.el).html(Mustache.to_html(this.template(), { closeUrl: this.closeUrl }));
     // jscs: enable
     this.renderList();
+    this.renderUserInfo();
     return this;
   },
 
@@ -98,6 +102,18 @@ var SidebarVisibleView = Backbone.View.extend({
     this.collection.saveDropbox();
   },
 
+  renderUserInfo: function () {
+    var name = this.userInfo.get('display_name');
+    var shortName = name && name[0] || 'D';
+
+    // jscs: disable
+    this.$el.find('.userInfo_detail')
+    .html(Mustache.to_html(this.userInfoTemplate(), _.extend(
+    this.userInfo.toJSON(), { shortName: shortName })
+    ));
+    // jscs: enable
+  },
+
   highlight: function () {
     var self = this;
     if (!self.videoTag.paused  && !_.isEmpty(self.collection.models)) {
@@ -129,6 +145,19 @@ var SidebarVisibleView = Backbone.View.extend({
     }
   },
 
+  fetchUser: function () {
+    var userStorage = new AppStorage({ name: Utils.userInfo });
+    userStorage.get((userInfo) => {
+      if (_.isEmpty(userInfo)) {
+        this.userInfo.clear();
+      } else {
+        this.userInfo.set(userInfo);
+      }
+
+      this.renderUserInfo();
+    });
+  },
+
   signIn: function (e) {
     e.preventDefault();
     chrome.runtime.sendMessage({ type: 'signIn' }, function () {
@@ -140,6 +169,16 @@ var SidebarVisibleView = Backbone.View.extend({
     chrome.runtime.sendMessage({ type: 'signOut' }, function () {
     });
   },
+
+  registerStorageChange: function () { //when changes happen in storage, this get trigger
+    chrome.storage.onChanged.addListener((changes) => {
+      for (var key in changes) {
+        if (key === Utils.userInfo) {
+          this.fetchUser();
+        }
+      }
+    });
+  }
 });
 
 export default SidebarVisibleView;

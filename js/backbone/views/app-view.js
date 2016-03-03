@@ -247,7 +247,7 @@ var AppView = Backbone.View.extend({
 
   fetchUser: function () {
     var self = this;
-    var userStorage = new AppStorage({ name: Utils.UserInfo });
+    var userStorage = new AppStorage({ name: Utils.userInfo });
     userStorage.get(function (userInfo) {
       if (_.isEmpty(userInfo)) {
         self.UserInfo.clear();

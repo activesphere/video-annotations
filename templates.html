@@ -34,6 +34,18 @@
     <div class='edit-annotation hide'></div>
   </script>
 
+  <script type="text/template" id="user-main-template">
+    <div class='dropdown-menu'>
+        {{#display_name}}
+        <p class='user-name'>{{display_name}}
+        <a href='#' class='sign_out'>Sign Out</a></p>
+        {{/display_name}}
+        {{^display_name}}
+        <a href='#' class='sign_in'>Sign In</a>
+        {{/display_name}}
+    </div>
+  </script>
+
   <script type="text/template" id='new-annotation-template'>
     <textarea  class='annotation_text' placeholder='Annotation'></textarea>
     <a href='#' class='create button success pull-left'>Create</a>
@@ -53,6 +65,7 @@
     <span class='left_arrow'><  </span>
       <div class="annotations_list">
         <input type='textfield' class='search_annotations' placeholder='Search Annotation'>
+        <div class="userInfo_detail"></div>
         <div class='clear'></div>
         <div class='border-line'></div>
         <ul class='annotations'></ul>

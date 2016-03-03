@@ -10,7 +10,7 @@ module.exports = {
     event: 'events'
   },
   output: {
-    sourceMapFilename: 'bundle.js.map',
+    sourceMapFilename: '[name].bundle.js.map',
     path:     'builds',
     filename: '[name].bundle.js',
   },
@@ -20,7 +20,7 @@ module.exports = {
       path.join(__dirname, "bower_components")
     ]
   },
-  "devtool": '#inline-source-map',
+  "devtool": '#eval-source-map',
   module: {
     preLoaders: [{
       test: /\.js/,
