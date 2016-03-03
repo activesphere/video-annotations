@@ -54,7 +54,7 @@ var NewAnnotationView = Backbone.View.extend({
     var uid = Date.now();
 
     // jscs: disable
-    var end_seconds = parseInt(this.videoTag.currentTime);
+    var end_seconds = parseInt(this.videoTag.getCurrentTime());
     var annotationObj = _.extend({
       id: uid,
       start_seconds: this.start_seconds,

@@ -42,10 +42,13 @@ Utils.getVideoInterface = function () {
 
   function buildProxy(container, player) {
     var videoMethodsObject = {
-      get currentTime() {
+      // cant use a getter method for currentTime as getters are memoized
+      // js
+      getCurrentTime: function () {
         return player.currentTime;
       },
 
+      /* jshint -W078 */
       set currentTime(time) {
         player.currentTime = time;
       },
@@ -86,7 +89,7 @@ Utils.getNewAnnotationPosition =  function ($targetEl) {
   var videoTagWidth = videoTag.width();
 
   var totalDuration = videoTag.duration;
-  var currentDuration = videoTag.currentTime;
+  var currentDuration = videoTag.getCurrentTime();
 
   var inputHeight = $targetEl.height() + heightOfChevron;
   var inputWidth = $targetEl.outerWidth();

@@ -117,7 +117,7 @@ var SidebarVisibleView = Backbone.View.extend({
   highlight: function () {
     var self = this;
     if (!self.videoTag.paused  && !_.isEmpty(self.collection.models)) {
-      var currentSeconds = parseInt(self.videoTag.currentTime);
+      var currentSeconds = parseInt(self.videoTag.getCurrentTime());
       _.each($(self.$el).find('li'), function ($li) {
         //Check if type auto and window opened
         if (($($li).find('span.icon-title').hasClass('fa fa-caret-down') &&

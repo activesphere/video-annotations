@@ -155,7 +155,7 @@ var AppView = Backbone.View.extend({
     if (this.newAnnotationView && this.videoTag) {
 
       // jscs: disable
-      this.newAnnotationView.start_seconds = parseInt(this.videoTag.currentTime);
+      this.newAnnotationView.start_seconds = parseInt(this.videoTag.getCurrentTime());
       this.videoFrame.set('start_seconds', this.newAnnotationView.start_seconds);
       // jscs: enable
     }
