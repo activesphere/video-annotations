@@ -183,10 +183,10 @@ var AppView = Backbone.View.extend({
     var sidebar = this.$el.find('.left_side');
     if (sidebar.hasClass('sidebar-hidden')) {
       sidebar.removeClass('sidebar-hidden').addClass('sidebar-visible');
-      sidebar.find('.left_arrow').html('>');
+      this.$el.find('.left_arrow').removeClass('fa-caret-left').addClass('fa-caret-right');
     } else {
       sidebar.removeClass('sidebar-visible').addClass('sidebar-hidden');
-      sidebar.find('.left_arrow').html('<');
+      this.$el.find('.left_arrow').removeClass('fa-caret-right').addClass('fa-caret-left');
     }
   }, 20),
 

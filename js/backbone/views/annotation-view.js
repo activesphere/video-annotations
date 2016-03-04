@@ -66,7 +66,7 @@ var AnnotationView = Backbone.View.extend({
 
   update: function (e) {
     e.preventDefault();
-    var annotation = $(e.target).parent().siblings('textarea')[0].value;
+    var annotation = this.$el.find('textarea')[0].value;
     this.model.set(Utils.splitAnnotation(annotation));
     Annotations.add([this.model], { merge: true, silent: true });
     Annotations.saveDropbox();

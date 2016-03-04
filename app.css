@@ -26,13 +26,11 @@
   clear: both;
 }
 #video-annotations div.left_side{
+  transition: 1s;
   position: fixed;
-  /*right: -409px;*/
-  /*top: 65px;*/
-  width: 450px;
+  width: 404px;
   z-index: 1001;
   pointer-events: all;
-  transition: 1s;
 }
 #video-annotations div#start_time{
   font-size: 15px;
@@ -45,35 +43,39 @@
   z-index: 1000;
   margin-top: 18px;
   padding-left: 5px;
+  box-sizing: border-box;
 }
 #video-annotations div.annotations_list{
   top: 0;
-  position:absolute;
+  position: realtive;
+  width: inherit;
   display: inline-block;
-  width:405px;
+  height: 500px;
   color: black;
   background: white;
-  /*padding: 5px;*/
-  /*margin-left: 10px;*/
   min-height: 255px;
   border: 1px solid #ccc;
   border-radius: 4px 0px 0px 4px;
-  /*-webkit-box-shadow: 1px 1px 10px 1px rgba(0,0,0,0.3);*/
+  box-sizing: border-box;
+  padding: 20px;
+  box-sizing: border-box;
 }
 #video-annotations .sidebar-visible {
-  right: -43px;
+  right: 0px;
 }
 #video-annotations .sidebar-hidden {
-  right: -450px;
+  right: -404px;
 }
 #video-annotations .create-annotation{
   padding: 1px;
+  box-sizing: border-box;
   position: absolute;
   z-index: 1001;
   background: #fff;
-  border-radius: 4px;
+  /*-webkit-box-shadow: 1px 1px 10px 1px rgba(0,0,0,0.3);*/
   border: 1px solid #ccc;
-  -webkit-box-shadow: 1px 1px 10px 1px rgba(0,0,0,0.3);
+  border-bottom: 1px solid #fff;
+  border-radius: 4px;
   pointer-events: all;
 }
 
@@ -91,26 +93,31 @@
 
 #video-annotations .create-annotation textarea.annotation_text{
   font-size: 13px;
+  padding: 10px;
+  box-sizing: border-box;
+  display: block;
+  margin: auto;
+  border-bottom: 1px double #ccc;
 }
 
 #video-annotations .create-annotation .annotation_text{
   resize: none;
   outline: none;
-  width: 150px;
-  height: 60px;
+  width: 300px;
+  height: 200px;
   border: 1px solid #fff;
 }
 #video-annotations div.annotations_list .search_annotations{
   height: 36px;
   font-size:13px;
-  margin: 2px 10px;
-  width: 373px;
+  width: 100%;
   border: 1px solid #ccc;
   border-radius: 3px;
   margin-top: 10px;
   padding-left: 10px;
+  box-sizing: border-box;
 }
-#video-annotations div.annotations_list div.user_info_detail{
+#video-annotations div.annotations_list div.userInfo_detail{
   height: 38px;
 }
 #video-annotations div.annotations_list ul{
@@ -123,11 +130,37 @@
 #video-annotations div.annotations_list ul.annotations{
   color: #666;
   width: 100%;
-  overflow-x:scroll;
-  max-height: 225px;
+  overflow-x: hidden;
+  height: 370px;
+  overflow-y: auto;
+}
+#video-annotations ::-webkit-scrollbar{
+  width: 5px;
+}
+#video-annotations ::-webkit-scrollbar-track{
+  background: #eee;
+}
+#video-annotations ::-webkit-scrollbar-thumb{
+  background: #ccc;
+}
+#video-annotations div.annotation-detail{
+  display: flex;
+  flex-wrap: nowrap;
+  margin-top: 5px;
+}
+#video-annotations .annotation-detail .fa{
+  width: 5%;
+}
+#video-annotations .annotation-detail a.seek{
+  width:  55%;
+}
+#video-annotations .annotation-description{
+  padding: 10px;
+  border: 1px solid #ccc;
 }
 #video-annotations div.annotations_list ul.annotations li.video-annotation{
   padding: 5px;
+  box-sizing: border-box;
   font-size: 14px;
   display: inline-block;
   width: 98%;
@@ -145,20 +178,13 @@
 #video-annotations div.annotations_list ul.annotations li.video-annotation .description span.icon-title{
   cursor: pointer;
   padding-left: 10px;
-}
-#video-annotations div.annotations_list ul.annotations li.video-annotation .right-pane{
-  float:right;
-  width: 38%;
+  box-sizing: border-box;
 }
 #video-annotations div.annotations_list ul.annotations li.video-annotation .annotation-title{
   font-family: Carlito, Sans-serif;
   font-size: 14px;
   color: #222C36;
   text-transform: capitalize;
-}
-#video-annotations div.annotations_list ul.annotations li.video-annotation .annotation-description{
-  margin-top: 5px;
-  margin-left: 27px;
 }
 #video-annotations div.annotations_list ul.annotations li.video-annotation .annotation-description span{
   line-height: 18px;
@@ -167,86 +193,39 @@
   font-size: 14px;
 }
 #video-annotations div.annotations_list ul.annotations li.video-annotation span.label{
-  border-radius: 10px;
-  color: #fff;
+  border-radius: 6px;
+  margin: 0px 4px 0px 4px;
+  color: #333;
   font-size: 14px;
-  padding: 1px 6px;
-  margin-right: 3px;
+  width: 30%;
+  max-height: 21px;
+  text-align: center;
 }
 #video-annotations div.annotations_list .border-line{
   padding: 5px 0px;
+  box-sizing: border-box;
   border-bottom: solid 1px #F1F1F1;
 }
-#video-annotations div.annotations_list ul.annotations li.video-annotation span.label.quick{
-  background: #aaa;
-}
-#video-annotations div.annotations_list ul.annotations li.video-annotation span.label.time{
-  background: #aaa;
-}
-#video-annotations div.annotations_list .user_info_detail .short-name{
+#video-annotations div.annotations_list .userInfo_detail .short-name{
   width: 50px;
   height: 35px;
 }
-#video-annotations div.annotations_list .user_info_detail .dropdown-menu{
-  position: absolute;
-  width: 100px;
-  background: #006DAE;
-  font-weight: 600;
-  margin-left: -35px;
-  display: none;
+#video-annotations div.annotations_list .userInfo_detail .short-name{
+  padding-left: 10px;
+  box-sizing: border-box;
 }
-#video-annotations div.annotations_list .user_info_detail .dropdown-menu ul{
-  -webkit-margin-before: 0em;
-  -webkit-margin-after: 0em;
-  -webkit-margin-start: 0px;
-  -webkit-margin-end: 0px;
-}
-#video-annotations div.annotations_list .user_info_detail:hover .dropdown-menu{
-  display: block;
-}
-#video-annotations div.annotations_list .user_info_detail .dropdown-menu ul li{
-  width: 100%;
-  display: inline-block;
-  text-align: center;
-  border-bottom: 1px solid #fff;
-}
-#video-annotations div.annotations_list .user_info_detail .dropdown-menu ul li:last-child{
-  border-bottom: none;
-}
-#video-annotations div.annotations_list .user_info_detail .dropdown-menu ul li a, #video-annotations div.annotations_list .user_info_detail .dropdown-menu ul li.user-name{
-  word-wrap: break-word;
-  padding: 3px 0px;
-  width: 100%;
-  display: block;
-  text-align: center;
-  color: #fff;
+
+#video-annotations div.annotations_list .userInfo_detail .dropdown-menu{
+  font-family: Carlito, Sans-serif;
   font-size: 14px;
-  text-decoration: none;
+  margin-top: 4px;
 }
-#video-annotations div.annotations_list .user_info_detail .dropdown-menu ul li a:hover{
-  color: #006DAE;
-  background: #fff;
-  border: 1px solid #006DAE;
+#video-annotations div.annotations_list .userInfo_detail .dropdown-menu p{
+  color: #888;
 }
-#video-annotations div.annotations_list .user_info_detail .short-name > .name{
-  width: 35px;
-  height: 35px;
-  display: block;
-  background: #006DAE;
-  -webkit-border-radius: 50px;
-  cursor: pointer;
-}
-#video-annotations div.annotations_list .user_info_detail .short-name > .name > p{
-  margin-left: 12px;
-  margin-top: 8px;
-  font-family: "Open Sans", sans-serif !important;
-  font-size: 15px;
-  font-weight: 600;
-  text-transform: uppercase;
-  color: #fff;
-}
-#video-annotations div.annotations_list ul.annotations li.video-annotation .description a:hover{
-  text-decoration: none;
+#video-annotations div.annotations_list .userInfo_detail .dropdown-menu a{
+  float: right;
+  color: #167ac6;
 }
 #video-annotations div.annotations_list .center{
   text-align: center;
@@ -255,7 +234,8 @@
   color:#444;
 }
 #video-annotations a.delete, #video-annotations a.edit{
-  padding-right: 10px
+  padding-right: 10px;
+  box-sizing: border-box;
 }
 #video-annotations .hide{
   display: none;
@@ -264,12 +244,13 @@
   transition: 1s;
   position: absolute;
   top: 100px;
-  right: 449px;
+  right: 403px;
   z-index: 1002;
-  color: black;
+  color: #666;
   font-size: 18px;
   border-radius: 10px 0px 0px 10px;
   padding: 10px 8px 10px 10px;
+  box-sizing: border-box;
   background: #fff;
   border: 1px solid #ccc;
   border-right: 0px;
@@ -298,7 +279,7 @@
   float: right;
 }
 #video-annotations .ml10{
-  margin-left: 10px;
+  /*margin-left: 10px;*/
 }
 #video-annotations .none{
   display: none;
@@ -306,6 +287,7 @@
 #video-annotations a.button{
   display: inline-block;
   padding: 6px 12px;
+  box-sizing: border-box;
   margin-bottom: 0;
   font-size: 14px;
   font-weight: 400;
@@ -321,26 +303,28 @@
   border: 1px solid transparent;
   border-radius: 4px;
 }
-#video-annotations a.button.success{
-  color: #fff;
-  background-color: #5cb85c;
-  border-color: #4cae4c;
+#video-annotations a.button{
+  color: #666;
+  background-color: #fff;
+  border-color: #ccc;
+  margin-right: 10px;
 }
-#video-annotations a.button.success:hover{
-  color: #fff;
-  background-color: #449d44;
-  border-color: #398439;
+#video-annotations a.button:hover{
+  color: #666;
+  background-color: #e6e6e6;
+  border-color: #adadad;
+  margin-right: 10px;
 }
-#video-annotations a.button.danger{
-  color: #fff;
-  background-color: #d9534f;
-  border-color: #d43f3a;
-}
-#video-annotations a.button.danger:hover{
-  color: #fff;
-  background-color: #c9302c;
-  border-color: #ac2925;
+#video-annotations a.button i{
+  margin-right: 10px;
 }
 #video-annotations a.button:hover{
   text-decoration: none;
+}
+
+#video-annotations .flex{
+  padding-top: 10px;
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
 }

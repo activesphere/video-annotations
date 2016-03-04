@@ -32,8 +32,8 @@ var NewAnnotationView = Backbone.View.extend({
   render: function () {
     this.$el.html(this.template());
     this.bindEvents();
-    this.$el.css('width', '160px');
-    this.$el.css('height', '109px');
+    this.$el.css('width', '310px');
+    this.$el.css('height', '261px');
     this.updatePosition();
     return this;
   },
@@ -46,7 +46,7 @@ var NewAnnotationView = Backbone.View.extend({
 
   createByClick: function (event) {
     event.preventDefault();
-    var value = $(event.target).siblings('textarea')[0].value;
+    var value = this.$el.find('textarea')[0].value;
     this.createAnnotation(value);
   },
 
