@@ -57,7 +57,7 @@
   border: 1px solid #ccc;
   border-radius: 4px 0px 0px 4px;
   box-sizing: border-box;
-  padding: 20px;
+  padding: 5px 20px 20px 20px;
   box-sizing: border-box;
 }
 #video-annotations .sidebar-visible {
@@ -116,9 +116,6 @@
   margin-top: 10px;
   padding-left: 10px;
   box-sizing: border-box;
-}
-#video-annotations div.annotations_list div.userInfo_detail{
-  height: 38px;
 }
 #video-annotations div.annotations_list ul{
   -webkit-margin-before: 0em;
@@ -211,25 +208,17 @@
   box-sizing: border-box;
   border-bottom: solid 1px #F1F1F1;
 }
-#video-annotations div.annotations_list .userInfo_detail .short-name{
-  width: 50px;
-  height: 35px;
-}
-#video-annotations div.annotations_list .userInfo_detail .short-name{
-  padding-left: 10px;
-  box-sizing: border-box;
-}
 
-#video-annotations div.annotations_list .userInfo_detail .dropdown-menu{
+#video-annotations div.annotations_list .user_info {
   font-family: Carlito, Sans-serif;
-  font-size: 14px;
-  margin-top: 4px;
+  font-size: 10px;
+  float: right;
+  text-align: right;
 }
-#video-annotations div.annotations_list .userInfo_detail .dropdown-menu p{
+#video-annotations div.annotations_list .user_info p{
   color: #888;
 }
-#video-annotations div.annotations_list .userInfo_detail .dropdown-menu a{
-  float: right;
+#video-annotations div.annotations_list .user_info a{
   color: #167ac6;
 }
 #video-annotations div.annotations_list .center{

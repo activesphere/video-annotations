@@ -107,7 +107,7 @@ var SidebarVisibleView = Backbone.View.extend({
     var shortName = name && name[0] || 'D';
 
     // jscs: disable
-    this.$el.find('.userInfo_detail')
+    this.$el.find('.user_info')
     .html(Mustache.to_html(this.userInfoTemplate(), _.extend(
     this.userInfo.toJSON(), { shortName: shortName })
     ));

@@ -27,15 +27,14 @@
   </script>
 
   <script type="text/template" id="user-main-template">
-    <div class='dropdown-menu'>
-        {{#display_name}}
-        <p class='user-name'>{{display_name}}
-        <a href='#' class='sign_out'>Sign Out</a></p>
-        {{/display_name}}
-        {{^display_name}}
-        <a href='#' class='sign_in'>Sign In</a>
-        {{/display_name}}
-    </div>
+      {{#display_name}}
+      <p class='user-name'>{{display_name}}</p>
+      <a href='#' class='sign_out'>Sign out</a>
+      {{/display_name}}
+      {{^display_name}}
+      <p>Your annotations are currently being saved on local storage & may be lost</p>
+      <p>Please <a href='#' class='sign_in'>Sign in</a> to sync with dropbox</p>
+      {{/display_name}}
   </script>
 
   <script type="text/template" id='new-annotation-template'>
@@ -59,8 +58,8 @@
   <script type="text/template" id="sidebar-visible-template">
     <span class='left_arrow fa fa-caret-left'></span>
     <div class="annotations_list">
+      <div class="user_info"></div>
       <input type='textfield' class='search_annotations' placeholder='Search'>
-      <div class="userInfo_detail"></div>
       <div class='clear'></div>
       <div class='border-line'></div>
       <ul class='annotations'></ul>
