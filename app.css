@@ -155,8 +155,13 @@
   width:  55%;
 }
 #video-annotations .annotation-description{
+  margin-top: 10px;
   padding: 10px;
   border: 1px solid #ccc;
+}
+#video-annotations .annotation-description span{
+  /*To preserve line breaks*/
+  white-space: pre-wrap;
 }
 #video-annotations div.annotations_list ul.annotations li.video-annotation{
   padding: 5px;
