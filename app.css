@@ -26,7 +26,7 @@
   clear: both;
 }
 #video-annotations div.left_side{
-  transition: 1s;
+  transition: 0.2s;
   position: fixed;
   width: 404px;
   z-index: 1001;
@@ -235,7 +235,6 @@
   display: none;
 }
 #video-annotations .left_arrow{
-  transition: 1s;
   position: absolute;
   top: 100px;
   right: 403px;
