@@ -152,6 +152,7 @@ var SidebarVisibleView = Backbone.View.extend({
         this.userInfo.clear();
       } else {
         this.userInfo.set(userInfo);
+        this.syncAnnotations();
       }
 
       this.renderUserInfo();
