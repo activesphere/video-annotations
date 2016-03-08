@@ -4,16 +4,16 @@ import $ from 'lib/jquery.hotkeys.js';
 import Dropbox from 'dropbox_chrome.js';
 
 import Utils from 'utils.js';
-import DropboxFile from 'dropbox-file.js';
+import DropboxFile from 'dropboxUtils.js';
 import {Frame, UserInfo} from 'backbone/models.js';
-import AppStorage from 'storage.js';
+import AppStorage from 'localStorageUtils.js';
 import Annotations from 'backbone/collections.js';
-import SidebarVisibleView from 'backbone/views/sidebar-visible-view.js';
-import NewAnnotationView from 'backbone/views/new-annotation-view.js';
+import SidebarView from 'backbone/views/sidebarView.js';
+import NewAnnotationView from 'backbone/views/newAnnotationView.js';
 import config from '../../config';
 
 var AppView = Backbone.View.extend({
-  el: 'div#video-annotations',
+  el: 'div#videoAnnotations',
 
   events: {
     'click span.left_arrow': 'showSidebar',
@@ -56,7 +56,7 @@ var AppView = Backbone.View.extend({
 
   render: function () {
     var _this = this;
-    this.$el.html($(this.sidebarVisibleView.render().el));
+    this.$el.html($(this.sidebarView.render().el));
     this.$el.find('.left_side').addClass('sidebar-hidden');
     _this.updateFrame();
   },
@@ -75,13 +75,13 @@ var AppView = Backbone.View.extend({
 
     this.newAnnotationView.videoFrame = this.videoFrame;
 
-    this.sidebarVisibleView = new SidebarVisibleView({
+    this.sidebarView = new SidebarView({
       collection: Annotations,
       storage: this.storage,
       videoTag: this.videoTag,
       userInfo: this.UserInfo,
       dropboxFile: this.dropboxFile,
-      arrowTag: '#video-annotations span.left_arrow',
+      arrowTag: '#videoAnnotations span.left_arrow',
     });
   },
 
@@ -98,7 +98,7 @@ var AppView = Backbone.View.extend({
           } else {
             // if no data present, update collection sliently.
             Annotations.reset([], { silent: true });
-            self.sidebarVisibleView.render();
+            self.sidebarView.render();
           }
         });
       }
@@ -261,7 +261,7 @@ var AppView = Backbone.View.extend({
     var self = this;
 
     setInterval(function () {
-        self.sidebarVisibleView.highlight();
+        self.sidebarView.highlight();
       }, 1000);
 
   },
@@ -278,7 +278,7 @@ var AppView = Backbone.View.extend({
   },
 
   switchExtensionVisibility: function () {
-    var $extension = $('#video-annotations');
+    var $extension = $('#videoAnnotations');
     if ($extension.css('display') === 'none') {
       $extension.css('display', 'block');
     } else {

@@ -6,8 +6,8 @@ var EventPageController = {}.hasOwnProperty;
 var dropboxChrome = {}.hasOwnProperty;
 
 EventPageController = (function () {
-  function EventPageController(dropboxChrome1) {
-    this.dropboxChrome = dropboxChrome1;
+  function EventPageController(dropboxChrome) {
+    this.dropboxChrome = dropboxChrome;
     chrome.browserAction.onClicked.addListener((function (_this) {
       return function () {
         return _this.onBrowserAction();

@@ -3,15 +3,15 @@ import Mustache from 'mustache.js';
 import _ from 'lodash';
 import $ from 'jquery';
 
-import AnnotationView from 'backbone/views/annotation-view.js';
+import AnnotationView from 'backbone/views/annotationView.js';
 import Utils from 'utils.js';
-import AppStorage from 'storage.js';
+import AppStorage from 'localStorageUtils.js';
 
-var SidebarVisibleView = Backbone.View.extend({
+var SidebarView = Backbone.View.extend({
   tagName:'div',
   className: 'left_side',
   template: function () {
-    return $('#sidebar-visible-template').html();
+    return $('#sidebar-template').html();
   },
 
   noAnnotationTemplate: function () {
@@ -182,4 +182,4 @@ var SidebarVisibleView = Backbone.View.extend({
   }
 });
 
-export default SidebarVisibleView;
+export default SidebarView;

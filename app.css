@@ -6,7 +6,7 @@
   font-style: normal;
 }
 
-#video-annotations{
+#videoAnnotations{
   font-family: "Open Sans", sans-serif;
   position: absolute;
   left: 0;
@@ -19,20 +19,20 @@
   text-rendering: optimizeLegibility;
   pointer-events: none;
 }
-#video-annotations h3{
+#videoAnnotations h3{
   font-size: 16px;
 }
-#video-annotations .clear{
+#videoAnnotations .clear{
   clear: both;
 }
-#video-annotations div.left_side{
+#videoAnnotations div.left_side{
   transition: 0.2s;
   position: fixed;
   width: 404px;
   z-index: 1001;
   pointer-events: all;
 }
-#video-annotations div#start_time{
+#videoAnnotations div#start_time{
   font-size: 15px;
   font-size: 14px;
   font-weight: 600;
@@ -45,7 +45,7 @@
   padding-left: 5px;
   box-sizing: border-box;
 }
-#video-annotations div.annotations_list{
+#videoAnnotations div.annotations_list{
   top: 0;
   position: realtive;
   width: inherit;
@@ -60,13 +60,13 @@
   padding: 5px 20px 20px 20px;
   box-sizing: border-box;
 }
-#video-annotations .sidebar-visible {
+#videoAnnotations .sidebar-visible {
   right: 0px;
 }
-#video-annotations .sidebar-hidden {
+#videoAnnotations .sidebar-hidden {
   right: -404px;
 }
-#video-annotations .create-annotation{
+#videoAnnotations .create-annotation{
   padding: 1px;
   box-sizing: border-box;
   position: absolute;
@@ -91,7 +91,7 @@
   margin-left: -8px;
 }
 
-#video-annotations .create-annotation textarea.annotation_text{
+#videoAnnotations .create-annotation textarea.annotation_text{
   font-size: 13px;
   padding: 10px;
   box-sizing: border-box;
@@ -100,14 +100,14 @@
   border-bottom: 1px double #ccc;
 }
 
-#video-annotations .create-annotation .annotation_text{
+#videoAnnotations .create-annotation .annotation_text{
   resize: none;
   outline: none;
   width: 300px;
   height: 200px;
   border: 1px solid #fff;
 }
-#video-annotations div.annotations_list .search_annotations{
+#videoAnnotations div.annotations_list .search_annotations{
   height: 36px;
   font-size:13px;
   width: 100%;
@@ -117,50 +117,50 @@
   padding-left: 10px;
   box-sizing: border-box;
 }
-#video-annotations div.annotations_list ul{
+#videoAnnotations div.annotations_list ul{
   -webkit-margin-before: 0em;
   -webkit-margin-after: 0em;
   -webkit-margin-start: 0px;
   -webkit-margin-end: 0px;
   -webkit-padding-start: 0px;
 }
-#video-annotations div.annotations_list ul.annotations{
+#videoAnnotations div.annotations_list ul.annotations{
   color: #666;
   width: 100%;
   overflow-x: hidden;
   height: 370px;
   overflow-y: auto;
 }
-#video-annotations ::-webkit-scrollbar{
+#videoAnnotations ::-webkit-scrollbar{
   width: 5px;
 }
-#video-annotations ::-webkit-scrollbar-track{
+#videoAnnotations ::-webkit-scrollbar-track{
   background: #eee;
 }
-#video-annotations ::-webkit-scrollbar-thumb{
+#videoAnnotations ::-webkit-scrollbar-thumb{
   background: #ccc;
 }
-#video-annotations div.annotation-detail{
+#videoAnnotations div.annotation-detail{
   display: flex;
   flex-wrap: nowrap;
   margin-top: 5px;
 }
-#video-annotations .annotation-detail .fa{
+#videoAnnotations .annotation-detail .fa{
   width: 5%;
 }
-#video-annotations .annotation-detail a.seek{
+#videoAnnotations .annotation-detail a.seek{
   width:  55%;
 }
-#video-annotations .annotation-description{
+#videoAnnotations .annotation-description{
   margin-top: 10px;
   padding: 10px;
   border: 1px solid #ccc;
 }
-#video-annotations .annotation-description span{
+#videoAnnotations .annotation-description span{
   /*To preserve line breaks*/
   white-space: pre-wrap;
 }
-#video-annotations div.annotations_list ul.annotations li.video-annotation{
+#videoAnnotations div.annotations_list ul.annotations li.video-annotation{
   padding: 5px;
   box-sizing: border-box;
   font-size: 14px;
@@ -168,33 +168,33 @@
   width: 98%;
   border-bottom: solid 1px #F1F1F1;
 }
-#video-annotations div.annotations_list ul.annotations li:last-child{
+#videoAnnotations div.annotations_list ul.annotations li:last-child{
   border-bottom: none;
 }
-#video-annotations div.annotations_list ul.annotations li.video-annotation .edit-annotation textarea{
+#videoAnnotations div.annotations_list ul.annotations li.video-annotation .edit-annotation textarea{
   width: 98%;
 }
-#video-annotations div.annotations_list ul.annotations li.video-annotation .description{
+#videoAnnotations div.annotations_list ul.annotations li.video-annotation .description{
   width: 60%;
 }
-#video-annotations div.annotations_list ul.annotations li.video-annotation .description span.icon-title{
+#videoAnnotations div.annotations_list ul.annotations li.video-annotation .description span.icon-title{
   cursor: pointer;
   padding-left: 10px;
   box-sizing: border-box;
 }
-#video-annotations div.annotations_list ul.annotations li.video-annotation .annotation-title{
+#videoAnnotations div.annotations_list ul.annotations li.video-annotation .annotation-title{
   font-family: Carlito, Sans-serif;
   font-size: 14px;
   color: #222C36;
   text-transform: capitalize;
 }
-#video-annotations div.annotations_list ul.annotations li.video-annotation .annotation-description span{
+#videoAnnotations div.annotations_list ul.annotations li.video-annotation .annotation-description span{
   line-height: 18px;
   letter-spacing: 0.7px;
   color: #666;
   font-size: 14px;
 }
-#video-annotations div.annotations_list ul.annotations li.video-annotation span.label{
+#videoAnnotations div.annotations_list ul.annotations li.video-annotation span.label{
   border-radius: 6px;
   margin: 0px 4px 0px 4px;
   color: #333;
@@ -203,38 +203,38 @@
   max-height: 21px;
   text-align: center;
 }
-#video-annotations div.annotations_list .border-line{
+#videoAnnotations div.annotations_list .border-line{
   padding: 5px 0px;
   box-sizing: border-box;
   border-bottom: solid 1px #F1F1F1;
 }
 
-#video-annotations div.annotations_list .user_info {
+#videoAnnotations div.annotations_list .user_info {
   font-family: Carlito, Sans-serif;
   font-size: 10px;
   float: right;
   text-align: right;
 }
-#video-annotations div.annotations_list .user_info p{
+#videoAnnotations div.annotations_list .user_info p{
   color: #888;
 }
-#video-annotations div.annotations_list .user_info a{
+#videoAnnotations div.annotations_list .user_info a{
   color: #167ac6;
 }
-#video-annotations div.annotations_list .center{
+#videoAnnotations div.annotations_list .center{
   text-align: center;
 }
-#video-annotations div.annotations_list i {
+#videoAnnotations div.annotations_list i {
   color:#444;
 }
-#video-annotations a.delete, #video-annotations a.edit{
+#videoAnnotations a.delete, #videoAnnotations a.edit{
   padding-right: 10px;
   box-sizing: border-box;
 }
-#video-annotations .hide{
+#videoAnnotations .hide{
   display: none;
 }
-#video-annotations .left_arrow{
+#videoAnnotations .left_arrow{
   position: absolute;
   top: 100px;
   right: 403px;
@@ -250,7 +250,7 @@
   cursor: pointer;
   pointer-events: all;
 }
-#video-annotations a.close_annotations{
+#videoAnnotations a.close_annotations{
   float: right;
   -webkit-border-radius: 50px;
   width: 28px;
@@ -259,25 +259,25 @@
   right: -14px;
   top: -14px;
 }
-#video-annotations a.close_annotations:hover{
+#videoAnnotations a.close_annotations:hover{
   text-decoration: none;
 }
-#video-annotations .mt5{
+#videoAnnotations .mt5{
   margin-top: 5px;
 }
-#video-annotations .pull-left{
+#videoAnnotations .pull-left{
   float: left;
 }
-#video-annotations .pull-right{
+#videoAnnotations .pull-right{
   float: right;
 }
-#video-annotations .ml10{
+#videoAnnotations .ml10{
   /*margin-left: 10px;*/
 }
-#video-annotations .none{
+#videoAnnotations .none{
   display: none;
 }
-#video-annotations a.button{
+#videoAnnotations a.button{
   display: inline-block;
   padding: 6px 12px;
   box-sizing: border-box;
@@ -296,26 +296,26 @@
   border: 1px solid transparent;
   border-radius: 4px;
 }
-#video-annotations a.button{
+#videoAnnotations a.button{
   color: #666;
   background-color: #fff;
   border-color: #ccc;
   margin-right: 10px;
 }
-#video-annotations a.button:hover{
+#videoAnnotations a.button:hover{
   color: #666;
   background-color: #e6e6e6;
   border-color: #adadad;
   margin-right: 10px;
 }
-#video-annotations a.button i{
+#videoAnnotations a.button i{
   margin-right: 10px;
 }
-#video-annotations a.button:hover{
+#videoAnnotations a.button:hover{
   text-decoration: none;
 }
 
-#video-annotations .flex{
+#videoAnnotations .flex{
   padding-top: 10px;
   display: flex;
   flex-wrap: nowrap;

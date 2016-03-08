@@ -5,7 +5,7 @@ import _ from 'lodash';
 
 import Utils from 'utils.js';
 import UserInfo from 'backbone/models.js';
-import AppStorage from 'storage.js';
+import AppStorage from 'localStorageUtils.js';
 
 var PopupView = Backbone.View.extend({
   el: 'div#popup',

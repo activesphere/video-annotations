@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import $ from 'lib/jquery.hotkeys.js';
 
-import AppView from 'backbone/views/app-view.js';
+import AppView from 'backbone/views/appView.js';
 import Utils from 'utils.js';
 
 $.get(chrome.extension.getURL('templates.html'),
@@ -12,7 +12,7 @@ function (data) {
   function checkAndEnableFeature() {
     return function () {
       if ($('video').length > 0) {
-        if (!$('#video-annotations')[0]) {
+        if (!$('#videoAnnotations')[0]) {
           var $video = Utils.getVideoInterface();
           $video.append($('#video-main-template').html());
         }
@@ -20,8 +20,8 @@ function (data) {
         var view = new AppView(appState);
         appState.view = view;
       } else {
-        if ($('#video-annotations')[0]) {
-          $('#video-annotations').remove();
+        if ($('#videoAnnotations')[0]) {
+          $('#videoAnnotations').remove();
         }
       }
     };

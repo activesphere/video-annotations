@@ -5,7 +5,7 @@ var BowerWebpackPlugin = require("bower-webpack-plugin");
 module.exports = {
   entry:  {
     videoDetection: 'videoDetectionService',
-    popup: 'backbone/views/popup-view',
+    popup: 'backbone/views/popupView',
     oauth: 'chrome_oauth_receiver',
     event: 'events'
   },
