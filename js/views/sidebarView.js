@@ -3,7 +3,7 @@ import Mustache from 'mustache.js';
 import _ from 'lodash';
 import $ from 'jquery';
 
-import AnnotationView from 'backbone/views/annotationView.js';
+import AnnotationView from 'views/annotationView.js';
 import Utils from 'utils.js';
 import AppStorage from 'localStorageUtils.js';
 

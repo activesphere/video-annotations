@@ -1,10 +1,10 @@
 import Backbone from 'backbone';
 import Mustache from 'mustache.js';
 import _ from 'lodash';
-import $ from 'lib/jquery.hotkeys.js';
+import $ from 'vendor/jquery.hotkeys.js';
 
 import Utils from 'utils.js';
-import Annotations from 'backbone/collections.js';
+import Annotations from 'collections/collections.js';
 
 var AnnotationView = Backbone.View.extend({
   template: '#annotation-template',

@@ -1,10 +1,10 @@
 import _ from 'lodash';
-import $ from 'lib/jquery.hotkeys.js';
+import $ from 'vendor/jquery.hotkeys.js';
 
-import AppView from 'backbone/views/appView.js';
+import AppView from 'views/appView.js';
 import Utils from 'utils.js';
 
-$.get(chrome.extension.getURL('templates.html'),
+$.get(chrome.extension.getURL('/html/templates.html'),
 function (data) {
   $('body').append(data);
   var appState = {};

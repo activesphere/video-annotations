@@ -6,7 +6,7 @@
   "version": "1.0",
 
   "browser_action": {
-    "default_icon": "icon.png"
+    "default_icon": "images/icon.png"
   },
   "minimum_chrome_version": "4.7.80",
   "permissions": [
@@ -30,14 +30,14 @@
         "https://www.youtube.com/*",
         "https://www.coursera.org/*"
       ],
-      "css": ["app.css", "popup.css", "bower_components/font-awesome/css/font-awesome.css"],
+      "css": ["css/app.css", "css/popup.css", "bower_components/font-awesome/css/font-awesome.css"],
       "js": [
         "builds/videoDetection.bundle.js"
       ]
     }
   ],
   "web_accessible_resources": [
-    "templates.html",
+    "html/templates.html",
     "html/chrome_oauth_receiver.html",
     "images/edit.png",
     "images/delete.png",

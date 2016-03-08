@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import $ from 'lib/jquery.hotkeys.js';
+import $ from 'vendor/jquery.hotkeys.js';
 
 var Utils = {};
 

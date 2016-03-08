@@ -1,5 +1,5 @@
 import Utils from 'utils.js';
-import Dropbox from 'lib/dropbox.js';
+import Dropbox from 'vendor/dropbox.js';
 
 var Chrome = function (clientOptions) {
   this.clientOptions = clientOptions;

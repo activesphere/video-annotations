@@ -1,10 +1,10 @@
 import Backbone from 'backbone';
 import _ from 'lodash';
-import $ from 'lib/jquery.hotkeys.js';
+import $ from 'vendor/jquery.hotkeys.js';
 
 import Utils from 'utils.js';
-import Annotation from 'backbone/models.js';
-import Annotations from 'backbone/collections.js';
+import Annotation from 'models/models.js';
+import Annotations from 'collections/collections.js';
 
 var NewAnnotationView = Backbone.View.extend({
   tagName: 'div',

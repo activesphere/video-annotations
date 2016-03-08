@@ -1,10 +1,10 @@
 import Backbone from 'backbone';
 import Mustache from 'mustache.js';
-import $ from 'lib/jquery.hotkeys.js';
+import $ from 'vendor/jquery.hotkeys.js';
 import _ from 'lodash';
 
 import Utils from 'utils.js';
-import UserInfo from 'backbone/models.js';
+import UserInfo from 'models/models.js';
 import AppStorage from 'localStorageUtils.js';
 
 var PopupView = Backbone.View.extend({

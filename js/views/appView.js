@@ -1,16 +1,16 @@
 import Backbone from 'backbone';
 import _ from 'lodash';
-import $ from 'lib/jquery.hotkeys.js';
+import $ from 'vendor/jquery.hotkeys.js';
 import Dropbox from 'dropbox_chrome.js';
 
 import Utils from 'utils.js';
 import DropboxFile from 'dropboxUtils.js';
-import {Frame, UserInfo} from 'backbone/models.js';
+import {Frame, UserInfo} from 'models/models.js';
 import AppStorage from 'localStorageUtils.js';
-import Annotations from 'backbone/collections.js';
-import SidebarView from 'backbone/views/sidebarView.js';
-import NewAnnotationView from 'backbone/views/newAnnotationView.js';
-import config from '../../config';
+import Annotations from 'collections/collections.js';
+import SidebarView from 'views/sidebarView.js';
+import NewAnnotationView from 'views/newAnnotationView.js';
+import config from '../config';
 
 var AppView = Backbone.View.extend({
   el: 'div#videoAnnotations',

@@ -1,7 +1,7 @@
 import Backbone from 'backbone';
 import _ from 'lodash';
 
-import Annotation from 'backbone/models.js';
+import Annotation from 'models/models.js';
 var Annotations = Backbone.Collection.extend({
   model: Annotation,
 
