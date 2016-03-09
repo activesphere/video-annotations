@@ -48,6 +48,7 @@ var AppView = Backbone.View.extend({
     this.videoTag = Utils.getVideoInterface();
 
     this.initializeView();
+    this.unbindEvents();
     this.bindEvents();
     this.highlight();
     this.clear();
@@ -141,15 +142,19 @@ var AppView = Backbone.View.extend({
     });
   },
 
+  unbindEvents: function () {
+    $(document).unbind('keydown');
+  },
+
   clear: function () {
     this.$el.html('');
   },
 
-  createAnnotation: _.debounce(function () {
+  createAnnotation: function () {
     this.videoTag.pause();
     this.$el.append(this.newAnnotationView.render().el);
     this.focusText();
-  }, 20),
+  },
 
   changeframe: function () {
     if (this.newAnnotationView && this.videoTag) {
