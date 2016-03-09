@@ -301,12 +301,14 @@
   background-color: #fff;
   border-color: #ccc;
   margin-right: 10px;
+  width: 85px;
 }
 #videoAnnotations a.button:hover{
   color: #666;
   background-color: #e6e6e6;
   border-color: #adadad;
   margin-right: 10px;
+  width: 85px;
 }
 #videoAnnotations a.button i{
   margin-right: 10px;
