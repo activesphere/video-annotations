@@ -13,10 +13,10 @@ import NewAnnotationView from 'views/newAnnotationView.js';
 import config from '../config';
 
 var AppView = Backbone.View.extend({
-  el: 'div#videoAnnotations',
+  el: 'div#video-annotation',
 
   events: {
-    'click span.left_arrow': 'showSidebar',
+    'click span.caret': 'showSidebar',
   },
 
   initialize: function (options) {
@@ -58,7 +58,7 @@ var AppView = Backbone.View.extend({
   render: function () {
     var _this = this;
     this.$el.html($(this.sidebarView.render().el));
-    this.$el.find('.left_side').addClass('sidebar-hidden');
+    this.$el.find('.sidebar').addClass('sidebar-hidden');
     _this.updateFrame();
   },
 
@@ -82,7 +82,7 @@ var AppView = Backbone.View.extend({
       videoTag: this.videoTag,
       userInfo: this.UserInfo,
       dropboxFile: this.dropboxFile,
-      arrowTag: '#videoAnnotations span.left_arrow',
+      arrowTag: '#video-annotation span.caret',
     });
   },
 
@@ -176,7 +176,7 @@ var AppView = Backbone.View.extend({
   },
 
   focusText: function () {
-    this.$el.find('.annotation_text').focus();
+    this.$el.find('.annotation-text').focus();
   },
 
   closeAnnotation: function (e) {
@@ -185,13 +185,13 @@ var AppView = Backbone.View.extend({
   },
 
   showSidebar: _.debounce(function () {
-    var sidebar = this.$el.find('.left_side');
+    var sidebar = this.$el.find('.sidebar');
     if (sidebar.hasClass('sidebar-hidden')) {
       sidebar.removeClass('sidebar-hidden').addClass('sidebar-visible');
-      this.$el.find('.left_arrow').removeClass('fa-caret-left').addClass('fa-caret-right');
+      this.$el.find('.caret').removeClass('fa-caret-left').addClass('fa-caret-right');
     } else {
       sidebar.removeClass('sidebar-visible').addClass('sidebar-hidden');
-      this.$el.find('.left_arrow').removeClass('fa-caret-right').addClass('fa-caret-left');
+      this.$el.find('.caret').removeClass('fa-caret-right').addClass('fa-caret-left');
     }
   }, 20),
 
@@ -283,7 +283,7 @@ var AppView = Backbone.View.extend({
   },
 
   switchExtensionVisibility: function () {
-    var $extension = $('#videoAnnotations');
+    var $extension = $('#video-annotation');
     if ($extension.css('display') === 'none') {
       $extension.css('display', 'block');
     } else {

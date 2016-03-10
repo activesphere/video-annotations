@@ -9,7 +9,7 @@ import AppStorage from 'localStorageUtils.js';
 
 var SidebarView = Backbone.View.extend({
   tagName:'div',
-  className: 'left_side',
+  className: 'sidebar',
   template: function () {
     return $('#sidebar-template').html();
   },
@@ -23,7 +23,7 @@ var SidebarView = Backbone.View.extend({
   },
 
   events: {
-    'keyup input.search_annotations': 'search',
+    'keyup input.search-annotations': 'search',
     'click a.close_annotations': 'hideSidebar',
     'click a.sign_in': 'signIn',
     'click a.sign_out': 'signOut',
@@ -63,7 +63,7 @@ var SidebarView = Backbone.View.extend({
   },
 
   renderList: function () {
-    this.$el.find('.search_annotations').val('');
+    this.$el.find('.search-annotations').val('');
     this.$el.find('ul.annotations').empty();
     this.addAll(this.collection.sort('start_seconds'));
   },
@@ -107,7 +107,7 @@ var SidebarView = Backbone.View.extend({
     var shortName = name && name[0] || 'D';
 
     // jscs: disable
-    this.$el.find('.user_info')
+    this.$el.find('.user-info')
     .html(Mustache.to_html(this.userInfoTemplate(), _.extend(
     this.userInfo.toJSON(), { shortName: shortName })
     ));

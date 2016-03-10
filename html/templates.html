@@ -1,8 +1,8 @@
 <div class='video-annotation-templates'>
   <script type="text/template" id="annotation-template">
     <div class='annotation-detail'>
-      <span class='fa fa-caret-right pull-left icon-title' data-type='auto'></span>
-      <a href='#' class='ml10 seek'>
+      <span class='fa fa-caret-right icon-title' data-type='auto'></span>
+      <a href='#' class='seek'>
         <p class='annotation-title'>{{title}}</p>
       </a>
       {{#end_minutes}}
@@ -38,37 +38,36 @@
   </script>
 
   <script type="text/template" id='new-annotation-template'>
-    <textarea  class='annotation_text' placeholder='Add your Annotation here...'></textarea>
+    <textarea  class='annotation-text' placeholder='Add your Annotation here...'></textarea>
     <div class='clear'></div>
     <div class="flex">
-      <a href='#' class='create button pull-right'><i class="fa fa-plus-square"></i>Add</a>
-      <a href='#' class='cancel button pull-right'><i class="fa fa-minus-square"></i>Cancel</a>
+      <a href='#' class='create button'><i class="fa fa-plus-square"></i>Add</a>
+      <a href='#' class='cancel button'><i class="fa fa-minus-square"></i>Cancel</a>
     </div>
     <span class="chevron">&nbsp;</span>
   </script>
   <script type="text/template" id='annotation-edit-template'>
     <textarea class='edit-annotation-text' rows='5'>{{annotation}}</textarea>
     <div class='clear'></div>
-    <div class='pull-right'>
+    <div>
       <a href='#' class='button update'><i class="fa fa-plus-square"></i>Update</a>
       <a href='#' class='button cancel-update'><i class="fa fa-minus-square"></i>Cancel</a>
     </div>
   </script>
 
   <script type="text/template" id="sidebar-template">
-    <span class='left_arrow fa fa-caret-left'></span>
-    <div class="annotations_list">
-      <div class="user_info"></div>
-      <input type='textfield' class='search_annotations' placeholder='Search'>
+    <span class='caret fa fa-caret-left'></span>
+    <div class="annotations-list">
+      <div class="user-info"></div>
+      <input type='textfield' class='search-annotations' placeholder='Search'>
       <div class='clear'></div>
       <div class='border-line'></div>
       <ul class='annotations'></ul>
     </div>
-    <div style="clear: both"></div>
   </script>
 
   <script type="text/template" id="video-main-template">
-    <div id='videoAnnotations'></div>
+    <div id='video-annotation'></div>
   </script>
 
   <script type="text/template" id="no-annotation-template">

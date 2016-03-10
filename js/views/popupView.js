@@ -7,6 +7,8 @@ import Utils from 'utils.js';
 import UserInfo from 'models/models.js';
 import AppStorage from 'localStorageUtils.js';
 
+import '../../styles/popup.less';
+
 var PopupView = Backbone.View.extend({
   el: 'div#popup',
 

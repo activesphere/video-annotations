@@ -17,7 +17,8 @@ module.exports = {
   resolve: {
     root: [
       path.join(__dirname, "js"),
-      path.join(__dirname, "bower_components")
+      path.join(__dirname, "bower_components"),
+      path.join(__dirname, "styles")
     ]
   },
   "devtool": '#eval-source-map',
@@ -32,15 +33,20 @@ module.exports = {
       loader: 'jshint-loader'
     }],
     loaders: [
-      {
+    {
       test:   /\.js/,
       loader: 'babel',
       include: __dirname + '/js',
       exclude: /node_modules|bower_components/,
       query: {
         presets: ['es2015']
-      }
-    }
+      },
+    },
+    {
+      test: /\.less/,
+      loaders: ['style', 'css', 'less']
+    },
+    { test: /\.(woff(2)?|ttf|eot|svg)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "url-loader?limit=10000000mimetype=application/font-woff" },
     ],
   },
   plugins: [

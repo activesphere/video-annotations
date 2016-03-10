@@ -30,7 +30,6 @@
         "https://www.youtube.com/*",
         "https://www.coursera.org/*"
       ],
-      "css": ["css/app.css", "css/popup.css", "bower_components/font-awesome/css/font-awesome.css"],
       "js": [
         "builds/videoDetection.bundle.js"
       ]

@@ -1,0 +1,334 @@
+@import "../bower_components/font-awesome/less/font-awesome.less";
+
+@font-face {
+  font-family: 'FontAwesome';
+  src: url('../bower_components/font-awesome/fonts/fontawesome-webfont.eot'); src: url('../bower_components/font-awesome/fonts/fontawesome-webfont.eot?#iefix&v=4.5.0') format('embedded-opentype'), url('../bower_components/font-awesome/fonts/fontawesome-webfont.woff2?v=4.5.0') format('woff2'), url('../bower_components/font-awesome/fonts/fontawesome-webfont.woff?v=4.5.0') format('woff'), url('../bower_components/font-awesome/fonts/fontawesome-webfont.ttf?v=4.5.0') format('truetype'), url('../bower_components/font-awesome/fonts/fontawesome-webfont.svg?v=4.5.0#fontawesomeregular') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@color: #888;
+@colorLighter: #ccc;
+
+#video-annotation {
+	font-family: Carlito, Sans-serif;
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
+
+	width: inherit;
+	height: inherit;
+	max-width: inherit;
+	max-height: inherit;
+
+	position: absolute;
+	left: 0;
+	top: 0;
+
+	pointer-events: none;
+
+
+
+	.sidebar {
+		transition: 0.2s;
+
+		position: fixed;
+		width: 404px;
+		z-index: 1001;
+
+		pointer-events: all;
+	}
+
+	.sidebar-hidden {
+		right: -404px;
+	}
+
+	.sidebar-visible {
+		right: 0px;
+	}
+
+	.create-annotation {
+		position: absolute;
+
+		z-index: 1001;
+
+		background-color: #fff;
+
+		padding: 1px;
+		box-sizing: border-box;
+
+		border: 1px solid #ccc;
+		border-bottom: 1px solid #fff;
+		border-radius: 4px;
+
+		pointer-events: all;
+
+		.annotation-text {
+			width: 300px;
+			height: 200px;
+
+			display: block;
+
+			font-size: 13px;
+
+			margin: auto;
+
+			padding: 10px;
+			box-sizing: border-box;
+
+			border: 1px solid #fff;
+			border-bottom: 1px double #ccc;
+
+			resize: none;
+
+			outline: none;
+		}
+	}
+
+	.chevron {
+		position: absolute;
+		top: 100%;
+		left: 50%;
+
+		width: 0;
+		height: 0;
+
+		border-left: 8px solid transparent;
+		border-right: 8px solid transparent;
+		border-top: 8px solid #fff;
+
+		margin-left: -8px;
+	}
+
+	.hide {
+		display: none;
+	}
+
+	.flex {
+		display: flex;
+		flex-wrap: nowrap;
+		justify-content: center;
+
+		padding-top: 10px;
+	}
+
+	.mt5 {
+		margin-top: 5px;
+	}
+
+	.button {
+		display: inline-block;
+		padding: 6px 12px;
+		box-sizing: border-box;
+		margin-bottom: 0;
+		margin-right: 10px;
+		font-size: 14px;
+		font-weight: 400;
+		line-height: 1.42857143;
+		text-align: center;
+		white-space: nowrap;
+		vertical-align: middle;
+		touch-action: manipulation;
+		cursor: pointer;
+		-webkit-user-select: none;
+		border: 1px solid transparent;
+		border-radius: 4px;
+		color: #666;
+		background-color: #fff;
+		border-color: #ccc;
+		width: 85px;
+
+		&:hover {
+			color: #666;
+			background-color: #e6e6e6;
+			border-color: #adadad;
+			text-decoration: none;
+		}
+
+		.fa {
+			padding-right: 5px;
+		}
+	}
+
+	.caret {
+		position: absolute;
+		top: 100px;
+		right: 403px;
+
+		z-index: 1002;
+
+		color: #666;
+		background: #fff;
+
+		font-size: 13px;
+
+		border: 1px solid #ccc;
+		border-right: 0px;
+		border-radius: 10px 0px 0px 10px;
+
+		padding: 10px 8px 10px 10px;
+		box-sizing: border-box;
+
+		cursor: pointer;
+		pointer-events: all;
+	}
+
+	.annotations-list {
+		position: realtive;
+		top: 0;
+
+		display: inline-block;
+
+		width: inherit;
+		height: 500px;
+		min-height: 255px;
+
+		background-color: #fff;
+
+		border: 1px solid #ccc;
+		border-radius: 4px 0px 0px 4px;
+
+		padding: 5px 20px 20px 20px;
+		box-sizing: border-box;
+
+
+		.user-info {
+			float: right;
+
+			text-align: right;
+			font-size: 10px;
+			line-height: 12px;
+
+			p {
+				color: @color;
+
+				font-size: inherit;
+
+				margin: 0;
+			}
+
+			a {
+				color: #167ac6;
+			}
+		}
+
+		.search-annotations {
+			margin-top: 10px;
+
+			height: 36px;
+			width: 100%;
+
+			font-size:13px;
+
+			border: 1px solid #ccc;
+			border-radius: 3px;
+
+			padding-left: 10px;
+			box-sizing: border-box;
+		}
+
+		.border-line {
+			padding: 5px 0px;
+			box-sizing: border-box;
+
+			border-bottom: solid 1px #F1F1F1;
+		}
+
+		.annotations {
+			height: 370px;
+			width: 100%;
+
+			padding: 0;
+
+			overflow-x: hidden;
+			overflow-y: auto;
+
+			.video-annotation {
+				display: inline-block;
+
+				width: 98%;
+
+				font-size: 14px;
+
+				padding: 5px;
+				box-sizing: border-box;
+
+				border-bottom: solid 1px #F1F1F1;
+
+				.annotation-detail {
+					margin-top: 5px;
+
+					display: flex;
+					flex-wrap: nowrap;
+
+					.fa {
+						width: 5%;
+					}
+
+					.icon-title {
+						color: @color;
+					}
+
+					.seek {
+						width: 55%;
+
+						.annotation-title {
+							color: #222C36;
+							text-transform: capitalize;
+						}
+					}
+
+					.label {
+						width: 30%;
+						max-height: 21px;
+
+						color: #333;
+
+						text-align: center;
+
+						margin: 0px 4px 0px 4px;
+					}
+				}
+
+				.annotation-description {
+					margin-top: 10px;
+
+					padding: 10px;
+					box-sizing: border-box;
+
+					border: 1px solid #ccc;
+
+					.span {
+						color: #666;
+
+						line-height: 18px;
+						letter-spacing: 0.7px;
+
+						white-space: pre-wrap;
+					}
+				}
+
+				.edit-annotation-text {
+					width: 98%;
+				}
+			}
+
+			li {
+				&:last-child {
+					border-bottom: none;
+				}
+			}
+		}
+	}
+
+	::-webkit-scrollbar{
+	  width: 5px;
+	}
+
+	::-webkit-scrollbar-track{
+	  background: #eee;
+	}
+
+	::-webkit-scrollbar-thumb{
+	  background: #ccc;
+	}
+}

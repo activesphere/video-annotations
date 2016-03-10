@@ -4,6 +4,8 @@ import $ from 'vendor/jquery.hotkeys.js';
 import AppView from 'views/appView.js';
 import Utils from 'utils.js';
 
+import '../styles/app.less';
+
 $.get(chrome.extension.getURL('/html/templates.html'),
 function (data) {
   $('body').append(data);
@@ -12,7 +14,7 @@ function (data) {
   function checkAndEnableFeature() {
     return function () {
       if ($('video').length > 0) {
-        if (!$('#videoAnnotations')[0]) {
+        if (!$('#video-annotation')[0]) {
           var $video = Utils.getVideoInterface();
           $video.append($('#video-main-template').html());
         }
@@ -20,8 +22,8 @@ function (data) {
         var view = new AppView(appState);
         appState.view = view;
       } else {
-        if ($('#videoAnnotations')[0]) {
-          $('#videoAnnotations').remove();
+        if ($('#video-annotation')[0]) {
+          $('#video-annotation').remove();
         }
       }
     };

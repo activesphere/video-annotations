@@ -14,7 +14,7 @@ var NewAnnotationView = Backbone.View.extend({
   },
 
   events: {
-    'keyup textarea.annotation_text': 'createByEvent',
+    'keyup textarea.annotation-text': 'createByEvent',
     'click a.create': 'createByClick',
     'click a.cancel': 'cancel',
   },
@@ -83,8 +83,8 @@ var NewAnnotationView = Backbone.View.extend({
   },
 
   bindEvents: function () {
-    this.$el.find('.annotation_text').bind('keydown', 'esc', this.cancel.bind(this));
-    this.$el.find('.annotation_text').bind('keydown', 'alt+w', this.cancel.bind(this));
+    this.$el.find('.annotation-text').bind('keydown', 'esc', this.cancel.bind(this));
+    this.$el.find('.annotation-text').bind('keydown', 'alt+w', this.cancel.bind(this));
   },
 
   cancel: function (e) {
@@ -99,7 +99,7 @@ var NewAnnotationView = Backbone.View.extend({
   },
 
   updatePosition: function () {
-    if (this.$el.find('textarea.annotation_text')) {
+    if (this.$el.find('textarea.annotation-text')) {
       var position = Utils.getNewAnnotationPosition(this.$el);
 
       this.$el.css({
