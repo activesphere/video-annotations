@@ -54,7 +54,7 @@ var AnnotationView = Backbone.View.extend({
   seek: function (e) {
     e.preventDefault();
     if (this.videoTag) {
-      this.videoTag.currentTime = this.model.get('start_seconds');
+      this.videoTag.setCurrentTime(this.model.get('start_seconds'));
     }
   },
 

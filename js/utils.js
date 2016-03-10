@@ -48,8 +48,7 @@ Utils.getVideoInterface = function () {
         return player.currentTime;
       },
 
-      /* jshint -W078 */
-      set currentTime(time) {
+      setCurrentTime: function (time) {
         player.currentTime = time;
       },
 
