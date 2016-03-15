@@ -31,10 +31,11 @@ var NewAnnotationView = Backbone.View.extend({
 
   render: function () {
     this.$el.html(this.template());
-    this.bindEvents();
     this.$el.css('width', '310px');
     this.$el.css('height', '261px');
     this.updatePosition();
+    this.unbindEvents();
+    this.bindEvents();
     return this;
   },
 
@@ -78,19 +79,20 @@ var NewAnnotationView = Backbone.View.extend({
     this.videoFrame.set('start_seconds', this.start_seconds);
     // jscs: enable
     this.videoTag.play();
-    this.$el.attr({ style: 'right: 0px;top: 0px' });
     this.clear();
   },
 
   bindEvents: function () {
     this.$el.find('.annotation-text').bind('keydown', 'esc', this.cancel.bind(this));
-    this.$el.find('.annotation-text').bind('keydown', 'alt+w', this.cancel.bind(this));
+  },
+
+  unbindEvents: function () {
+    this.$el.find('.annotation-text').unbind('keydown', 'esc', this.cancel.bind(this));
   },
 
   cancel: function (e) {
     e.preventDefault();
     this.videoTag.play();
-    this.$el.attr({ style: 'right: 0px;top: 0px' });
     this.clear();
   },
 
