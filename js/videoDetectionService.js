@@ -20,14 +20,11 @@ function (data) {
           $video.append($('#video-main-template').html());
         }
 
-        if (app) {
-          app.render();
-        } else {
+        if (!app) {
           app = new AppView();
-          app.render(videokey);
         }
 
-        app.render();
+        app.render(videokey);
       } else {
         if ($('#video-annotation')[0]) {
           $('#video-annotation').remove();
