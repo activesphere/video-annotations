@@ -19,24 +19,25 @@ var AppView = Backbone.View.extend({
     'click span.caret': 'showSidebar',
   },
 
-  initialize: function (options) {
-    var appState = options;
-    this.getVideoKey();
-    if (appState.view && appState.view.videoKey === this.videoKey) {
-      return;
-    }
+  initialize: function () {
 
-    appState.view = this;
     this.dropbox();
     this.registerStorageChange();
+    this.bindEvents();
 
     _.bindAll(this, 'render');
     _.bindAll(this, 'updateFrame');
 
+    this.clear();
+  },
+
+  render: function () {
+    this.getVideoKey();
+
     // jscs: disable
     this.videoFrame = new Frame({ start_seconds: 0 });
-
     // jscs: enable
+
     this.storage = new AppStorage({ name: this.videoKey });
     this.UserInfo = new UserInfo({});
 
@@ -48,18 +49,10 @@ var AppView = Backbone.View.extend({
     this.videoTag = Utils.getVideoInterface();
 
     this.initializeView();
-    this.unbindEvents();
-    this.bindEvents();
-    this.highlight();
-    this.clear();
-    this.render();
-  },
-
-  render: function () {
-    var _this = this;
     this.$el.html($(this.sidebarView.render().el));
     this.$el.find('.sidebar').addClass('sidebar-hidden');
-    _this.updateFrame();
+    this.updateFrame();
+    this.highlight();
   },
 
   initializeView: function () {
@@ -140,10 +133,6 @@ var AppView = Backbone.View.extend({
       self.closeAnnotation(e);
       return false;
     });
-  },
-
-  unbindEvents: function () {
-    $(document).unbind('keydown');
   },
 
   clear: function () {

@@ -9,7 +9,7 @@ import '../styles/app.less';
 $.get(chrome.extension.getURL('/html/templates.html'),
 function (data) {
   $('body').append(data);
-  var appState = {};
+  var app;
 
   function checkAndEnableFeature() {
     return function () {
@@ -19,8 +19,14 @@ function (data) {
           $video.append($('#video-main-template').html());
         }
 
-        var view = new AppView(appState);
-        appState.view = view;
+        if (app) {
+          app.render();
+        } else {
+          app = new AppView();
+          app.render();
+        }
+
+        app.render();
       } else {
         if ($('#video-annotation')[0]) {
           $('#video-annotation').remove();
