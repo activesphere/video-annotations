@@ -31,8 +31,14 @@ var AppView = Backbone.View.extend({
     this.clear();
   },
 
-  render: function () {
+  render: function (options) {
     this.getVideoKey();
+
+    if (options.videoKey && this.videoKey === options.videoKey) {
+      return;
+    }
+
+    options.videoKey = this.videoKey;
 
     // jscs: disable
     this.videoFrame = new Frame({ start_seconds: 0 });

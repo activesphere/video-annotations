@@ -10,6 +10,7 @@ $.get(chrome.extension.getURL('/html/templates.html'),
 function (data) {
   $('body').append(data);
   var app;
+  var videokey = {};
 
   function checkAndEnableFeature() {
     return function () {
@@ -23,7 +24,7 @@ function (data) {
           app.render();
         } else {
           app = new AppView();
-          app.render();
+          app.render(videokey);
         }
 
         app.render();
