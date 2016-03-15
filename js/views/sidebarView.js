@@ -50,12 +50,11 @@ var SidebarView = Backbone.View.extend({
 
     this.userInfo.on('change', this.renderUserInfo);
     this.registerStorageChange();
-    this.closeUrl = chrome.extension.getURL('images/close.png');
   },
 
   render: function () {
     // jscs: disable
-    $(this.el).html(Mustache.to_html(this.template(), { closeUrl: this.closeUrl }));
+    $(this.el).html(Mustache.to_html(this.template()));
     // jscs: enable
     this.renderList();
     this.renderUserInfo();
