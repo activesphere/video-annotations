@@ -15,8 +15,6 @@ var NewAnnotationView = Backbone.View.extend({
 
   events: {
     'keyup textarea.annotation-text': 'createByEvent',
-    'click a.create': 'createByClick',
-    'click a.cancel': 'cancel',
   },
 
   initialize: function (options) {
@@ -106,7 +104,7 @@ var NewAnnotationView = Backbone.View.extend({
 
       this.$el.css({
           right: position.right + 'px',
-          top: position.top + 'px',
+          bottom: position.bottom + 'px',
         });
       this.$el.find('.chevron').css(position.chevronLeft);
     }
