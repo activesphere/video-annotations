@@ -6,6 +6,7 @@ import $ from 'jquery';
 import AnnotationView from 'views/annotationView.js';
 import Utils from 'utils.js';
 import AppStorage from 'localStorageUtils.js';
+import syncingData from 'syncService.js';
 
 var SidebarView = Backbone.View.extend({
   tagName:'div',
@@ -40,16 +41,21 @@ var SidebarView = Backbone.View.extend({
     this.videoTag =  options.videoTag;
     this.userInfo = options.userInfo;
 
-    this.collection.on('reset', this.renderList);
-    this.collection.on('add', this.renderList);
-    this.collection.on('remove', this.renderList);
+    this.eventPromises = syncingData(this.storage, this.dropboxFile, this.collection, true)
+    .then(() => {
+      this.collection.on('reset', this.renderList);
+      this.collection.on('add', this.renderList);
+      this.collection.on('remove', this.renderList);
 
-    this.collection.on('reset', this.syncAnnotations);
-    this.collection.on('add', this.syncAnnotations);
-    this.collection.on('remove', this.syncAnnotations);
+      this.collection.on('reset', this.syncAnnotations);
+      this.collection.on('add', this.syncAnnotations);
+      this.collection.on('remove', this.syncAnnotations);
+      this.collection.on('change', this.syncAnnotations);
 
-    this.userInfo.on('change', this.renderUserInfo);
-    this.registerStorageChange();
+      this.userInfo.on('change', this.renderUserInfo);
+      this.userInfo.on('change', this.syncAnnotations);
+      this.registerStorageChange();
+    });
   },
 
   render: function () {
@@ -62,9 +68,13 @@ var SidebarView = Backbone.View.extend({
   },
 
   renderList: function () {
-    this.$el.find('.search-annotations').val('');
-    this.$el.find('ul.annotations').empty();
-    this.addAll(this.collection.sort('start_seconds'));
+    this.eventPromises.then(() => {
+      syncingData(this.storage, this.dropboxFile, this.collection).then(() => {
+        this.$el.find('.search-annotations').val('');
+        this.$el.find('ul.annotations').empty();
+        this.addAll(this.collection.sort('start_seconds'));
+      });
+    });
   },
 
   addAll: function (models) {
@@ -98,7 +108,7 @@ var SidebarView = Backbone.View.extend({
   },
 
   syncAnnotations: function () {
-    this.collection.saveDropbox();
+    syncingData(this.storage, this.dropboxFile, this.collection);
   },
 
   renderUserInfo: function () {
@@ -151,7 +161,7 @@ var SidebarView = Backbone.View.extend({
         this.userInfo.clear();
       } else {
         this.userInfo.set(userInfo);
-        this.syncAnnotations();
+        syncingData(this.storage, this.dropboxFile, this.collection, true);
       }
 
       this.renderUserInfo();

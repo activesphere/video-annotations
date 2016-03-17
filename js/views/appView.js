@@ -52,7 +52,6 @@ var AppView = Backbone.View.extend({
 
     this.fetchUser();
     this.updateVideoKey();
-    this.syncData();
 
     this.videoFrame.on('change', this.updateFrame);
     this.videoTag = Utils.getVideoInterface();
@@ -85,28 +84,6 @@ var AppView = Backbone.View.extend({
       userInfo: this.UserInfo,
       dropboxFile: this.dropboxFile,
       arrowTag: '#video-annotation span.caret',
-    });
-  },
-
-  fetch: function () {
-    var self = this;
-    self.dropboxFile.read(function (error, annotations) {
-      if (!error) {
-        Annotations.reset(annotations);
-        self.storage.save(Annotations);
-      } else {
-        self.storage.get(function (annotations) {
-          if (annotations) {
-            Annotations.reset(annotations);
-          } else {
-            // if no data present, update collection sliently.
-            Annotations.reset([], { silent: true });
-            self.sidebarView.render();
-          }
-        });
-      }
-
-      self.updateFrame();
     });
   },
 
@@ -273,19 +250,6 @@ var AppView = Backbone.View.extend({
     this.dropboxFile = new DropboxFile({
       dropboxObj: dropboxChrome,
       name: this.videoKey,
-    });
-  },
-
-  syncData: function () {
-    var self = this;
-    self.storage.get(function (annotations) {
-      if (!_.isEmpty(annotations)) {
-        self.dropboxFile.write(annotations, function () {
-          self.fetch();
-        });
-      } else {
-        self.fetch();
-      }
     });
   },
 

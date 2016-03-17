@@ -68,8 +68,6 @@ var AnnotationView = Backbone.View.extend({
     e.preventDefault();
     var annotation = this.$el.find('textarea')[0].value;
     this.model.set(Utils.splitAnnotation(annotation));
-    Annotations.add([this.model], { merge: true, silent: true });
-    Annotations.saveDropbox();
     this.$el.find('.edit-annotation').hide();
     this.$el.find('.annotation-detail').show();
   },

@@ -1,14 +1,8 @@
-import _ from 'lodash';
-
 function AppStorage(options) {
   this.name = options.name;
 }
 
-AppStorage.prototype.save = function (collection) {
-  var jsonData = [];
-  var models = collection.models;
-  jsonData = _.map(models, function (model) { return model.toJSON(); });
-
+AppStorage.prototype.save = function (jsonData) {
   this.set(jsonData, function () {});
 };
 

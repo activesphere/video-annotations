@@ -30,14 +30,14 @@ DropboxFile.prototype.read = function (callback) {
       client.readFile(_this.name + '.json', function (error, data) {
         if (error) {
           if (error.status === 404) {
-            callback(true, {});
+            callback(error, []);
           }
         } else {
           callback(false, JSON.parse(data));
         }
       });
     } else {
-      callback(true, {});
+      callback({ status: 403 }, []);
     }
   });
 };

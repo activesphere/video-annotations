@@ -27,16 +27,7 @@ var Annotations = Backbone.Collection.extend({
     });
 
     return models;
-  },
-
-  saveDropbox: function () {
-    if (this.storage && this.dropboxFile) {
-      this.storage.save(this.models);
-      var jsonData = _.map(this.models, function (model) { return model.toJSON();});
-
-      this.dropboxFile.write(jsonData);
-    }
-  },
+  }
 });
 
 export default new Annotations();

@@ -68,7 +68,8 @@ module.exports = {
       document: false,
       btoa: false,
       setInterval: false,
-      MutationObserver: false
+      MutationObserver: false,
+      console: false
     },
     esnext: true,
     strict: false,
