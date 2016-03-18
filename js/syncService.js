@@ -67,7 +67,10 @@ var syncingData = function (localStorage, dropboxFile, collection, initialSync) 
   return Promise.all([readingDropbox(dropboxFile), readingStorage(localStorage)]).then((data) => {
     return merge(data, _.map(collection.models, (model) => model.toJSON()), initialSync);
   }).then((jsonData) => {
-    collection.set(jsonData, { merge: true, silent: true });
+    if (initialSync) {
+      collection.set(jsonData, { silent: true });
+    }
+
     localStorage.save(jsonData);
     dropboxFile.write(jsonData);
   }).catch((err) => {
