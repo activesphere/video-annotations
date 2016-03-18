@@ -65,6 +65,7 @@ var AnnotationView = Backbone.View.extend({
     this.model.set(Utils.splitAnnotation(annotation));
     this.$el.find('.edit-annotation').hide();
     this.$el.find('.annotation-detail').show();
+    this.setCaretRight();
   },
 
   delete: function (e) {
@@ -77,8 +78,12 @@ var AnnotationView = Backbone.View.extend({
   },
 
   edit: function (e) {
+    this.setCaretDown();
     e.preventDefault();
-    this.$el.find('.annotation-detail').hide();
+    if (!_.isEmpty(this.$el.find('.annotation-description'))) {
+      this.$el.find('.annotation-description').hide();
+    }
+
     this.$el.find('.edit-annotation').show();
     this.renderEdit(this.model.get('annotation'));
     this.$el.find('.edit-annotation .edit-annotation-text').focus();
@@ -88,20 +93,29 @@ var AnnotationView = Backbone.View.extend({
     e.preventDefault();
     this.$el.find('.edit-annotation').hide();
     this.$el.find('.annotation-detail').show();
+    this.setCaretRight();
   },
 
   changeIcon: function (e) {
     if ($(e.target).hasClass('fa fa-caret-right')) {
       //Set type to manual to aviod window close automatally when video playing
       $(e.target).data('type', 'manual');
-      $(e.target).removeClass('fa fa-caret-right').addClass('fa fa-caret-down');
+      this.setCaretDown();
       this.$el.find('.annotation-description').show();
     } else {
       $(e.target).data('type', 'auto');
-      $(e.target).removeClass('fa fa-caret-down').addClass('fa fa-caret-right');
+      this.setCaretRight();
       this.$el.find('.annotation-description').hide();
     }
   },
+
+  setCaretRight: function () {
+    this.$el.find('.icon-title').removeClass('fa fa-caret-down').addClass('fa fa-caret-right');
+  },
+
+  setCaretDown: function () {
+    this.$el.find('.icon-title').removeClass('fa fa-caret-right').addClass('fa fa-caret-down');
+  }
 });
 
 export default AnnotationView;
