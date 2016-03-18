@@ -7,7 +7,11 @@ Utils.minuteSeconds = function (time) {
   if (time !== null) {
     var minutes = Math.floor(time / 60);
     var seconds = Math.floor(time - (minutes * 60));
-    time = minutes + '.' + seconds;
+    if (minutes) {
+      time = minutes + 'm ' + seconds + 's';
+    } else {
+      time = seconds + 's';
+    }
   }
 
   return time;
