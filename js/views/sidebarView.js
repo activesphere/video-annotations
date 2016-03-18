@@ -68,11 +68,9 @@ var SidebarView = Backbone.View.extend({
 
   renderList: function () {
     this.eventPromises.then(() => {
-      syncingData(this.storage, this.dropboxFile, this.collection).then(() => {
-        this.$el.find('.search-annotations').val('');
-        this.$el.find('ul.annotations').empty();
-        this.addAll(this.collection.sort('start_seconds'));
-      });
+      this.$el.find('.search-annotations').val('');
+      this.$el.find('ul.annotations').empty();
+      this.addAll(this.collection.sort('start_seconds'));
     });
   },
 
