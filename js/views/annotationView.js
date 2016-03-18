@@ -26,8 +26,6 @@ var AnnotationView = Backbone.View.extend({
   },
 
   render: function () {
-    var editUrl = chrome.extension.getURL('images/edit.png');
-    var deleteUrl = chrome.extension.getURL('images/delete.png');
     this.secondsToMinutes('start_minutes', 'start_seconds');
     this.secondsToMinutes('end_minutes', 'end_seconds');
 
@@ -35,10 +33,7 @@ var AnnotationView = Backbone.View.extend({
     $(this.el)
     .html(Mustache.to_html($(this.template).html(), _.extend(
     // jscs:  enable
-      this.model.toJSON(),
-      { editUrl: editUrl },
-      { deleteUrl: deleteUrl })
-    ));
+      this.model.toJSON())));
     $(this.el).addClass(this.model.get('id') + '');
     return this;
   },

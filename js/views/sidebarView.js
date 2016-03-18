@@ -80,9 +80,8 @@ var SidebarView = Backbone.View.extend({
       _.each(models, function (annotation) { self.addOne(annotation); });
     } else {
       // jscs: disable
-      this.$el.find('ul.annotations').html(Mustache.to_html(this.noAnnotationTemplate(),
+      this.$el.find('ul.annotations').html(Mustache.to_html(this.noAnnotationTemplate()));
       // jscs: enable
-        { closeUrl: this.closeUrl }));
     }
   },
 
