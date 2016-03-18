@@ -60,7 +60,6 @@ var AppView = Backbone.View.extend({
     this.$el.html($(this.sidebarView.render().el));
     this.$el.find('.sidebar').addClass('sidebar-hidden');
     this.updateFrame();
-    this.highlight();
   },
 
   initializeView: function () {
@@ -272,15 +271,6 @@ var AppView = Backbone.View.extend({
         self.UserInfo.set(userInfo);
       }
     });
-  },
-
-  highlight: function () {
-    var self = this;
-
-    setInterval(function () {
-        self.sidebarView.highlight();
-      }, 1000);
-
   },
 
   registerStorageChange: function () { //when changes happen in storage, this get trigger

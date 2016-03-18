@@ -120,37 +120,6 @@ var SidebarView = Backbone.View.extend({
     // jscs: enable
   },
 
-  highlight: function () {
-    var self = this;
-    if (!self.videoTag.paused  && !_.isEmpty(self.collection.models)) {
-      var currentSeconds = parseInt(self.videoTag.getCurrentTime());
-      _.each($(self.$el).find('li'), function ($li) {
-        //Check if type auto and window opened
-        if (($($li).find('span.icon-title').hasClass('fa fa-caret-down') &&
-          $($li).find('span.icon-title').data('type') === 'auto' &&
-          $($li).find('div.annotation-description').css('display') === 'block')) {
-
-          $($li).find('span.icon-title')
-            .removeClass('fa fa-caret-down')
-            .addClass('fa fa-caret-right');
-          $($li).find('.annotation-description').hide();
-        }
-      });
-
-      _.each(self.collection.models, function (model) {
-        if ((model.get('end_seconds') !== null &&
-          currentSeconds >= model.get('start_seconds') &&
-          currentSeconds <= model.get('end_seconds')) ||
-          model.get('start_seconds') === currentSeconds) {
-          self.$el.find('li.' + model.get('id') + ' .icon-title')
-            .removeClass('fa fa-caret-right')
-            .addClass('fa fa-caret-down');
-          self.$el.find('li.' + model.get('id') + ' .annotation-description').show();
-        }
-      });
-    }
-  },
-
   fetchUser: function () {
     var userStorage = new AppStorage({ name: Utils.userInfo });
     userStorage.get((userInfo) => {
