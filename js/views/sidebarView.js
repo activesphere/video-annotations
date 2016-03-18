@@ -51,11 +51,10 @@ var SidebarView = Backbone.View.extend({
       this.collection.on('add', this.syncAnnotations);
       this.collection.on('remove', this.syncAnnotations);
       this.collection.on('change', this.syncAnnotations);
-
-      this.userInfo.on('change', this.renderUserInfo);
-      this.userInfo.on('change', this.syncAnnotations);
-      this.registerStorageChange();
     });
+
+    this.userInfo.on('change', this.renderUserInfo);
+    this.registerStorageChange();
   },
 
   render: function () {
