@@ -136,7 +136,7 @@ var AppView = Backbone.View.extend({
 
   quickAnnotation: function () {
     this.videoTag.pause();
-    this.newAnnotationView.thatSeconds = true;
+    this.newAnnotationView.isQuickAnnotation = true;
     this.$el.append(this.newAnnotationView.render().el);
     this.focusText();
   },

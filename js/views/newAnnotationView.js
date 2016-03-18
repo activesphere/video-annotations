@@ -22,7 +22,7 @@ var NewAnnotationView = Backbone.View.extend({
     // jscs: disable
     this.start_seconds = 0;//second
     // jscs: enable
-    this.thatSeconds = false;
+    this.isQuickAnnotation = false;
     this.videoTag = options.videoTag;
     this.resize();
   },
@@ -60,11 +60,10 @@ var NewAnnotationView = Backbone.View.extend({
       end_seconds: end_seconds,
     }, Utils.splitAnnotation(value));
 
-    // TODO: what does thatSeconds mean
-    if (this.thatSeconds) {
+    if (this.isQuickAnnotation) {
       annotationObj.start_seconds = end_seconds;
       annotationObj.end_seconds = null;
-      this.thatSeconds = false;
+      this.isQuickAnnotation = false;
     } else {
       this.start_seconds = end_seconds;
       // jscs: enable
