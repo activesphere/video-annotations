@@ -61,7 +61,6 @@
 		box-sizing: border-box;
 
 		border: 1px solid #ccc;
-		border-bottom: 1px solid #fff;
 		border-radius: 4px;
 
 		pointer-events: all;
@@ -91,16 +90,15 @@
 	.chevron {
 		position: absolute;
 		top: 100%;
-		left: 50%;
 
 		width: 0;
 		height: 0;
 
-		border-left: 8px solid transparent;
-		border-right: 8px solid transparent;
-		border-top: 8px solid #fff;
+		border-left: 2px solid transparent;
+		border-right: 2px solid transparent;
+		border-top: 2px solid grey;
 
-		margin-left: -8px;
+		margin-right: -2px;
 	}
 
 	.hide {
@@ -124,21 +122,48 @@
 
 		z-index: 999;
 
-		color: #167ac6;
+		color: grey;
 
 		pointer-events: all;
 
 		div {
 			color: #fff;
-			background-color: #167ac6;
+			background-color: grey;
 			width: fit-content;
 			padding: 2px;
+			box-sizing: border-box;
+		}
+		.end-marker {
+			z-index: 998;
+
+			position: absolute;
+			background-color: transparent;
+
+			.chevron {
+				float: right;
+			}
+		}
+
+		.start-marker {
+			position: absolute;
+
+			height: 24px;
+
+			.chevron {
+				float: left;
+			}
+		}
+
+		.end-time {
+			float: right;
 		}
 
 		.duration-marker {
-			display: none;
 			height: 1px;
-			background-color: #167ac6;
+			background-color: grey;
+			text-align: right;
+			clear: both;
+			width: inherit;
 		}
 	}
 

@@ -44,8 +44,8 @@
       <a href='#' class='create button'><i class="fa fa-plus-square"></i>Add</a>
       <a href='#' class='cancel button'><i class="fa fa-minus-square"></i>Cancel</a>
     </div>
-    <span class="chevron">&nbsp;</span>
   </script>
+
   <script type="text/template" id='annotation-edit-template'>
     <textarea class='edit-annotation-text' rows='5'>{{annotation}}</textarea>
     <div class='clear'></div>
@@ -66,11 +66,23 @@
     </div>
   </script>
 
-  <script type="text/template" id="annotation-marker-template">
-    <div class="annotation-marker">
-      <div class="hint">Annotation start time</div>
-      <div class="start-time">{{minutes}}:{{seconds}}</div>
-      <div class="duration-marker"></div>
+  <script type="text/template" id="annotation-start-marker-template">
+    <div class="annotation-marker start-marker">
+      <div class="start-time" title="annotation start time">
+        {{startTime.minutes}}m:{{startTime.seconds}}s
+      </div>
+    <span class="chevron">&nbsp;</span>
+    </div>
+  </script>
+
+  <script type="text/template" id="annotation-end-marker-template">
+    <div class="annotation-marker end-marker">
+        <div class="end-time" title="annotation end time">
+            {{endTime.minutes}}m:{{endTime.seconds}}s
+        </div>
+      <div class="duration-marker">
+        <span class="chevron">&nbsp;</span>
+      </div>
     </div>
   </script>
 

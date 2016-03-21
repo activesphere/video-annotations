@@ -1,5 +1,6 @@
 import Backbone from 'backbone';
 import _ from 'lodash';
+import Mustache from 'mustache.js';
 import $ from 'vendor/jquery.hotkeys.js';
 
 import Utils from 'utils.js';
@@ -101,19 +102,77 @@ var NewAnnotationView = Backbone.View.extend({
     if (this.$el.find('textarea.annotation-text')) {
       var position = Utils.getNewAnnotationPosition(this.$el);
 
+      var heightOfMarker = 24;
       this.$el.css({
           right: position.right + 'px',
-          bottom: position.bottom + 'px',
+          bottom: position.bottom + heightOfMarker + 'px',
         });
-      this.$el.find('.chevron').css(position.chevronLeft);
     }
   },
 
   resize: function () {
-    var self = this;
-    $(window).bind('resize', function () {
-      self.updatePosition();
+    $(window).bind('resize', () => {
+      this.updatePosition();
+      this.renderStartMarker();
+      this.renderEndMarker();
     });
+  },
+
+  renderStartMarker: function () {
+    // jscs: disable
+    $('#video-annotation').append(Mustache.to_html($('#annotation-start-marker-template').html(),
+      {startTime: this.getTime(this.start_seconds) }));
+    // jscs: enable
+
+    var marker = $('#video-annotation').find('.start-marker');
+
+    function onEnter() {
+      $('.annotation-marker').css('opacity', '100');
+    }
+
+    function onLeave() {
+      $('.annotation-marker').css('opacity', '0');
+    }
+
+    marker.hover(onEnter, onLeave);
+
+    var position = Utils.getNewAnnotationPosition(marker);
+    marker.css({ opacity: '100', bottom: position.bottom + 'px',
+      left: this.videoTag.getSeekerPosition() + 'px' });
+    marker.fadeTo(2000, 0);
+  },
+
+  renderEndMarker: function () {
+    // jscs: disable
+    $('#video-annotation').append(Mustache.to_html($('#annotation-end-marker-template').html(),
+      { startTime: this.getTime(this.start_seconds),
+        endTime: this.getTime(this.videoTag.getCurrentTime()) }));
+
+    var marker = $('#video-annotation').find('.end-marker');
+
+    var annotationDuration = this.videoTag.getCurrentTime() - this.start_seconds;
+    var width = annotationDuration * this.videoTag.getPixelsPerSecond();
+    marker.css({ width: width + 'px' });
+
+    var position = Utils.getNewAnnotationPosition(marker);
+
+    marker.css({ opacity: '100', bottom: position.bottom + 'px',
+      left: this.videoTag.getSeekerPosition(this.start_seconds) + 'px' });
+    // jscs: enable
+    $('#video-annotation').find('.annotation-marker').unbind();
+    $('#video-annotation').find('.annotation-marker').css('opacity', '100');
+  },
+
+  getTime: function (totalSeconds) {
+    var minutes = Math.floor(totalSeconds / 60);
+    var seconds = Math.floor(totalSeconds % 60);
+    return { minutes: minutes, seconds: seconds };
+  },
+
+  removeAnnotationMarker: function () {
+    if (!_.isEmpty($('#video-annotation').find('.annotation-marker'))) {
+      $('#video-annotation').find('.annotation-marker').remove();
+    }
   },
 });
 

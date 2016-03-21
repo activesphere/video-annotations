@@ -2,7 +2,6 @@ import Backbone from 'backbone';
 import _ from 'lodash';
 import $ from 'vendor/jquery.hotkeys.js';
 import Dropbox from 'dropbox_chrome.js';
-import Mustache from 'mustache.js';
 
 import Utils from 'utils.js';
 import DropboxFile from 'dropboxUtils.js';
@@ -121,12 +120,12 @@ var AppView = Backbone.View.extend({
   createAnnotation: function () {
     this.videoTag.pause();
     this.$el.append(this.newAnnotationView.render().el);
-    this.expandAnnotationMarker();
+    this.newAnnotationView.renderEndMarker();
     this.focusText();
   },
 
   changeframe: function () {
-    this.renderAnnotationMarker();
+    this.newAnnotationView.renderStartMarker();
 
     // jscs: disable
     this.newAnnotationView.start_seconds = parseInt(this.videoTag.getCurrentTime());
@@ -147,65 +146,20 @@ var AppView = Backbone.View.extend({
 
   closeAnnotation: function (e) {
     this.newAnnotationView.cancel(e);
-    this.removeAnnotationMarker();
+    this.newAnnotationView.removeAnnotationMarker();
     this.videoTag.play();
   },
 
   createByClick: function (e) {
     this.newAnnotationView.createByClick(e);
-    this.removeAnnotationMarker();
+    this.newAnnotationView.removeAnnotationMarker();
     return false;
   },
 
   cancel: function (e) {
     this.newAnnotationView.cancel(e);
-    this.removeAnnotationMarker();
+    this.newAnnotationView.removeAnnotationMarker();
     return false;
-  },
-
-  renderAnnotationMarker: function () {
-
-    var getStartTime = () => {
-      var totalSeconds = this.videoTag.getCurrentTime();
-      var minutes = Math.floor(totalSeconds / 60);
-      var seconds = Math.floor(totalSeconds % 60);
-      return { minutes: minutes, seconds: seconds };
-    };
-
-    if (_.isEmpty(this.$el.find('.annotation-marker'))) {
-      // jscs: disable
-      this.$el.append(Mustache.to_html($('#annotation-marker-template').html(), getStartTime()));
-      // jscs: enable
-    }
-
-    var videoTag  = this.videoTag;
-    var marker = this.$el.find('.annotation-marker');
-    function onEnter() {
-      $('.annotation-marker').css('opacity', '100');
-    }
-
-    function onLeave() {
-      $('.annotation-marker').css('opacity', '0');
-    }
-
-    marker.hover(onEnter, onLeave);
-
-    marker.css({ opacity: '100', bottom: videoTag.getControlsHeight() + 'px',
-      left: videoTag.getSeekerPosition() + 'px' });
-    marker.fadeTo(2000, 0);
-  },
-
-  expandAnnotationMarker: function () {
-    var durationMarker = this.$el.find('.duration-marker');
-    var annotationDuration = this.videoTag.getCurrentTime() - this.videoFrame.get('start_seconds');
-    var width = annotationDuration * this.videoTag.getPixelsPerSecond();
-    durationMarker.css({ width: width + 'px', display: 'block' });
-    this.$el.find('.annotation-marker').unbind();
-    this.$el.find('.annotation-marker').css('opacity', '100');
-  },
-
-  removeAnnotationMarker: function () {
-    this.$el.find('.annotation-marker').remove();
   },
 
   showSidebar: function () {

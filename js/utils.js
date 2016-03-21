@@ -90,8 +90,13 @@ Utils.getVideoInterface = function () {
         return (container.width() - provider.paddingForSeeker * 2) / player.duration;
       },
 
-      getSeekerPosition: function () {
-        return provider.paddingForSeeker + player.currentTime * this.getPixelsPerSecond();
+      getSeekerPosition: function (time) {
+        if (!time) {
+          return provider.paddingForSeeker +
+            parseInt(player.currentTime) * this.getPixelsPerSecond();
+        }
+
+        return provider.paddingForSeeker + time * this.getPixelsPerSecond();
       }
     };
     _.extend(container, videoMethodsObject);
