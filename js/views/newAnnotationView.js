@@ -15,7 +15,7 @@ var NewAnnotationView = Backbone.View.extend({
   },
 
   events: {
-    'keyup textarea.annotation-text': 'createByEvent',
+    'keyup textarea.editor': 'createByEvent',
   },
 
   initialize: function (options) {
@@ -30,8 +30,6 @@ var NewAnnotationView = Backbone.View.extend({
 
   render: function () {
     this.$el.html(this.template());
-    this.$el.css('width', '310px');
-    this.$el.css('height', '261px');
     this.updatePosition();
     this.unbindEvents();
     this.bindEvents();
@@ -100,12 +98,9 @@ var NewAnnotationView = Backbone.View.extend({
 
   updatePosition: function () {
     if (this.$el.find('textarea.annotation-text')) {
-      var position = Utils.getNewAnnotationPosition(this.$el);
-
-      var heightOfMarker = 24;
       this.$el.css({
-          right: position.right + 'px',
-          bottom: position.bottom + heightOfMarker + 'px',
+          right: '5px',
+          top:  '5px',
         });
     }
   },

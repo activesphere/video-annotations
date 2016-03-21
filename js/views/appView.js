@@ -2,6 +2,7 @@ import Backbone from 'backbone';
 import _ from 'lodash';
 import $ from 'vendor/jquery.hotkeys.js';
 import Dropbox from 'dropbox_chrome.js';
+import SimpleMDE from 'vendor/simplemde.min.js';
 
 import Utils from 'utils.js';
 import DropboxFile from 'dropboxUtils.js';
@@ -121,7 +122,10 @@ var AppView = Backbone.View.extend({
     this.videoTag.pause();
     this.$el.append(this.newAnnotationView.render().el);
     this.newAnnotationView.renderEndMarker();
-    this.focusText();
+    this.editor = new SimpleMDE({ element: document.getElementById('editor'),
+      autofocus: true,
+      placeholder: 'Enter your Annotation here..'
+    });
   },
 
   changeframe: function () {
@@ -137,11 +141,10 @@ var AppView = Backbone.View.extend({
     this.videoTag.pause();
     this.newAnnotationView.isQuickAnnotation = true;
     this.$el.append(this.newAnnotationView.render().el);
-    this.focusText();
-  },
-
-  focusText: function () {
-    this.$el.find('.annotation-text').focus();
+    this.editor = new SimpleMDE({ element: document.getElementById('editor'),
+      autofocus: true,
+      placeholder: 'Enter your Annotation here..'
+    });
   },
 
   closeAnnotation: function (e) {
@@ -150,8 +153,9 @@ var AppView = Backbone.View.extend({
     this.videoTag.play();
   },
 
-  createByClick: function (e) {
-    this.newAnnotationView.createByClick(e);
+  createByClick: function () {
+    var value = this.editor ? this.editor.value() : '';
+    this.newAnnotationView.createAnnotation(value);
     this.newAnnotationView.removeAnnotationMarker();
     return false;
   },
