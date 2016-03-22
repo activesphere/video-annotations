@@ -28,6 +28,13 @@ var AppView = Backbone.View.extend({
     this.registerStorageChange();
     this.bindEvents();
 
+    this.UserInfo = new UserInfo({});
+    this.fetchUser();
+
+    this.getVideoKey();
+    this.storage = new AppStorage({ name: this.videoKey });
+    this.dropbox();
+
     _.bindAll(this, 'render');
     _.bindAll(this, 'updateFrame');
 
@@ -47,10 +54,6 @@ var AppView = Backbone.View.extend({
     this.videoFrame = new Frame({ start_seconds: 0 });
     // jscs: enable
 
-    this.storage = new AppStorage({ name: this.videoKey });
-    this.UserInfo = new UserInfo({});
-
-    this.fetchUser();
     this.updateVideoKey();
 
     this.videoFrame.on('change', this.updateFrame);
@@ -76,6 +79,7 @@ var AppView = Backbone.View.extend({
 
     this.newAnnotationView.videoFrame = this.videoFrame;
 
+    Annotations.reset(null, { silent: true });
     this.sidebarView = new SidebarView({
       collection: Annotations,
       storage: this.storage,

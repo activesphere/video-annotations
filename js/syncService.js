@@ -25,12 +25,7 @@ var readingDropbox = function (dropboxFile) {
   return promisify(dropboxFile.read.bind(dropboxFile))
   .catch((error) => {
     console.error(error);
-    if (error.status === 404) {
-      // Create file for the first time
-      dropboxFile.write([], () => syncingData);
-    } else if (error.status === 403) {
-      return [];
-    }
+    return [];
   });
 };
 
@@ -40,12 +35,16 @@ var readingStorage = function (localStorage) {
 
 // Exported for testing
 export function merge(sources, local, initialSync) {
+  var storageData = _.cloneDeep(sources[1]);
+  var dropboxData = sources[0];
+
+  if (_.isEmpty(local) && _.isEmpty(storageData) && _.isEmpty(dropboxData)) {
+    throw Error('No annotations on this video to sync');
+  }
+
   if (!initialSync) {
     return local;
   }
-
-  var dropboxData = sources[0];
-  var storageData = _.cloneDeep(sources[1]);
 
   if (_.isEmpty(storageData)) {
     return dropboxData;
