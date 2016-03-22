@@ -135,8 +135,12 @@ var NewAnnotationView = Backbone.View.extend({
     marker.hover(onEnter, onLeave);
 
     var position = Utils.getNewAnnotationPosition(marker);
+
+    // jscs: disable
     marker.css({ bottom: position.bottom + 'px',
-      left: this.videoTag.getSeekerPosition(this.start_seconds) + 'px' });
+      left: this.videoTag.getSeekerPosition(this.start_seconds) + 'px',
+      'z-index': '1000' });
+    // jscs: enable
     if (updatePosition) {
       return;
     }
