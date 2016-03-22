@@ -91,7 +91,7 @@ Utils.getVideoInterface = function () {
       },
 
       getSeekerPosition: function (time) {
-        if (!time) {
+        if (typeof time === 'undefined') {
           return provider.paddingForSeeker +
             parseInt(player.currentTime) * this.getPixelsPerSecond();
         }

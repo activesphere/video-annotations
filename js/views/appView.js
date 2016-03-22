@@ -133,11 +133,11 @@ var AppView = Backbone.View.extend({
   },
 
   changeframe: function () {
-    this.newAnnotationView.renderStartMarker();
 
     // jscs: disable
     this.newAnnotationView.start_seconds = parseInt(this.videoTag.getCurrentTime());
     this.videoFrame.set('start_seconds', this.newAnnotationView.start_seconds);
+    this.newAnnotationView.renderStartMarker();
     // jscs: enable
   },
 
