@@ -109,13 +109,14 @@ var NewAnnotationView = Backbone.View.extend({
     $(window).bind('resize', () => {
       this.updatePosition();
       if ($('#video-annotation').find('.annotation-marker')[0]) {
-        this.renderStartMarker();
+        this.removeAnnotationMarker();
+        this.renderStartMarker(true);
         this.renderEndMarker();
       }
     });
   },
 
-  renderStartMarker: function () {
+  renderStartMarker: function (updatePosition) {
     // jscs: disable
     $('#video-annotation').append(Mustache.to_html($('#annotation-start-marker-template').html(),
       {startTime: this.getTime(this.start_seconds) }));
@@ -134,8 +135,12 @@ var NewAnnotationView = Backbone.View.extend({
     marker.hover(onEnter, onLeave);
 
     var position = Utils.getNewAnnotationPosition(marker);
-    marker.css({ opacity: '100', bottom: position.bottom + 'px',
-      left: this.videoTag.getSeekerPosition() + 'px' });
+    marker.css({ bottom: position.bottom + 'px',
+      left: this.videoTag.getSeekerPosition(this.start_seconds) + 'px' });
+    if (updatePosition) {
+      return;
+    }
+
     marker.fadeTo(2000, 0);
   },
 
@@ -153,7 +158,7 @@ var NewAnnotationView = Backbone.View.extend({
 
     var position = Utils.getNewAnnotationPosition(marker);
 
-    marker.css({ opacity: '100', bottom: position.bottom + 'px',
+    marker.css({ bottom: position.bottom + 'px',
       left: this.videoTag.getSeekerPosition(this.start_seconds) + 'px' });
     // jscs: enable
     $('#video-annotation').find('.annotation-marker').unbind();
