@@ -97,7 +97,7 @@ var NewAnnotationView = Backbone.View.extend({
   },
 
   updatePosition: function () {
-    if (this.$el.find('textarea.annotation-text')) {
+    if (this.$el.find('textarea.annotation-text')[0]) {
       this.$el.css({
           right: '5px',
           top:  '5px',
@@ -108,8 +108,10 @@ var NewAnnotationView = Backbone.View.extend({
   resize: function () {
     $(window).bind('resize', () => {
       this.updatePosition();
-      this.renderStartMarker();
-      this.renderEndMarker();
+      if ($('#video-annotation').find('.annotation-marker')[0]) {
+        this.renderStartMarker();
+        this.renderEndMarker();
+      }
     });
   },
 
