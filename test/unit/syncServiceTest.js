@@ -36,6 +36,8 @@ describe('syncService', function() {
 
   it('should return local collection if not initial sync', function () {
     var local =[{id: 1, data: 'foo'}];
-    assert.deepEqual(merge(null, local, false), local);
+    var sources = [undefined, null];
+
+    assert.deepEqual(merge(sources, local, false), local);
   });
 });
