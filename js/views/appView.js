@@ -24,7 +24,6 @@ var AppView = Backbone.View.extend({
 
   initialize: function () {
 
-    this.dropbox();
     this.registerStorageChange();
     this.bindEvents();
 
