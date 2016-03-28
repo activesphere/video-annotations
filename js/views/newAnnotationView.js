@@ -87,7 +87,10 @@ var NewAnnotationView = Backbone.View.extend({
   },
 
   cancel: function (e) {
-    e.preventDefault();
+    if (typeof e !== 'undefined') {
+      e.preventDefault();
+    }
+
     this.videoTag.play();
     this.clear();
   },

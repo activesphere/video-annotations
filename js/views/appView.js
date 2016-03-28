@@ -125,10 +125,7 @@ var AppView = Backbone.View.extend({
     this.videoTag.pause();
     this.$el.append(this.newAnnotationView.render().el);
     this.newAnnotationView.renderEndMarker();
-    this.editor = new SimpleMDE({ element: document.getElementById('editor'),
-      autofocus: true,
-      placeholder: 'Enter your Annotation here..'
-    });
+    this.createEditor();
   },
 
   changeframe: function () {
@@ -144,10 +141,7 @@ var AppView = Backbone.View.extend({
     this.videoTag.pause();
     this.newAnnotationView.isQuickAnnotation = true;
     this.$el.append(this.newAnnotationView.render().el);
-    this.editor = new SimpleMDE({ element: document.getElementById('editor'),
-      autofocus: true,
-      placeholder: 'Enter your Annotation here..'
-    });
+    this.createEditor();
   },
 
   closeAnnotation: function (e) {
@@ -167,6 +161,22 @@ var AppView = Backbone.View.extend({
     this.newAnnotationView.cancel(e);
     this.newAnnotationView.removeAnnotationMarker();
     return false;
+  },
+
+  createEditor: function () {
+    this.editor = new SimpleMDE({ element: document.getElementById('editor'),
+      autofocus: true,
+      placeholder: 'Enter your Annotation here..'
+    });
+    this.editor.codemirror.setOption('extraKeys', {
+      Esc: () => {
+        this.cancel();
+      },
+
+      'Alt-Enter': () => {
+        this.createByClick();
+      }
+    });
   },
 
   showSidebar: function () {
