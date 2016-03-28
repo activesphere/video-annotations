@@ -126,8 +126,9 @@ var SidebarView = Backbone.View.extend({
   showInfo: function () {
     this.$el.find('.annotations').hide();
     this.$el.find('.fa-container > .fa')
-    .removeClass('fa-info-circle show-info')
-    .addClass('fa-times close-info');
+    .removeClass('fa-question show-info')
+    .addClass('fa-times close-info')
+    .attr('title', 'Close Help');
     this.$el.find('.info').show();
   },
 
@@ -135,7 +136,8 @@ var SidebarView = Backbone.View.extend({
     this.$el.find('.info').hide();
     this.$el.find('.fa-container > .fa')
     .removeClass('fa-times close-info')
-    .addClass('fa-info-circle show-info');
+    .addClass('fa-question show-info')
+    .attr('title', 'Show Help');
     this.$el.find('.annotations').show();
   },
 
