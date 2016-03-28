@@ -28,6 +28,8 @@ var SidebarView = Backbone.View.extend({
     'click a.close_annotations': 'hideSidebar',
     'click a.sign_in': 'signIn',
     'click a.sign_out': 'signOut',
+    'click i.show-info': 'showInfo',
+    'click i.close-info': 'closeInfo'
   },
 
   initialize: function (options) {
@@ -60,9 +62,11 @@ var SidebarView = Backbone.View.extend({
   render: function () {
     // jscs: disable
     $(this.el).html(Mustache.to_html(this.template()));
-    // jscs: enable
     this.renderList();
     this.renderUserInfo();
+    this.$el.find('.annotations-list').append(Mustache.to_html($('#extension-info-template').html()));
+    this.$el.find('.info').hide();
+    // jscs: enable
     return this;
   },
 
@@ -117,6 +121,22 @@ var SidebarView = Backbone.View.extend({
     this.userInfo.toJSON(), { shortName: shortName })
     ));
     // jscs: enable
+  },
+
+  showInfo: function () {
+    this.$el.find('.annotations').hide();
+    this.$el.find('.fa-container > .fa')
+    .removeClass('fa-info-circle show-info')
+    .addClass('fa-times close-info');
+    this.$el.find('.info').show();
+  },
+
+  closeInfo: function () {
+    this.$el.find('.info').hide();
+    this.$el.find('.fa-container > .fa')
+    .removeClass('fa-times close-info')
+    .addClass('fa-info-circle show-info');
+    this.$el.find('.annotations').show();
   },
 
   fetchUser: function () {
