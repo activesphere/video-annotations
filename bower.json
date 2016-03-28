@@ -24,7 +24,8 @@
     "backbone": "^1.2.3",
     "mustache.js": "mustache#^2.2.1",
     "font-awesome": "^4.5.0",
-    "bluebird": "^3.3.4"
+    "bluebird": "^3.3.4",
+    "marked": "^0.3.5"
   },
   "devDependencies": {}
 }

@@ -2,6 +2,7 @@ import Backbone from 'backbone';
 import Mustache from 'mustache.js';
 import _ from 'lodash';
 import $ from 'vendor/jquery.hotkeys.js';
+import marked from 'marked';
 
 import Utils from 'utils.js';
 import Annotations from 'collections/collections.js';
@@ -33,7 +34,7 @@ var AnnotationView = Backbone.View.extend({
     $(this.el)
     .html(Mustache.to_html($(this.template).html(), _.extend(
     // jscs:  enable
-      this.model.toJSON())));
+      this.model.toJSON(), { html: marked(this.model.get('description')) })));
     $(this.el).addClass(this.model.get('id') + '');
     return this;
   },
