@@ -11,7 +11,7 @@ module.exports = {
   },
   output: {
     sourceMapFilename: '[name].bundle.js.map',
-    path:     'builds',
+    path:     'builds/builds',
     filename: '[name].bundle.js',
   },
   resolve: {
