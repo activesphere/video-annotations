@@ -3,6 +3,7 @@ import Mustache from 'mustache.js';
 import _ from 'lodash';
 import $ from 'vendor/jquery.hotkeys.js';
 import marked from 'marked';
+import SimpleMDE from 'vendor/simplemde.min.js';
 
 import Utils from 'utils.js';
 import Annotations from 'collections/collections.js';
@@ -39,10 +40,12 @@ var AnnotationView = Backbone.View.extend({
     return this;
   },
 
-  renderEdit: function (annotation) {
+  renderEditor: function () {
+    var id = this.model.get('id') + '';
+
     // jscs: disable
     this.$el.find('.edit-annotation').html(
-      Mustache.to_html($('#annotation-edit-template').html(), { annotation: annotation })
+      Mustache.to_html($('#annotation-edit-template').html(), { id: id })
       // jscs: enable
     );
   },
@@ -61,12 +64,15 @@ var AnnotationView = Backbone.View.extend({
   },
 
   update: function (e) {
-    e.preventDefault();
-    var annotation = this.$el.find('textarea')[0].value;
+    if (typeof e !== 'undefined') {
+      e.preventDefault();
+    }
+
+    var annotation = this.editor.value();
     this.model.set(Utils.splitAnnotation(annotation));
-    this.$el.find('.edit-annotation').hide();
-    this.$el.find('.annotation-detail').show();
+    this.removeUpdateDiv();
     this.setCaretRight();
+    this.$el.find('.icon-title').css('pointer-events', 'all');
   },
 
   delete: function (e) {
@@ -79,22 +85,42 @@ var AnnotationView = Backbone.View.extend({
   },
 
   edit: function (e) {
-    this.setCaretDown();
-    e.preventDefault();
-    if (!_.isEmpty(this.$el.find('.annotation-description'))) {
-      this.$el.find('.annotation-description').hide();
+    if (typeof e !== 'undefined') {
+      e.preventDefault();
     }
 
-    this.$el.find('.edit-annotation').show();
-    this.renderEdit(this.model.get('annotation'));
-    this.$el.find('.edit-annotation .edit-annotation-text').focus();
+    this.$el.find('.annotation-description').hide();
+    this.renderEditor();
+    this.createEditor(this.model.get('annotation'));
+    this.setCaretDown();
+    this.$el.find('.icon-title').css('pointer-events', 'none');
+  },
+
+  createEditor: function (annotation) {
+    var id = this.model.get('id') + '';
+    this.editor = new SimpleMDE({ element: document.getElementById(id),
+      autofocus: true,
+    });
+    this.editor.codemirror.setOption('extraKeys', {
+      Esc: () => {
+        this.cancelUpdate();
+      },
+
+      'Alt-Enter': () => {
+        this.update();
+      }
+    });
+    this.editor.value(annotation);
   },
 
   cancelUpdate: function (e) {
-    e.preventDefault();
-    this.$el.find('.edit-annotation').hide();
-    this.$el.find('.annotation-detail').show();
+    if (typeof e !== 'undefined') {
+      e.preventDefault();
+    }
+
     this.setCaretRight();
+    this.$el.find('.icon-title').css('pointer-events', 'all');
+    this.removeUpdateDiv();
   },
 
   changeIcon: function (e) {
@@ -116,6 +142,10 @@ var AnnotationView = Backbone.View.extend({
 
   setCaretDown: function () {
     this.$el.find('.icon-title').removeClass('fa fa-caret-right').addClass('fa fa-caret-down');
+  },
+
+  removeUpdateDiv: function () {
+    this.$el.find('.update-annotation').remove();
   }
 });
 

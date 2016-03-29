@@ -55,7 +55,7 @@
 	.create-annotation {
 		position: absolute;
 		top: 5px;
-		right: 5px;
+		left: 5px;
 
 		z-index: 1001;
 
@@ -393,11 +393,11 @@
 		.fa-container {
 			padding: 5px;
 			height: 1.5em;
-		}
 
-		.fa {
-			float: right;
-			cursor: pointer;
+			.fa {
+				float: right;
+				cursor: pointer;
+			}
 		}
 
 		.info {
@@ -412,6 +412,17 @@
 			padding: 5px;
 			box-sizing: border-box;
 		}
+	}
+
+	.update-annotation {
+		background-color: #fff;
+
+		padding: 1px;
+		box-sizing: border-box;
+
+		margin-top: 8px;
+
+		pointer-events: all;
 	}
 
 	::-webkit-scrollbar{

@@ -23,7 +23,7 @@
       <span>No Description</span>
       {{/description}}
     </div>
-    <div class='edit-annotation hide'></div>
+    <div class='edit-annotation'></div>
   </script>
 
   <script type="text/template" id="user-main-template">
@@ -49,11 +49,15 @@
   </script>
 
   <script type="text/template" id='annotation-edit-template'>
-    <textarea class='edit-annotation-text' rows='5'>{{annotation}}</textarea>
-    <div class='clear'></div>
-    <div>
-      <a href='#' class='button update'><i class="fa fa-plus-square"></i>Update</a>
-      <a href='#' class='button cancel-update'><i class="fa fa-minus-square"></i>Cancel</a>
+    <div class="update-annotation">
+      <div>
+        <textarea id={{id}}></textarea>
+      </div>
+      <div class='clear'></div>
+      <div class="flex">
+        <a href='#' class='button update'><i class="fa fa-plus-square"></i>Update</a>
+        <a href='#' class='button cancel-update'><i class="fa fa-minus-square"></i>Cancel</a>
+      </div>
     </div>
   </script>
 
