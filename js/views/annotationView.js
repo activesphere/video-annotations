@@ -124,7 +124,7 @@ var AnnotationView = Backbone.View.extend({
   },
 
   changeIcon: function (e) {
-    if ($(e.target).hasClass('fa fa-caret-right')) {
+    if ($(e.target).hasClass('fa-caret-right')) {
       //Set type to manual to aviod window close automatally when video playing
       $(e.target).data('type', 'manual');
       this.setCaretDown();
@@ -137,11 +137,11 @@ var AnnotationView = Backbone.View.extend({
   },
 
   setCaretRight: function () {
-    this.$el.find('.icon-title').removeClass('fa fa-caret-down').addClass('fa fa-caret-right');
+    this.$el.find('.icon-title').removeClass('fa-caret-down').addClass('fa-caret-right');
   },
 
   setCaretDown: function () {
-    this.$el.find('.icon-title').removeClass('fa fa-caret-right').addClass('fa fa-caret-down');
+    this.$el.find('.icon-title').removeClass('fa-caret-right').addClass('fa-caret-down');
   },
 
   removeUpdateDiv: function () {
