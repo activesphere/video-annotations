@@ -32,9 +32,6 @@
       ],
       "js": [
         "builds/videoDetection.bundle.js"
-      ],
-      "css": [
-        "styles/simplemde.min.css"
       ]
     }
   ],
