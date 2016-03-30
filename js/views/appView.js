@@ -29,6 +29,7 @@ var AppView = Backbone.View.extend({
 
     this.UserInfo = new UserInfo({});
     this.fetchUser();
+    this.draggable = false;
 
     this.getVideoKey();
     this.storage = new AppStorage({ name: this.videoKey });
@@ -61,6 +62,7 @@ var AppView = Backbone.View.extend({
     this.initializeView();
     this.$el.html($(this.sidebarView.render().el));
     this.$el.find('.sidebar').addClass('sidebar-hidden');
+    this.bindResizeEvents();
     this.updateFrame();
   },
 
@@ -115,6 +117,39 @@ var AppView = Backbone.View.extend({
       self.closeAnnotation(e);
       return false;
     });
+  },
+
+  bindResizeEvents: function () {
+    this.$el.find('.resizer').on('mousedown', this.initDrag.bind(this));
+    $(document).on('mousemove', this.doDrag.bind(this));
+    $(document).on('mouseup', this.stopDrag.bind(this));
+  },
+
+  initDrag: function (e) {
+    this.xValue = e.clientX;
+    this.startWidth = parseInt(this.$el.find('.sidebar').css('width'));
+    this.draggable = true;
+  },
+
+  doDrag: function (e) {
+    e.preventDefault();
+    var width = this.startWidth - e.clientX + this.xValue;
+    var sidebar = this.$el.find('.sidebar');
+
+    if (this.draggable && width > 300) {
+      sidebar.css('transition', '0s');
+
+      sidebar.css('width',
+        this.startWidth - e.clientX + this.xValue + 'px'
+      );
+
+      this.$el.find('.caret').css('right', width - 1 + 'px');
+    }
+  },
+
+  stopDrag: function () {
+    this.draggable = false;
+    this.$el.find('.sidebar').css('transition', '.2s');
   },
 
   clear: function () {
@@ -183,9 +218,12 @@ var AppView = Backbone.View.extend({
     var sidebar = this.$el.find('.sidebar');
     if (sidebar.hasClass('sidebar-hidden')) {
       sidebar.removeClass('sidebar-hidden').addClass('sidebar-visible');
+      sidebar.css('right', '0px');
       this.$el.find('.caret').removeClass('fa-caret-left').addClass('fa-caret-right');
     } else {
+      var right = parseInt(sidebar.css('width')) + 1;
       sidebar.removeClass('sidebar-visible').addClass('sidebar-hidden');
+      sidebar.css('right', -1 * right + 'px');
       this.$el.find('.caret').removeClass('fa-caret-right').addClass('fa-caret-left');
     }
   },

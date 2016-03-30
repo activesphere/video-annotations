@@ -39,14 +39,14 @@
 		transition: 0.2s;
 
 		position: fixed;
-		width: 580px;
+		width: 545px;
 		z-index: 2001;
 
 		pointer-events: all;
 	}
 
 	.sidebar-hidden {
-		right: -580px;
+		right: -546px;
 	}
 
 	.sidebar-visible {
@@ -221,7 +221,7 @@
 	.caret {
 		position: absolute;
 		top: 100px;
-		right: 579px;
+		right: 544px;
 
 		z-index: 1002;
 
@@ -248,8 +248,10 @@
 		display: inline-block;
 
 		width: inherit;
-		height: 500px;
+		height: 85vh;
 		min-height: 255px;
+
+		overflow-y: scroll;
 
 		background-color: #fff;
 
@@ -258,6 +260,19 @@
 
 		padding: 5px 20px 20px 20px;
 		box-sizing: border-box;
+
+		.resizer {
+			position: absolute;
+			top: 0;
+			left: -1px;
+
+			height: inherit;
+			width: 2px;
+
+			background-color: @colorLighter;
+
+			cursor: w-resize;
+		}
 
 
 		.user-info {
@@ -303,7 +318,6 @@
 		}
 
 		.annotations {
-			height: 370px;
 			width: 100%;
 
 			padding: 0;
@@ -403,7 +417,6 @@
 
 		.info {
 			width: 100%;
-			height: 370px;
 
 			color: #222C36;
 
