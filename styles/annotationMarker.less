@@ -1,0 +1,47 @@
+#video-annotation .annotation-marker {
+	position: absolute;
+
+	z-index: 999;
+
+	color: @lightBlue;
+
+	pointer-events: all;
+
+	div {
+		color: #fff;
+		background-color: @lightBlue;
+		width: fit-content;
+		padding: 2px;
+		box-sizing: border-box;
+	}
+	.end-marker {
+		position: absolute;
+		background-color: transparent;
+	}
+
+	.start-marker {
+		position: absolute;
+	}
+
+	.start-time {
+		height: 24px;
+	}
+
+	.end-time {
+		float: right;
+	}
+
+	.duration-marker {
+		height: 1px;
+		background-color: @lightBlue;
+		text-align: right;
+		clear: both;
+		width: inherit;
+
+		.chevron {
+			position: absolute;
+			bottom: 0px;
+			right: 2px;
+		}
+	}
+}
