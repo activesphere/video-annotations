@@ -1,6 +1,6 @@
 {
   "name": "video-annotation",
-  "version": "1.0.0",
+  "version": "0.1.2",
   "description": "A chrome extension to annotate videos & share it with others via dropbox",
   "main": "index.html",
   "dependencies": {
@@ -26,7 +26,9 @@
     "webpack": "^1.12.14"
   },
   "scripts": {
-    "test": "mocha --compilers js:babel-core/register test/unit"
+    "test": "mocha --compilers js:babel-core/register test/unit",
+    "build": "webpack && grunt",
+    "release": "node release.js"
   },
   "repository": {
     "type": "git",

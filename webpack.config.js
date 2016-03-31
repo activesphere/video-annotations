@@ -1,8 +1,9 @@
 var path = require("path");
 var webpack = require("webpack");
 var BowerWebpackPlugin = require("bower-webpack-plugin");
+var production = process.env.NODE_ENV === 'production';
 
-module.exports = {
+configObj = {
   entry:  {
     videoDetection: 'videoDetectionService',
     popup: 'views/popupView',
@@ -10,7 +11,6 @@ module.exports = {
     event: 'events'
   },
   output: {
-    sourceMapFilename: '[name].bundle.js.map',
     path:     'builds/builds',
     filename: '[name].bundle.js',
   },
@@ -21,7 +21,6 @@ module.exports = {
       path.join(__dirname, "styles")
     ]
   },
-  "devtool": '#eval-source-map',
   module: {
     preLoaders: [{
       test: /\.js/,
@@ -78,3 +77,9 @@ module.exports = {
     unused : true,
   }
 };
+
+if (!production) {
+  configObj.devtool = '#eval-source-map';
+}
+
+module.exports = configObj;
