@@ -80,6 +80,8 @@ configObj = {
 
 if (!production) {
   configObj.devtool = '#eval-source-map';
+} else {
+  configObj.plugins.push(new webpack.optimize.UglifyJsPlugin());
 }
 
 module.exports = configObj;
