@@ -141,6 +141,41 @@ var SidebarView = Backbone.View.extend({
     this.$el.find('.annotations').show();
   },
 
+  highlight: function () {
+      if (!_.isEmpty(this.collection.models)) {
+
+        var currentSeconds = parseInt(this.videoTag.getCurrentTime());
+
+        _.each(this.$el.find('li'), function (li) {
+          var $li = $(li);
+
+          //Check if type auto and window opened
+          if (($li.find('.icon-title').hasClass('fa-caret-down') &&
+            $li.find('.icon-title').data('type') === 'auto' &&
+            $li.find('div.annotation-description').css('display') === 'block')) {
+
+            $li.find('.icon-title')
+              .removeClass('fa-caret-down')
+              .addClass('fa-caret-right');
+
+            $li.find('.annotation-description').hide();
+          }
+        });
+
+        _.each(this.collection.models, (model) => {
+          if ((model.get('end_seconds') !== null &&
+            currentSeconds >= model.get('start_seconds') &&
+            currentSeconds <= model.get('end_seconds')) ||
+            model.get('start_seconds') === currentSeconds) {
+            this.$el.find('li.' + model.get('id') + ' .icon-title')
+              .removeClass('fa-caret-right')
+              .addClass('fa-caret-down');
+            this.$el.find('li.' + model.get('id') + ' .annotation-description').show();
+          }
+        });
+      }
+    },
+
   fetchUser: function () {
     var userStorage = new AppStorage({ name: Utils.userInfo });
     userStorage.get((userInfo) => {
