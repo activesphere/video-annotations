@@ -79,6 +79,7 @@ function buildZipFile() {
 }
 
 function gitCommitAndTag() {
+	execSync('git add manifest.json package.json');
 	execSync('git commit -m ' + versionStr);
 	execSync('git tag ' + versionStr);
 }
