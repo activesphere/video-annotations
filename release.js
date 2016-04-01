@@ -4,53 +4,23 @@ const execSync = require('child_process').execSync;
 const archiver = require('archiver');
 
 
-const releaseType = process.argv[2];
+const packageJSON = getJSON('package.json');
+const manifestJSON = getJSON('manifest.json');
 
-const data = fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8');
-var packageJSON = JSON.parse(data.slice().toString());
 
-const data2 = fs.readFileSync(path.join(__dirname, 'manifest.json'), 'utf8');
-var manifestJSON = JSON.parse(data2.slice().toString());
+bumpRelease();
+buildZipFile();
+gitCommitAndTag();
 
-var version = packageJSON.version.split('.');
-
-bumpRelease(version, releaseType);
-
-var versionStr = version.join('.');
-
-packageJSON.version = versionStr;
-manifestJSON.version = versionStr;
-
-fs.writeFileSync(path.join(__dirname, 'package.json'), JSON.stringify(packageJSON, null, '  '));
-fs.writeFileSync(path.join(__dirname, 'manifest.json'), JSON.stringify(manifestJSON, null, '  '));
-
-process.env.NODE_ENV = 'production';
-execSync('npm run build');
-var dir = path.join(__dirname, 'dist');
-try {
-	fs.accessSync(dir);
-} catch (e) {
-    fs.mkdirSync(dir);
+function getJSON(fileName) {
+	const data = fs.readFileSync(path.join(__dirname, fileName), 'utf8');
+	return JSON.parse(data.slice().toString());
 }
 
-const output = fs.createWriteStream('dist/video-annotation-' + versionStr+ '.zip');
-const archive = archiver('zip');
+function bumpRelease() {
+	const version = packageJSON.version.split('.');
+	const releaseType = process.argv[2];
 
-archive.pipe(output);
-archive.bulk([
-    { expand: true, cwd: 'builds', src: ['**']}
-]);
-archive.finalize();
-
-execSync('git tag ' + versionStr);
-
-output.on('close', () => {
-	process.env.NODE_ENV = '';
-	execSync('npm run build');
-});
-
-
-function bumpRelease (version, releaseType) {
 	if (!releaseType) {
 		++version[2];
 
@@ -61,4 +31,54 @@ function bumpRelease (version, releaseType) {
 		++version[0];
 		version[1] = version[2] = 0;
 	}
+
+	global.versionStr = version.join('.');
+
+	packageJSON.version = manifestJSON.version = versionStr;
+	fs.writeFileSync(path.join(__dirname, 'package.json'), JSON.stringify(packageJSON, null, '  '));
+	fs.writeFileSync(path.join(__dirname, 'manifest.json'), JSON.stringify(manifestJSON, null, '  '));
+}
+
+function buildZipFile() {
+
+	npmBuild('production');
+	createDistDir();
+	createZipFile();
+
+	function npmBuild(env) {
+		process.env.NODE_ENV = env;
+		execSync('npm run build');
+	}
+
+	function createDistDir() {
+		var dir = path.join(__dirname, 'dist');
+
+		try {
+			fs.accessSync(dir);
+		} catch (e) {
+		    fs.mkdirSync(dir);
+		}
+	}
+
+	function createZipFile() {
+		const output = fs.createWriteStream('dist/video-annotation-' + versionStr + '.zip');
+		const archive = archiver('zip');
+
+		archive.pipe(output);
+		archive.bulk([
+		    { expand: true, cwd: 'builds', src: ['**']}
+		]);
+		archive.finalize();
+
+		output.on('close', () => {
+			// rebuild /builds extension with sourcemap enabled
+			npmBuild('');
+		});
+	}
+
+}
+
+function gitCommitAndTag() {
+	execSync('git commit -m ' + versionStr);
+	execSync('git tag ' + versionStr);
 }
