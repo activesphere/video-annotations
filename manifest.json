@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Video Annotation",
   "description": "Allow to add annotation",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "browser_action": {
     "default_icon": "images/icon.png"
   },
@@ -29,6 +29,7 @@
         "https://www.coursera.org/*"
       ],
       "js": [
+        "builds/commons.chunk.js",
         "builds/videoDetection.bundle.js"
       ]
     }

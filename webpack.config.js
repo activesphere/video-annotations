@@ -2,6 +2,7 @@ var path = require("path");
 var webpack = require("webpack");
 var BowerWebpackPlugin = require("bower-webpack-plugin");
 var production = process.env.NODE_ENV === 'production';
+var CommonsChunkPlugin = require("webpack/lib/optimize/CommonsChunkPlugin");
 
 configObj = {
   entry:  {
@@ -52,7 +53,8 @@ configObj = {
     new webpack.ResolverPlugin(
       new webpack.ResolverPlugin.DirectoryDescriptionFilePlugin(".bower.json", ["main"])
     ),
-    new BowerWebpackPlugin()
+    new BowerWebpackPlugin(),
+    new CommonsChunkPlugin('commons.chunk.js')
   ],
   jscs: {
     preset: 'airbnb',
