@@ -18,6 +18,7 @@
   ],
   "background": {
     "scripts": [
+      "builds/commons.chunk.js",
       "builds/event.bundle.js"
     ],
     "persistent": false
