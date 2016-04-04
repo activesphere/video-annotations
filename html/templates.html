@@ -68,7 +68,13 @@
       <div class="user-info"></div>
       <input type='textfield' class='search-annotations' placeholder='Search'>
       <div class='clear'></div>
-      <div class="fa-container"><i class="fa fa-question show-info" title="Show Help"></i></div>
+      <div class="fa-container">
+        <i class="fa fa-question toggle-info" title="Show Help"></i>
+        <p class="toggle-highlight" title="Show descriptions for annotations made at current video duration">
+          Auto Highlight
+        </p>
+        <i class="toggle-highlight fa fa-check-square-o"></i>
+      </div>
       <ul class='annotations'></ul>
     </div>
   </script>
@@ -91,7 +97,7 @@
         <h4>Short cuts supported in annotation editor:</h4>
         <ul>
           <li><strong><em>alt+return</em></strong> Create/Update Annotation</li>
-          <li><<strong><em>esc</em></strong> Close editor without creating Annotation</li>
+          <li><strong><em>esc</em></strong> Close editor without creating Annotation</li>
         </ul>
       </p>
       <p>

@@ -63,7 +63,6 @@ var AppView = Backbone.View.extend({
     this.$el.html($(this.sidebarView.render().el));
     this.$el.find('.sidebar').addClass('sidebar-hidden');
     this.bindResizeEvents();
-    this.bindDurationChange();
     this.updateFrame();
   },
 
@@ -124,10 +123,6 @@ var AppView = Backbone.View.extend({
     this.$el.find('.resizer').on('mousedown', this.initDrag.bind(this));
     $(document).on('mousemove', this.doDrag.bind(this));
     $(document).on('mouseup', this.stopDrag.bind(this));
-  },
-
-  bindDurationChange: function () {
-    $('video').on('timeupdate', this.sidebarView.highlight.bind(this.sidebarView));
   },
 
   initDrag: function (e) {

@@ -28,14 +28,15 @@ var SidebarView = Backbone.View.extend({
     'click a.close_annotations': 'hideSidebar',
     'click a.sign_in': 'signIn',
     'click a.sign_out': 'signOut',
-    'click i.show-info': 'showInfo',
-    'click i.close-info': 'closeInfo'
+    'click i.toggle-info': 'toggleInfo',
+    'click  i.toggle-highlight': 'toggleHighlight'
   },
 
   initialize: function (options) {
     _.bindAll(this, 'renderList');
     _.bindAll(this, 'syncAnnotations');
     _.bindAll(this, 'renderUserInfo');
+    this.bindDurationChange();
 
     this.arrowTag = options.arrowTag;
     this.storage = options.storage;
@@ -57,6 +58,15 @@ var SidebarView = Backbone.View.extend({
 
     this.userInfo.on('change', this.renderUserInfo);
     this.registerStorageChange();
+  },
+
+  bindDurationChange: function () {
+    $('video').on('timeupdate', this.highlight.bind(this));
+  },
+
+  unbindDurationChange: function () {
+    $('video').unbind('timeupdate');
+    this.closeHighlightedDesc();
   },
 
   render: function () {
@@ -123,18 +133,27 @@ var SidebarView = Backbone.View.extend({
     // jscs: enable
   },
 
+  toggleInfo: function (e) {
+    if ($(e.target).hasClass('fa-question')) {
+      this.showInfo();
+      return;
+    }
+
+    this.closeInfo();
+  },
+
   showInfo: function () {
     this.$el.find('.annotations').hide();
-    this.$el.find('.fa-container > .fa')
-    .removeClass('fa-question show-info')
-    .addClass('fa-times close-info')
+    this.$el.find('.fa-container > .toggle-info')
+    .removeClass('fa-question')
+    .addClass('fa-times')
     .attr('title', 'Close Help');
     this.$el.find('.info').show();
   },
 
   closeInfo: function () {
     this.$el.find('.info').hide();
-    this.$el.find('.fa-container > .fa')
+    this.$el.find('.fa-container > .toggle-info')
     .removeClass('fa-times close-info')
     .addClass('fa-question show-info')
     .attr('title', 'Show Help');
@@ -142,39 +161,55 @@ var SidebarView = Backbone.View.extend({
   },
 
   highlight: function () {
-      if (!_.isEmpty(this.collection.models)) {
+    if (!_.isEmpty(this.collection.models)) {
 
-        var currentSeconds = parseInt(this.videoTag.getCurrentTime());
+      var currentSeconds = parseInt(this.videoTag.getCurrentTime());
 
-        _.each(this.$el.find('li'), function (li) {
-          var $li = $(li);
+      this.closeHighlightedDesc();
 
-          //Check if type auto and window opened
-          if (($li.find('.icon-title').hasClass('fa-caret-down') &&
-            $li.find('.icon-title').data('type') === 'auto' &&
-            $li.find('div.annotation-description').css('display') === 'block')) {
+      _.each(this.collection.models, (model) => {
+        if ((model.get('end_seconds') !== null &&
+          currentSeconds >= model.get('start_seconds') &&
+          currentSeconds <= model.get('end_seconds')) ||
+          model.get('start_seconds') === currentSeconds) {
+          this.$el.find('li.' + model.get('id') + ' .icon-title')
+          .removeClass('fa-caret-right')
+          .addClass('fa-caret-down');
+          this.$el.find('li.' + model.get('id') + ' .annotation-description').show();
+        }
+      });
+    }
+  },
 
-            $li.find('.icon-title')
-              .removeClass('fa-caret-down')
-              .addClass('fa-caret-right');
+  closeHighlightedDesc: function () {
+    _.each(this.$el.find('li'), function (li) {
+      var $li = $(li);
 
-            $li.find('.annotation-description').hide();
-          }
-        });
+      //Check if type auto and window opened
+      if (($li.find('.icon-title').hasClass('fa-caret-down') &&
+        $li.find('.icon-title').data('type') === 'auto' &&
+        $li.find('div.annotation-description').css('display') === 'block')) {
 
-        _.each(this.collection.models, (model) => {
-          if ((model.get('end_seconds') !== null &&
-            currentSeconds >= model.get('start_seconds') &&
-            currentSeconds <= model.get('end_seconds')) ||
-            model.get('start_seconds') === currentSeconds) {
-            this.$el.find('li.' + model.get('id') + ' .icon-title')
-              .removeClass('fa-caret-right')
-              .addClass('fa-caret-down');
-            this.$el.find('li.' + model.get('id') + ' .annotation-description').show();
-          }
-        });
+        $li.find('.icon-title')
+        .removeClass('fa-caret-down')
+        .addClass('fa-caret-right');
+
+        $li.find('.annotation-description').hide();
       }
-    },
+    });
+  },
+
+  toggleHighlight: function (e) {
+    var $target = $(e.target);
+    if ($target.hasClass('fa-check-square-o')) {
+      this.unbindDurationChange();
+      $target.removeClass('fa-check-square-o').addClass('fa-square-o');
+      return;
+    }
+
+    this.bindDurationChange();
+    $target.removeClass('fa-square-o').addClass('fa-check-square-o');
+  },
 
   fetchUser: function () {
     var userStorage = new AppStorage({ name: Utils.userInfo });
