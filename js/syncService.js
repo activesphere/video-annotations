@@ -2,29 +2,26 @@ import _ from 'lodash';
 import Promise from 'bluebird';
 
 function promisify(fn) {
-  return new Promise((resolve, reject) => {
-    return fn(function (err, res) {
+  return new Promise((resolve, reject) =>
+    fn(function (err, res) {
       if (err) {
         reject(err);
       } else {
         resolve(res);
       }
-    });
-  });
+    }));
 }
 
 function promisifyStd(fn) {
-  return new Promise((resolve) => {
-    return fn(function (res) {
+  return new Promise((resolve) =>
+    fn(function (res) {
       resolve(res);
-    });
-  });
+    }));
 }
 
 var readingDropbox = function (dropboxFile) {
   return promisify(dropboxFile.read.bind(dropboxFile))
   .catch((error) => {
-    console.error(error);
     return [];
   });
 };
@@ -63,9 +60,9 @@ export function merge(sources, local, initialSync) {
 }
 
 var syncingData = function (localStorage, dropboxFile, collection, initialSync) {
-  return Promise.all([readingDropbox(dropboxFile), readingStorage(localStorage)]).then((data) => {
-    return merge(data, _.map(collection.models, (model) => model.toJSON()), initialSync);
-  }).then((jsonData) => {
+  return Promise.all([readingDropbox(dropboxFile), readingStorage(localStorage)]).then((data) =>
+    merge(data, _.map(collection.models, (model) => model.toJSON()), initialSync)
+  ).then((jsonData) => {
     if (initialSync) {
       collection.set(jsonData, { silent: true });
     }
