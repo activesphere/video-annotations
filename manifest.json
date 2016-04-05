@@ -38,9 +38,6 @@
   "web_accessible_resources": [
     "html/templates.html",
     "html/chrome_oauth_receiver.html",
-    "images/edit.png",
-    "images/delete.png",
-    "images/close.png",
     "bower_components/font-awesome/fonts/*"
   ],
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"

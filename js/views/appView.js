@@ -67,13 +67,6 @@ var AppView = Backbone.View.extend({
   },
 
   initializeView: function () {
-    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-      if (request.switch) {
-        this.switchExtensionVisibility();
-        sendResponse({});
-      }
-    });
-
     this.newAnnotationView = new NewAnnotationView({
       videoTag: this.videoTag,
     });
@@ -283,19 +276,23 @@ var AppView = Backbone.View.extend({
   },
 
   registerStorageChange: function () { //when changes happen in storage, this get trigger
-    var self = this;
-    chrome.storage.onChanged.addListener(function (changes) {
+    chrome.storage.onChanged.addListener(changes => {
       for (var key in changes) {
         if (key === Utils.UserInfo) {
-          self.fetchUser();
+          this.fetchUser();
+          return;
+        }
+
+        if (changes['video-annotation']) {
+          this.switchExtensionVisibility(changes['video-annotation'].newValue);
         }
       }
     });
   },
 
-  switchExtensionVisibility: function () {
+  switchExtensionVisibility: function (data) {
     var $extension = $('#video-annotation');
-    if ($extension.css('display') === 'none') {
+    if (data) {
       $extension.css('display', 'block');
     } else {
       $extension.css('display', 'none');

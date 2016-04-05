@@ -10,29 +10,51 @@ $.get(chrome.extension.getURL('/html/templates.html'),
 function (data) {
   $('body').append(data);
   var app;
-  var videokey = {};
+  const videokey = {};
 
-  function checkAndEnableFeature() {
-    return function () {
-      if ($('video').length > 0) {
-        if (!$('#video-annotation')[0]) {
-          var $video = Utils.getVideoInterface();
-          $video.append($('#video-main-template').html());
-        }
-
-        if (!app) {
-          app = new AppView();
-        }
-
-        app.render(videokey);
-      } else {
-        if ($('#video-annotation')[0]) {
-          $('#video-annotation').remove();
-        }
+  const checkAndEnableFeature = () => {
+    if ($('video').length > 0) {
+      if (!$('#video-annotation')[0]) {
+        var $video = Utils.getVideoInterface();
+        $video.append($('#video-main-template').html());
       }
-    };
-  }
 
-  var observer = new MutationObserver(_.debounce(checkAndEnableFeature(), 100));
-  observer.observe(document.querySelector('body'), { childList: true });
+      if (!app) {
+        app = new AppView();
+      }
+
+      app.render(videokey);
+    } else {
+      if ($('#video-annotation')[0]) {
+        $('#video-annotation').remove();
+      }
+    }
+  };
+
+  const observer = new MutationObserver(_.debounce(checkAndEnableFeature, 100));
+
+  chrome.storage.local.get(data => {
+    if (data['video-annotation']) {
+      observer.observe(document.querySelector('body'), { childList: true });
+      return;
+    }
+
+    observer.disconnect();
+  });
+
+  chrome.storage.onChanged.addListener(data => {
+    const toggleDomObservation = enabled => {
+      if (enabled) {
+        observer.observe(document.querySelector('body'), { childList: true });
+        checkAndEnableFeature();
+        return;
+      }
+
+      observer.disconnect();
+    };
+
+    if (data['video-annotation']) {
+      toggleDomObservation(data['video-annotation'].newValue);
+    }
+  });
 }, 'html');

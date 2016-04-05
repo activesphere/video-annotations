@@ -8,11 +8,19 @@ var dropboxChrome = {}.hasOwnProperty;
 EventPageController = (function () {
   function EventPageController(dropboxChrome) {
     this.dropboxChrome = dropboxChrome;
-    chrome.browserAction.onClicked.addListener((function (_this) {
-      return function () {
-        return _this.onBrowserAction();
-      };
-    })(this));
+    chrome.browserAction.onClicked.addListener(() => {
+      chrome.storage.local.get('video-annotation', function  (data) {
+        if (!data['video-annotation']) {
+          chrome.storage.local.set({ 'video-annotation': true }, function () {
+          });
+
+          return;
+        }
+
+        chrome.storage.local.set({ 'video-annotation': false }, function () {
+        });
+      });
+    });
 
     this.dropboxChrome.onClient.addListener((function (_this) {
       return function (client) {
@@ -26,10 +34,25 @@ EventPageController = (function () {
       };
     })(this));
 
+    chrome.storage.onChanged.addListener(data => {
+      const changeIcon = enabled => {
+        if (enabled) {
+          chrome.browserAction.setIcon({ path: 'images/icon.png' });
+          return;
+        }
+
+        chrome.browserAction.setIcon({ path: 'images/icon-disabled.png' });
+      };
+
+      if (data['video-annotation']) {
+        changeIcon(data['video-annotation'].newValue);
+      }
+    });
+
     var _this = this;
     chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       if (request.type === 'signIn') {
-        return _this.onBrowserAction();
+        return _this.signInHandler();
       } else if (request.type === 'signOut') {
         return _this.signOut(function () {
           sendResponse();
@@ -37,6 +60,26 @@ EventPageController = (function () {
       }
     });
   }
+
+  EventPageController.prototype.signInHandler = function () {
+    return this.dropboxChrome.client((function (_this) {
+      return function (client) {
+        var credentials;
+        if (client.isAuthenticated()) {
+          _this.dropboxChrome.userInfo();
+        }
+
+        credentials = client.credentials();
+        if (credentials.authState) {
+          client.reset();
+        }
+
+        return _this.signIn(function () {
+          return null;
+        });
+      };
+    })(this));
+  };
 
   EventPageController.prototype.signIn = function (callback) {
     return this.dropboxChrome.client(function (client) {
@@ -56,74 +99,10 @@ EventPageController = (function () {
     });
   };
 
-  EventPageController.prototype.onBrowserAction = function () {
-    return this.dropboxChrome.client((function (_this) {
-      return function (client) {
-        var credentials;
-        if (client.isAuthenticated()) {
-          _this.dropboxChrome.userInfo();
-          chrome.browserAction.setPopup({
-            popup: 'html/popup.html',
-          });
-        }
-
-        credentials = client.credentials();
-        if (credentials.authState) {
-          client.reset();
-        }
-
-        return _this.signIn(function () {
-          return null;
-        });
-      };
-    })(this));
-  };
-
   EventPageController.prototype.onDropboxAuthChange = function (client) {
-    var credentials;
-    var _this = this;
     if (client.isAuthenticated()) {
-      chrome.browserAction.setPopup({
-        popup: 'html/popup.html',
-      });
-      chrome.browserAction.setTitle({
-        title: 'Signed in',
-      });
-      chrome.browserAction.setBadgeText({
-        text: '',
-      });
-      _this.dropboxChrome.userInfo();
-    } else {
-      chrome.browserAction.setPopup({
-        popup: '',
-      });
-      credentials = client.credentials();
-      if (credentials.authState) {
-        chrome.browserAction.setTitle({
-          title: 'Signing in...',
-        });
-        chrome.browserAction.setBadgeText({
-          text: '...',
-        });
-        chrome.browserAction.setBadgeBackgroundColor({
-          color: '#DFBF20',
-        });
-      } else {
-        chrome.browserAction.setTitle({
-          title: 'Click to sign into Dropbox',
-        });
-        chrome.browserAction.setBadgeText({
-          text: '?',
-        });
-        chrome.browserAction.setBadgeBackgroundColor({
-          color: '#DF2020',
-        });
-      }
+      this.dropboxChrome.userInfo();
     }
-
-    return chrome.extension.sendMessage({
-      notice: 'dropbox_auth',
-    });
   };
 
   EventPageController.prototype.onDropboxError = function (client, error) {

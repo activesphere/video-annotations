@@ -7,7 +7,6 @@ var CommonsChunkPlugin = require("webpack/lib/optimize/CommonsChunkPlugin");
 configObj = {
   entry:  {
     videoDetection: 'videoDetectionService',
-    popup: 'views/popupView',
     oauth: 'chrome_oauth_receiver',
     event: 'events'
   },
