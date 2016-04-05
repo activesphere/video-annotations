@@ -5,7 +5,11 @@ function promisify(fn) {
   return new Promise((resolve, reject) =>
     fn(function (err, res) {
       if (err) {
-        reject(err);
+        if (err instanceof Error) {
+          reject(err);
+        } else {
+          reject(Error(err));
+        }
       } else {
         resolve(res);
       }
@@ -21,9 +25,7 @@ function promisifyStd(fn) {
 
 var readingDropbox = function (dropboxFile) {
   return promisify(dropboxFile.read.bind(dropboxFile))
-  .catch((error) => {
-    return [];
-  });
+  .catch(() => []);
 };
 
 var readingStorage = function (localStorage) {

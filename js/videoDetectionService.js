@@ -34,12 +34,10 @@ function (data) {
   const observer = new MutationObserver(_.debounce(checkAndEnableFeature, 100));
 
   chrome.storage.local.get(data => {
-    if (data['video-annotation']) {
+    if (typeof data['video-annotation'] === 'undefined' || data['video-annotation']) {
       observer.observe(document.querySelector('body'), { childList: true });
       return;
     }
-
-    observer.disconnect();
   });
 
   chrome.storage.onChanged.addListener(data => {
