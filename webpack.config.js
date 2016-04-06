@@ -8,10 +8,10 @@ configObj = {
   entry:  {
     videoDetection: 'videoDetectionService',
     oauth: 'chrome_oauth_receiver',
-    event: 'events'
+    background: 'background'
   },
   output: {
-    path:     'builds/builds',
+    path:     'builds/bundles',
     filename: '[name].bundle.js',
   },
   resolve: {

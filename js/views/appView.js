@@ -13,11 +13,12 @@ import SidebarView from 'views/sidebarView.js';
 import NewAnnotationView from 'views/newAnnotationView.js';
 import config from '../config';
 
+import AnnotationMarker from './_appView/annotationMarker.js';
+
 var AppView = Backbone.View.extend({
   el: 'div#video-annotation',
 
   events: {
-    'click span.caret': 'showSidebar',
     'click a.create': 'createByClick',
     'click a.cancel': 'cancel',
   },
@@ -54,7 +55,7 @@ var AppView = Backbone.View.extend({
     this.videoFrame = new Frame({ start_seconds: 0 });
     // jscs: enable
 
-    this.updateVideoKey();
+    this.updateStorage();
 
     this.videoFrame.on('change', this.updateFrame);
     this.videoTag = Utils.getVideoInterface();
@@ -62,16 +63,14 @@ var AppView = Backbone.View.extend({
     this.initializeView();
     this.$el.html($(this.sidebarView.render().el));
     this.$el.find('.sidebar').addClass('sidebar-hidden');
-    this.bindResizeEvents();
     this.updateFrame();
   },
 
   initializeView: function () {
     this.newAnnotationView = new NewAnnotationView({
       videoTag: this.videoTag,
+      videoFrame: this.videoFrame
     });
-
-    this.newAnnotationView.videoFrame = this.videoFrame;
 
     Annotations.reset(null, { silent: true });
     this.sidebarView = new SidebarView({
@@ -82,6 +81,8 @@ var AppView = Backbone.View.extend({
       dropboxFile: this.dropboxFile,
       arrowTag: '#video-annotation span.caret',
     });
+
+    this.marker = new AnnotationMarker(this.newAnnotationView);
   },
 
   bindEvents: function () {
@@ -112,37 +113,14 @@ var AppView = Backbone.View.extend({
     });
   },
 
-  bindResizeEvents: function () {
-    this.$el.find('.resizer').on('mousedown', this.initDrag.bind(this));
-    $(document).on('mousemove', this.doDrag.bind(this));
-    $(document).on('mouseup', this.stopDrag.bind(this));
-  },
-
-  initDrag: function (e) {
-    this.xValue = e.clientX;
-    this.startWidth = parseInt(this.$el.find('.sidebar').css('width'));
-    this.draggable = true;
-  },
-
-  doDrag: function (e) {
-    e.preventDefault();
-    var width = this.startWidth - e.clientX + this.xValue;
-    var sidebar = this.$el.find('.sidebar');
-
-    if (this.draggable && width > 300) {
-      sidebar.css('transition', '0s');
-
-      sidebar.css('width',
-        this.startWidth - e.clientX + this.xValue + 'px'
-      );
-
-      this.$el.find('.caret').css('right', width - 1 + 'px');
-    }
-  },
-
-  stopDrag: function () {
-    this.draggable = false;
-    this.$el.find('.sidebar').css('transition', '.2s');
+  bindResize: function () {
+    $(window).bind('resize', () => {
+      if ($('#video-annotation').find('.annotation-marker')[0]) {
+        this.marker.removeAnnotationMarker();
+        this.marker.renderStartMarker(true);
+        this.marker.renderEndMarker();
+      }
+    });
   },
 
   clear: function () {
@@ -152,7 +130,7 @@ var AppView = Backbone.View.extend({
   createAnnotation: function () {
     this.videoTag.pause();
     this.$el.append(this.newAnnotationView.render().el);
-    this.newAnnotationView.renderEndMarker();
+    this.marker.renderEndMarker();
     this.createEditor();
   },
 
@@ -161,7 +139,7 @@ var AppView = Backbone.View.extend({
     // jscs: disable
     this.newAnnotationView.start_seconds = parseInt(this.videoTag.getCurrentTime());
     this.videoFrame.set('start_seconds', this.newAnnotationView.start_seconds);
-    this.newAnnotationView.renderStartMarker();
+    this.marker.renderStartMarker();
     // jscs: enable
   },
 
@@ -174,20 +152,20 @@ var AppView = Backbone.View.extend({
 
   closeAnnotation: function (e) {
     this.newAnnotationView.cancel(e);
-    this.newAnnotationView.removeAnnotationMarker();
+    this.marker.removeAnnotationMarker();
     this.videoTag.play();
   },
 
   createByClick: function () {
     var value = this.editor ? this.editor.value() : '';
     this.newAnnotationView.createAnnotation(value);
-    this.newAnnotationView.removeAnnotationMarker();
+    this.marker.removeAnnotationMarker();
     return false;
   },
 
   cancel: function (e) {
     this.newAnnotationView.cancel(e);
-    this.newAnnotationView.removeAnnotationMarker();
+    this.marker.removeAnnotationMarker();
     return false;
   },
 
@@ -205,20 +183,6 @@ var AppView = Backbone.View.extend({
         this.createByClick();
       }
     });
-  },
-
-  showSidebar: function () {
-    var sidebar = this.$el.find('.sidebar');
-    if (sidebar.hasClass('sidebar-hidden')) {
-      sidebar.removeClass('sidebar-hidden').addClass('sidebar-visible');
-      sidebar.css('right', '0px');
-      this.$el.find('.caret').removeClass('fa-caret-left').addClass('fa-caret-right');
-    } else {
-      var right = parseInt(sidebar.css('width')) + 1;
-      sidebar.removeClass('sidebar-visible').addClass('sidebar-hidden');
-      sidebar.css('right', -1 * right + 'px');
-      this.$el.find('.caret').removeClass('fa-caret-right').addClass('fa-caret-left');
-    }
   },
 
   getVideoKey: function () {
@@ -254,7 +218,7 @@ var AppView = Backbone.View.extend({
     });
   },
 
-  updateVideoKey: function () {
+  updateStorage: function () {
     this.storage.name = this.videoKey;
     this.dropboxFile.name = this.videoKey;
 
@@ -277,15 +241,8 @@ var AppView = Backbone.View.extend({
 
   registerStorageChange: function () { //when changes happen in storage, this get trigger
     chrome.storage.onChanged.addListener(changes => {
-      for (var key in changes) {
-        if (key === Utils.UserInfo) {
-          this.fetchUser();
-          return;
-        }
-
-        if (changes['video-annotation']) {
-          this.switchExtensionVisibility(changes['video-annotation'].newValue);
-        }
+      if (changes['video-annotation']) {
+        this.switchExtensionVisibility(changes['video-annotation'].newValue);
       }
     });
   },

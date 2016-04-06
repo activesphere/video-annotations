@@ -17,13 +17,6 @@ webpack
 - Share annotations over dropbox
 - Publish publicly over a URL
 
-### Minor
-- Resizable sidebar width
-- Option to highlight annotation on playback
-- Grunt release task
-
 ### Cleanup
-- Break up less into smaller chunks
 - Use ES6 classes instead of Backbone.extend
 - Use bower for all vendor stuff
-- Optimize plugin size

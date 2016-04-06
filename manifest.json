@@ -18,8 +18,8 @@
   ],
   "background": {
     "scripts": [
-      "builds/commons.chunk.js",
-      "builds/event.bundle.js"
+      "bundles/commons.chunk.js",
+      "bundles/background.bundle.js"
     ],
     "persistent": false
   },
@@ -30,8 +30,8 @@
         "https://www.coursera.org/*"
       ],
       "js": [
-        "builds/commons.chunk.js",
-        "builds/videoDetection.bundle.js"
+        "bundles/commons.chunk.js",
+        "bundles/videoDetection.bundle.js"
       ]
     }
   ],

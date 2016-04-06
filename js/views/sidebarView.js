@@ -8,6 +8,9 @@ import Utils from 'utils.js';
 import AppStorage from 'localStorageUtils.js';
 import syncingData from 'syncService.js';
 
+import ResizeWidth from './_sidebarView/resizeWidth.js';
+import AutoHighlight from './_sidebarView/highlight.js';
+
 var SidebarView = Backbone.View.extend({
   tagName:'div',
   className: 'sidebar',
@@ -24,8 +27,8 @@ var SidebarView = Backbone.View.extend({
   },
 
   events: {
+    'click span.caret': 'toggleSidebar',
     'keyup input.search-annotations': 'search',
-    'click a.close_annotations': 'hideSidebar',
     'click a.sign_in': 'signIn',
     'click a.sign_out': 'signOut',
     'click i.toggle-info': 'toggleInfo',
@@ -36,7 +39,6 @@ var SidebarView = Backbone.View.extend({
     _.bindAll(this, 'renderList');
     _.bindAll(this, 'syncAnnotations');
     _.bindAll(this, 'renderUserInfo');
-    this.bindDurationChange();
 
     this.arrowTag = options.arrowTag;
     this.storage = options.storage;
@@ -60,15 +62,6 @@ var SidebarView = Backbone.View.extend({
     this.registerStorageChange();
   },
 
-  bindDurationChange: function () {
-    $('video').on('timeupdate', this.highlight.bind(this));
-  },
-
-  unbindDurationChange: function () {
-    $('video').unbind('timeupdate');
-    this.closeHighlightedDesc();
-  },
-
   render: function () {
     // jscs: disable
     $(this.el).html(Mustache.to_html(this.template()));
@@ -76,6 +69,13 @@ var SidebarView = Backbone.View.extend({
     this.renderUserInfo();
     this.$el.find('.annotations-list').append(Mustache.to_html($('#extension-info-template').html()));
     this.$el.find('.info').hide();
+
+    this.resizeWidth = new ResizeWidth(this.$el);
+    this.autoHighlight = new AutoHighlight({
+      $el: this.$el,
+      collection: this.collection,
+      videoTag: this.videoTag
+    });
     // jscs: enable
     return this;
   },
@@ -104,17 +104,25 @@ var SidebarView = Backbone.View.extend({
     this.$el.find('ul.annotations').append(view.render().el);
   },
 
+  toggleSidebar: function () {
+    var sidebar = this.$el;
+    if (sidebar.hasClass('sidebar-hidden')) {
+      sidebar.removeClass('sidebar-hidden').addClass('sidebar-visible');
+      sidebar.css('right', '0px');
+      sidebar.find('.caret').removeClass('fa-caret-left').addClass('fa-caret-right');
+    } else {
+      var right = parseInt(sidebar.css('width')) + 1;
+      sidebar.removeClass('sidebar-visible').addClass('sidebar-hidden');
+      sidebar.css('right', -1 * right + 'px');
+      sidebar.find('.caret').removeClass('fa-caret-right').addClass('fa-caret-left');
+    }
+  },
+
   search: function (e) {
     var keyword = $(e.target).val();
     var searchResult = this.collection.search(keyword);
     this.$el.find('ul.annotations').empty();
     this.addAll(searchResult);
-  },
-
-  hideSidebar: function (event) {
-    event.preventDefault();
-    this.$el.toggle('slide');
-    $(this.arrowTag).fadeIn('slow');
   },
 
   syncAnnotations: function () {
@@ -131,6 +139,10 @@ var SidebarView = Backbone.View.extend({
     this.userInfo.toJSON(), { shortName: shortName })
     ));
     // jscs: enable
+  },
+
+  toggleHighlight: function (e) {
+    this.autoHighlight.toggleHighlight(e);
   },
 
   toggleInfo: function (e) {
@@ -158,57 +170,6 @@ var SidebarView = Backbone.View.extend({
     .addClass('fa-question show-info')
     .attr('title', 'Show Help');
     this.$el.find('.annotations').show();
-  },
-
-  highlight: function () {
-    if (!_.isEmpty(this.collection.models)) {
-
-      var currentSeconds = parseInt(this.videoTag.getCurrentTime());
-
-      this.closeHighlightedDesc();
-
-      _.each(this.collection.models, (model) => {
-        if ((model.get('end_seconds') !== null &&
-          currentSeconds >= model.get('start_seconds') &&
-          currentSeconds <= model.get('end_seconds')) ||
-          model.get('start_seconds') === currentSeconds) {
-          this.$el.find('li.' + model.get('id') + ' .icon-title')
-          .removeClass('fa-caret-right')
-          .addClass('fa-caret-down');
-          this.$el.find('li.' + model.get('id') + ' .annotation-description').show();
-        }
-      });
-    }
-  },
-
-  closeHighlightedDesc: function () {
-    _.each(this.$el.find('li'), function (li) {
-      var $li = $(li);
-
-      //Check if type auto and window opened
-      if (($li.find('.icon-title').hasClass('fa-caret-down') &&
-        $li.find('.icon-title').data('type') === 'auto' &&
-        $li.find('div.annotation-description').css('display') === 'block')) {
-
-        $li.find('.icon-title')
-        .removeClass('fa-caret-down')
-        .addClass('fa-caret-right');
-
-        $li.find('.annotation-description').hide();
-      }
-    });
-  },
-
-  toggleHighlight: function (e) {
-    var $target = $(e.target);
-    if ($target.hasClass('fa-check-square-o')) {
-      this.unbindDurationChange();
-      $target.removeClass('fa-check-square-o').addClass('fa-square-o');
-      return;
-    }
-
-    this.bindDurationChange();
-    $target.removeClass('fa-square-o').addClass('fa-check-square-o');
   },
 
   fetchUser: function () {
