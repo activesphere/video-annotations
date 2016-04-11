@@ -83,6 +83,7 @@ var AppView = Backbone.View.extend({
     });
 
     this.marker = new AnnotationMarker(this.newAnnotationView);
+    this.bindResize();
   },
 
   bindEvents: function () {
