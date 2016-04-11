@@ -215,7 +215,7 @@ var AppView = Backbone.View.extend({
   getVideoKey: function () {
     var currentUrl = window.location;
     this.hostname = Utils.hosts[currentUrl.hostname] || '';
-    this.videoKey = this.base64Url(currentUrl.href);
+    this.videoKey = this.base64Url(currentUrl.href.split('#')[0]);
   },
 
   base64Url: function (currentUrl) {
