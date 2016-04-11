@@ -14,7 +14,7 @@ var NewAnnotationView = Backbone.View.extend({
   },
 
   events: {
-    'keyup textarea.editor': 'createByEvent',
+    'click .editor-minimized': 'restoreEditor',
   },
 
   initialize: function (options) {
@@ -29,22 +29,9 @@ var NewAnnotationView = Backbone.View.extend({
 
   render: function () {
     this.$el.html(this.template());
-    this.updatePosition();
-    this.unbindEvents();
-    this.bindEvents();
+    this.$el.find('.editor-minimized').css('display', 'none');
+    this.$el.css({ right: '5px', top:  '5px' });
     return this;
-  },
-
-  createByEvent: function (event) {
-    if (event.keyCode === 13 && event.altKey) {
-      this.createAnnotation(event.target.value);
-    }
-  },
-
-  createByClick: function (event) {
-    event.preventDefault();
-    var value = this.$el.find('textarea')[0].value;
-    this.createAnnotation(value);
   },
 
   createAnnotation: function (value) {
@@ -77,14 +64,6 @@ var NewAnnotationView = Backbone.View.extend({
     this.clear();
   },
 
-  bindEvents: function () {
-    this.$el.find('.annotation-text').bind('keydown', 'esc', this.cancel.bind(this));
-  },
-
-  unbindEvents: function () {
-    this.$el.find('.annotation-text').unbind('keydown', 'esc', this.cancel.bind(this));
-  },
-
   cancel: function (e) {
     if (typeof e !== 'undefined') {
       e.preventDefault();
@@ -94,17 +73,22 @@ var NewAnnotationView = Backbone.View.extend({
     this.clear();
   },
 
-  clear: function () {
-    this.$el.detach();
+  hideEditor: function () {
+    this.$el.find('.annotation-editor').css('display', 'none');
+    this.$el.find('.editor-minimized').css('display', 'block');
+    this.$el.css('width', '20px');
+    this.videoTag.play();
   },
 
-  updatePosition: function () {
-    if (this.$el.find('textarea.annotation-text')[0]) {
-      this.$el.css({
-          right: '5px',
-          top:  '5px',
-        });
-    }
+  restoreEditor: function () {
+    this.$el.find('.annotation-editor').css('display', 'block');
+    this.$el.find('.editor-minimized').css('display', 'none');
+    this.$el.css('width', '480px');
+    this.videoTag.pause();
+  },
+
+  clear: function () {
+    this.$el.detach();
   }
 });
 

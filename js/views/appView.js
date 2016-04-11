@@ -111,6 +111,18 @@ var AppView = Backbone.View.extend({
       self.closeAnnotation(e);
       return false;
     });
+
+    $(document).bind('keydown', 'alt+h', function (e) {
+      e.stopPropagation();
+      self.hideEditor(e);
+      return false;
+    });
+
+    $(document).bind('keydown', 'shift+h', function (e) {
+      e.stopPropagation();
+      self.restoreEditor(e);
+      return false;
+    });
   },
 
   bindResize: function () {
@@ -169,6 +181,17 @@ var AppView = Backbone.View.extend({
     return false;
   },
 
+  hideEditor: function () {
+    this.newAnnotationView.hideEditor();
+  },
+
+  restoreEditor: function () {
+    this.newAnnotationView.restoreEditor();
+    if (this.editor) {
+      this.editor.codemirror.focus();
+    }
+  },
+
   createEditor: function () {
     this.editor = new SimpleMDE({ element: document.getElementById('editor'),
       autofocus: true,
@@ -181,6 +204,10 @@ var AppView = Backbone.View.extend({
 
       'Alt-Enter': () => {
         this.createByClick();
+      },
+
+      'Alt-H': () => {
+        this.hideEditor();
       }
     });
   },

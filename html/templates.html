@@ -38,14 +38,17 @@
   </script>
 
   <script type="text/template" id='new-annotation-template'>
-    <div class="editor-container">
-      <textarea  id='editor' placeholder='Add your Annotation here...'></textarea>
+    <div class="annotation-editor">
+      <div class="editor-container">
+        <textarea  id='editor' placeholder='Add your Annotation here...'></textarea>
+      </div>
+      <div class='clear'></div>
+      <div class="flex">
+        <a href='#' class='create button'><i class="fa fa-plus-square"></i>Add</a>
+        <a href='#' class='cancel button'><i class="fa fa-minus-square"></i>Cancel</a>
+      </div>
     </div>
-    <div class='clear'></div>
-    <div class="flex">
-      <a href='#' class='create button'><i class="fa fa-plus-square"></i>Add</a>
-      <a href='#' class='cancel button'><i class="fa fa-minus-square"></i>Cancel</a>
-    </div>
+    <div class="editor-minimized" title="Restore Editor"><i class="fa fa-plus-square"></i></div>
   </script>
 
   <script type="text/template" id='annotation-edit-template'>
@@ -92,6 +95,8 @@
           <li><strong><em>atl+d</em></strong> Create Quick Annotation</li>
           <li><strong><em>alt+s</em></strong> Mark start time for Annotation</li>
           <li><strong><em>alt+e</em></strong> Mark end time for and create Annotation</li>
+          <li><strong><em>alt+h</em></strong> Hide Annotation Editor (minimise it)</li>
+          <li><strong><em>shift+h</em></strong> Restore hidden Annotation Editor</li>
           <li><strong><em>esc</em></strong> Close editor without creating Annotation</li>
         </ul>
         <h4>Short cuts supported in annotation editor:</h4>

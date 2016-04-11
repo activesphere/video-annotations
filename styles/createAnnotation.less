@@ -3,11 +3,13 @@
 	top: 5px;
 	left: 5px;
 
+	width: 480px;
+
 	z-index: 1001;
 
 	background-color: #fff;
 
-	padding: 1px;
+	padding: 0;
 	box-sizing: border-box;
 
 	border: 1px solid @colorLighter;
@@ -38,5 +40,17 @@
 		resize: none;
 
 		outline: none;
+	}
+
+	.editor-minimized {
+		color: @color;
+
+		width: 15px;
+		height: 20px;
+		margin-top: -2px;
+
+		.fa {
+			font-size: 23px;
+		}
 	}
 }
