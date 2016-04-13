@@ -14,6 +14,7 @@ import NewAnnotationView from 'views/newAnnotationView.js';
 import config from '../config';
 
 import AnnotationMarker from './_appView/annotationMarker.js';
+import AnnotationsVisual from './_appView/annotationsVisual.js';
 
 var AppView = Backbone.View.extend({
   el: 'div#video-annotation',
@@ -21,6 +22,7 @@ var AppView = Backbone.View.extend({
   events: {
     'click a.create': 'createByClick',
     'click a.cancel': 'cancel',
+    'click .remove-visual': 'removeAnnotationsVisual'
   },
 
   initialize: function () {
@@ -83,6 +85,10 @@ var AppView = Backbone.View.extend({
     });
 
     this.marker = new AnnotationMarker(this.newAnnotationView);
+    this.annotationsVisual = new AnnotationsVisual({
+      videoTag: this.videoTag,
+      annotations: Annotations
+    });
     this.bindResize();
   },
 
@@ -107,10 +113,8 @@ var AppView = Backbone.View.extend({
     });
 
     $(document).bind('keydown', 'esc', function (e) {
-      // TODO: remove stop propogation here
-      e.stopPropagation();
       self.closeAnnotation(e);
-      return false;
+      self.removeAnnotationsVisual();
     });
 
     $(document).bind('keydown', 'alt+h', function (e) {
@@ -122,6 +126,18 @@ var AppView = Backbone.View.extend({
     $(document).bind('keydown', 'shift+h', function (e) {
       e.stopPropagation();
       self.restoreEditor(e);
+      return false;
+    });
+
+    $(document).bind('keydown', 'alt+v', function (e) {
+      e.stopPropagation();
+      self.annotationsVisual.renderVisuals();
+      return false;
+    });
+
+    $(document).bind('keydown', 'shift+v', function (e) {
+      e.stopPropagation();
+      self.removeAnnotationsVisual();
       return false;
     });
   },
@@ -174,6 +190,10 @@ var AppView = Backbone.View.extend({
     this.newAnnotationView.createAnnotation(value);
     this.marker.removeAnnotationMarker();
     return false;
+  },
+
+  removeAnnotationsVisual: function () {
+    this.annotationsVisual.removeAnnotationsVisual();
   },
 
   cancel: function (e) {

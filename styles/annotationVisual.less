@@ -1,0 +1,95 @@
+@timelineColour: #F7803C;
+#video-annotation .annotation-visual {
+	position: absolute;
+
+	z-index: 999;
+
+	height: 4px;
+
+	pointer-events: all;
+
+	background-color: @timelineColour;
+
+	cursor: pointer;
+
+	.time-display {
+		z-index: 1000;
+		position: absolute;
+
+		height: 18px;
+
+		padding: 1px;
+		box-sizing: border-box;
+
+		top: -18px;
+		color: #fff;
+		background-color: @timelineColour;
+	}
+
+	.start {
+		left: 0;
+	}
+
+	.end {
+		right: 0;
+	}
+}
+
+#video-annotation div.focused {
+	z-index: 1001;
+}
+
+#video-annotation .quick-annotation-visual {
+	#video-annotation .annotation-visual;
+	background-color: #3299BB;
+	height: 7px;
+	width: 7px;
+
+	.time-display {
+		color: #fff;
+		background-color: #3299BB;
+	}
+
+	&.faded-visual {
+		background-color: tint(#3299BB);
+	}
+}
+
+#video-annotation .remove-visual {
+	position: absolute;
+	top: 5px;
+	right: 5px;
+
+	z-index: 999;
+
+	padding: 2px;
+	box-sizing: border-box;
+
+	pointer-events: all;
+
+	cursor: pointer;
+
+	background-color: #fff;
+	color: black;
+	border: 1px solid @timelineColour;
+	border-radius: 2px;
+}
+
+#video-annotation .faded-visual {
+	background-color: tint(@timelineColour);
+}
+
+#video-annotation .annotation-visual-chevron {
+	position: absolute;
+
+	z-index: 999;
+
+	width: 0;
+	height: 0;
+
+	border-left: 5px solid transparent;
+	border-right: 5px solid transparent;
+	border-top: 5px solid @timelineColour;
+
+	margin-right: -5px;
+}

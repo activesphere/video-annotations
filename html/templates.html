@@ -95,9 +95,13 @@
           <li><strong><em>atl+d</em></strong> Create Quick Annotation</li>
           <li><strong><em>alt+s</em></strong> Mark start time for Annotation</li>
           <li><strong><em>alt+e</em></strong> Mark end time for and create Annotation</li>
-          <li><strong><em>alt+h</em></strong> Hide Annotation Editor (minimise it)</li>
-          <li><strong><em>shift+h</em></strong> Restore hidden Annotation Editor</li>
           <li><strong><em>esc</em></strong> Close editor without creating Annotation</li>
+          <br>
+          <li><strong><em>alt+h</em></strong> Hide Annotation Editor (minimize it)</li>
+          <li><strong><em>shift+h</em></strong> Restore hidden Annotation Editor</li>
+          <br>
+          <li><strong><em>alt+v</em></strong> Show a visual representation of all Annotations</li>
+          <li><strong><em>shift+v</em></strong> Remove Annotations visualization</li>
         </ul>
         <h4>Short cuts supported in annotation editor:</h4>
         <ul>
@@ -148,5 +152,20 @@
 
   <script type="text/template" id="no-annotation-template">
     <h3 class='center mt5'>No Annotations</h3>
+  </script>
+
+  <script type="text/template" id="annotation-visual-template">
+    <div id="{{id}}" class="annotation-visual" title="{{title}}">
+      <div class="time-display start hide"><p>{{startMinutes}}m:{{startSeconds}}s</p></div>
+      {{#end_seconds}}
+      <div class="time-display end hide"><p>{{endMinutes}}m:{{endSeconds}}s</p></div>
+      {{/end_seconds}}
+    </div>
+  </script>
+
+  <script type="text/template" id="close-annotation-visual-template">
+    <div class="remove-visual">
+      <p>Close Annotations Visual <i class="fa fa-times"></i></p>
+    </div>
   </script>
 </div>
