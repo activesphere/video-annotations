@@ -1,6 +1,6 @@
 {
   "name": "video-annotation",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "A chrome extension to annotate videos & share it with others via dropbox",
   "main": "index.html",
   "dependencies": {},
