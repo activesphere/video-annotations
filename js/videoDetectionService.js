@@ -13,7 +13,8 @@ function (data) {
   const videokey = {};
 
   const checkAndEnableFeature = () => {
-    if ($('video').length > 0) {
+    // application works on assumption that there is only one video in page
+    if ($('video').length > 0 && $('video')[0].getAttribute('src')) {
       if (!$('#video-annotation')[0]) {
         var $video = Utils.getVideoInterface();
         $video.append($('#video-main-template').html());
