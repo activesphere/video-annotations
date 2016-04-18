@@ -45,7 +45,11 @@ var AnnotationView = Backbone.View.extend({
 
     // jscs: disable
     this.$el.find('.edit-annotation').html(
-      Mustache.to_html($('#annotation-edit-template').html(), { id: id })
+      Mustache.to_html($('#annotation-edit-template').html(), {
+        id: id,
+        className: 'update-annotation',
+        function: 'update'
+      })
       // jscs: enable
     );
   },

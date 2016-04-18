@@ -64,7 +64,7 @@ var SidebarView = Backbone.View.extend({
 
   render: function () {
     // jscs: disable
-    $(this.el).html(Mustache.to_html(this.template()));
+    this.$el.html(Mustache.to_html(this.template()));
     this.renderList();
     this.renderUserInfo();
     this.$el.find('.annotations-list').append(Mustache.to_html($('#extension-info-template').html()));
@@ -156,6 +156,7 @@ var SidebarView = Backbone.View.extend({
 
   showInfo: function () {
     this.$el.find('.annotations').hide();
+    this.$el.find('.create-annotation').hide();
     this.$el.find('.fa-container > .toggle-info')
     .removeClass('fa-question')
     .addClass('fa-times')
@@ -170,6 +171,7 @@ var SidebarView = Backbone.View.extend({
     .addClass('fa-question show-info')
     .attr('title', 'Show Help');
     this.$el.find('.annotations').show();
+    this.$el.find('.create-annotation').show();
   },
 
   fetchUser: function () {

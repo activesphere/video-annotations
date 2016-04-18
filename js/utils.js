@@ -74,6 +74,10 @@ Utils.getVideoInterface = function () {
         return player.duration;
       },
 
+      isPaused: function () {
+        return player.paused;
+      },
+
       play: function () {
         return player.play();
       },

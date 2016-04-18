@@ -1,6 +1,7 @@
 import Backbone from 'backbone';
 import _ from 'lodash';
 import $ from 'vendor/jquery.hotkeys.js';
+import Mustache from 'mustache.js';
 
 import Utils from 'utils.js';
 import Annotation from 'models/models.js';
@@ -9,12 +10,12 @@ import Annotations from 'collections/collections.js';
 var NewAnnotationView = Backbone.View.extend({
   tagName: 'div',
   className: 'create-annotation',
-  template: function () {
-    return $('#new-annotation-template').html();
-  },
-
-  events: {
-    'click .editor-minimized': 'restoreEditor',
+  template: function (id) {
+    return Mustache.to_html($('#annotation-edit-template').html(), {
+      id: id,
+      function: 'create',
+      className: 'create-annotation'
+    });
   },
 
   initialize: function (options) {
@@ -27,10 +28,8 @@ var NewAnnotationView = Backbone.View.extend({
     this.videoFrame = options.videoFrame;
   },
 
-  render: function () {
-    this.$el.html(this.template());
-    this.$el.find('.editor-minimized').css('display', 'none');
-    this.$el.css({ right: '5px', top:  '5px' });
+  render: function (id) {
+    this.$el.html(this.template(id));
     return this;
   },
 
@@ -71,20 +70,6 @@ var NewAnnotationView = Backbone.View.extend({
 
     this.videoTag.play();
     this.clear();
-  },
-
-  hideEditor: function () {
-    this.$el.find('.annotation-editor').css('display', 'none');
-    this.$el.find('.editor-minimized').css('display', 'block');
-    this.$el.css('width', '20px');
-    this.videoTag.play();
-  },
-
-  restoreEditor: function () {
-    this.$el.find('.annotation-editor').css('display', 'block');
-    this.$el.find('.editor-minimized').css('display', 'none');
-    this.$el.css('width', '480px');
-    this.videoTag.pause();
   },
 
   clear: function () {

@@ -189,15 +189,19 @@ export default class AnnotationsVisual {
     $annotationVisual.hover(onEnter, onLeave);
   }
 
-  highlightAnnotation(e) {
-    const id = '.' + $(e.target).attr('id');
-
+  showSidebar() {
     var $sidebar = $('.sidebar');
     if ($sidebar.hasClass('sidebar-hidden')) {
       $sidebar.removeClass('sidebar-hidden').addClass('sidebar-visible');
       $sidebar.css('right', '0px');
       $sidebar.find('.caret').removeClass('fa-caret-left').addClass('fa-caret-right');
     }
+  }
+
+  highlightAnnotation(e) {
+    const id = '.' + $(e.target).attr('id');
+
+    this.showSidebar();
 
     $(id).find('.annotation-description').show();
     $(id).find('.icon-title').

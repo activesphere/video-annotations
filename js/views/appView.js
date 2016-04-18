@@ -21,7 +21,7 @@ var AppView = Backbone.View.extend({
 
   events: {
     'click a.create': 'createByClick',
-    'click a.cancel': 'cancel',
+    'click a.cancel-create': 'cancel',
     'click .remove-visual': 'removeAnnotationsVisual'
   },
 
@@ -117,12 +117,6 @@ var AppView = Backbone.View.extend({
       self.removeAnnotationsVisual();
     });
 
-    $(document).bind('keydown', 'alt+h', function (e) {
-      e.stopPropagation();
-      self.hideEditor(e);
-      return false;
-    });
-
     $(document).bind('keydown', 'shift+h', function (e) {
       e.stopPropagation();
       self.restoreEditor(e);
@@ -158,9 +152,34 @@ var AppView = Backbone.View.extend({
 
   createAnnotation: function () {
     this.videoTag.pause();
-    this.$el.append(this.newAnnotationView.render().el);
+    this.annotationsVisual.showSidebar();
+    const id = Date.now();
+    this.$el.find('.create-annotation').html(this.newAnnotationView.render(id).el);
+    this.createEditor(id);
     this.marker.renderEndMarker();
-    this.createEditor();
+  },
+
+  createEditor: function (id) {
+    this.editor = new SimpleMDE({ element: document.getElementById(id),
+      autofocus: true,
+    });
+    this.editor.codemirror.setOption('extraKeys', {
+      Esc: () => {
+        this.cancelCreateAnnotation();
+      },
+
+      'Alt-Enter': () => {
+        this.createByClick();
+      },
+
+      'Alt-P': () => {
+        if (this.videoTag.isPaused()) {
+          this.videoTag.play();
+        } else {
+          this.videoTag.pause();
+        }
+      }
+    });
   },
 
   changeframe: function () {
@@ -174,9 +193,11 @@ var AppView = Backbone.View.extend({
 
   quickAnnotation: function () {
     this.videoTag.pause();
+    this.annotationsVisual.showSidebar();
     this.newAnnotationView.isQuickAnnotation = true;
-    this.$el.append(this.newAnnotationView.render().el);
-    this.createEditor();
+    const id = Date.now();
+    this.$el.find('.create-annotation').html(this.newAnnotationView.render(id).el);
+    this.createEditor(id);
   },
 
   closeAnnotation: function (e) {
@@ -202,35 +223,10 @@ var AppView = Backbone.View.extend({
     return false;
   },
 
-  hideEditor: function () {
-    this.newAnnotationView.hideEditor();
-  },
-
-  restoreEditor: function () {
-    this.newAnnotationView.restoreEditor();
-    if (this.editor) {
-      this.editor.codemirror.focus();
-    }
-  },
-
-  createEditor: function () {
-    this.editor = new SimpleMDE({ element: document.getElementById('editor'),
-      autofocus: true,
-      placeholder: 'Enter your Annotation here..'
-    });
-    this.editor.codemirror.setOption('extraKeys', {
-      Esc: () => {
-        this.cancel();
-      },
-
-      'Alt-Enter': () => {
-        this.createByClick();
-      },
-
-      'Alt-H': () => {
-        this.hideEditor();
-      }
-    });
+  cancelCreateAnnotation: function () {
+    this.$el.find('.create-annotation').html('');
+    this.$el.find('.annotation-marker').remove();
+    this.editor = null;
   },
 
   getVideoKey: function () {
