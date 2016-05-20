@@ -8,7 +8,7 @@ Ideal for creating indices for educational content
 ```
 npm install
 bower install
-webpack
+npm run build
 ```
 
 ## TODO
