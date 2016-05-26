@@ -6,3 +6,4 @@ node_modules/
 .bowerrc
 js/config.js
 dist/*
+\#*
