@@ -39,13 +39,14 @@ var SidebarView = Backbone.View.extend({
     _.bindAll(this, 'renderList');
     _.bindAll(this, 'syncAnnotations');
     _.bindAll(this, 'renderUserInfo');
+    _.bindAll(this, 'updateMetadata');
 
     this.arrowTag = options.arrowTag;
     this.storage = options.storage;
     this.dropboxFile = options.dropboxFile;
     this.videoTag =  options.videoTag;
     this.userInfo = options.userInfo;
-
+    
     this.eventPromises = syncingData(this.storage, this.dropboxFile, this.collection, true)
     .then(() => {
       this.collection.on('reset', this.renderList);
@@ -56,6 +57,8 @@ var SidebarView = Backbone.View.extend({
       this.collection.on('add', this.syncAnnotations);
       this.collection.on('remove', this.syncAnnotations);
       this.collection.on('change', this.syncAnnotations);
+      
+      this.collection.on('add', this.updateMetadata);
     });
 
     this.userInfo.on('change', this.renderUserInfo);
@@ -125,6 +128,15 @@ var SidebarView = Backbone.View.extend({
     this.addAll(searchResult);
   },
 
+  updateMetadata: function () {
+    if (this.collection.length === 1) {
+      // probably first write. Add creation-time
+      this.collection.metadata.creationTime = new Date().toString();
+    }
+    
+    this.collection.metadata.lastUpdate = new Date().toString();
+  },
+  
   syncAnnotations: function () {
     syncingData(this.storage, this.dropboxFile, this.collection);
   },
