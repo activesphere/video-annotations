@@ -37,11 +37,26 @@ const PROVIDER_INFO = {
   'www.youtube.com': {
     parentContainer: '.player-api',
     controlsHeight: 41,
-    paddingForSeeker: 12
+    paddingForSeeker: 12,
   },
   default: {
     controlsHeight: 39,
     paddingForSeeker: 0
+  }
+};
+
+Utils.getVideoInfo = function (host) {
+  switch (host) {
+  case 'youtube':
+    return {
+      videoTitle: $('title').text(),
+      provider: 'youtube'
+    };
+  case 'coursera':
+    return {
+      videoTitle: $('title').text(),
+      provider: 'coursera'
+    };
   }
 };
 

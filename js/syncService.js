@@ -42,23 +42,26 @@ export function merge(sources, local, initialSync) {
   }
 
   if (!initialSync) {
-    return local;
+    return { annotations: local,
+             metadata: null };
   }
 
   if (_.isEmpty(storageData)) {
     return dropboxData;
   }
 
-  var merged = _.map(dropboxData, (record) => {
-    var storageIdx = _.findIndex(storageData, (d) => d.id === record.id);
+  var merged = _.map(dropboxData.annotations, (record) => {
+    var storageIdx = _.findIndex(storageData.annotations, (d) => d.id === record.id);
     if (storageIdx > -1) {
-      record = storageData.splice(storageIdx, 1)[0];
+      record = storageData.annotations.splice(storageIdx, 1)[0];
     }
-
+    
     return record;
   });
 
-  return merged.concat(storageData);
+  //return merged.concat(storageData['annotations']);
+  storageData.annotations = merged.concat(storageData.annotations);
+  return storageData;
 }
 
 var syncingData = function (localStorage, dropboxFile, collection, initialSync) {
@@ -66,14 +69,18 @@ var syncingData = function (localStorage, dropboxFile, collection, initialSync) 
     merge(data, _.map(collection.models, (model) => model.toJSON()), initialSync)
   ).then((jsonData) => {
     if (initialSync) {
-      collection.set(jsonData, { silent: true });
+      collection.set(jsonData.annotations, { silent: true });
+      collection.metadata = jsonData.metadata;
     }
+
+    jsonData.metadata = collection.metadata;
 
     localStorage.save(jsonData);
     dropboxFile.write(jsonData);
   }).catch((err) => {
     console.error(err);
   });
+  
 };
 
 export default syncingData;

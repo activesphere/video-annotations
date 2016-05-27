@@ -8,6 +8,7 @@ var Annotations = Backbone.Collection.extend({
   initialize: function () {
     this.storage = null;
     this.dropboxFile = null;
+    this.metadata = null;
   },
 
   search: function (keyword) {
@@ -27,7 +28,8 @@ var Annotations = Backbone.Collection.extend({
     });
 
     return models;
-  }
+  },
+
 });
 
 export default new Annotations();

@@ -32,6 +32,14 @@ var AppView = Backbone.View.extend({
 
     this.UserInfo = new UserInfo({});
     this.fetchUser();
+    this.metadata = {
+      // set default fields
+      videoTitle: '',
+      provider: '',
+      creationTime: null,
+      lastUpdate: null
+    };
+    
     this.draggable = false;
 
     this.getVideoKey();
@@ -57,8 +65,9 @@ var AppView = Backbone.View.extend({
     this.videoFrame = new Frame({ start_seconds: 0 });
     // jscs: enable
 
+    this.updateMetadata();
     this.updateStorage();
-
+    
     this.videoFrame.on('change', this.updateFrame);
     this.videoTag = Utils.getVideoInterface();
 
@@ -75,6 +84,7 @@ var AppView = Backbone.View.extend({
     });
 
     Annotations.reset(null, { silent: true });
+    
     this.sidebarView = new SidebarView({
       collection: Annotations,
       storage: this.storage,
@@ -262,6 +272,12 @@ var AppView = Backbone.View.extend({
     });
   },
 
+  updateMetadata: function () {
+    var host = Utils.hosts[window.location.hostname];
+    var pagedata = Utils.getVideoInfo(host);
+    this.metadata = _.merge(this.metadata, pagedata);
+  },
+
   updateStorage: function () {
     this.storage.name = this.videoKey;
     this.dropboxFile.name = this.videoKey;
@@ -269,6 +285,7 @@ var AppView = Backbone.View.extend({
     //refresh object
     Annotations.storage = this.storage;
     Annotations.dropboxFile = this.dropboxFile;
+    Annotations.metadata = this.metadata;
   },
 
   fetchUser: function () {
