@@ -4,10 +4,10 @@ import _ from 'lodash';
 import Utils from 'utils.js';
 
 
-var TableRow = React.createClass({
-  render: function () {
-    var metadata = this.props.video.metadata;
-    var annotations = this.props.video.annotations;
+
+const TableRow = (props) => {
+    var metadata = props.video.metadata;
+    var annotations = props.video.annotations;
     return (
       <tr>
         <th>{metadata.provider}</th>
@@ -19,11 +19,11 @@ var TableRow = React.createClass({
         <td>{Utils.daysPassed(metadata.lastUpdate)} days ago</td>
       </tr>
     );
-  }
-});
+};
 
-var Table = React.createClass({
-  render: function () {
+
+class Table extends React.Component {
+  render () {
     var rows = this.props.videos.map((video) => {
       return (<TableRow key={video.id} video={video} />);
     });
@@ -44,17 +44,18 @@ var Table = React.createClass({
       </table>
     );
   }
-});
+}
 
-var handleStorageData = function (data) {
+const handleStorageData = function (data) {
   // Make an array of videos{metadata,annotations}
   var storage = _.cloneDeep(data);
   var videos = [];
+
   _.forIn(storage, (value, key) => {
     value.id = key;
     value.metadata.url = atob(key);
     videos.push(value);
-  })
+  });
   
   if (!videos.length) {
     // No annotations, yet.
@@ -63,6 +64,6 @@ var handleStorageData = function (data) {
     ReactDOM.render(<Table videos={videos} />,
                     document.getElementById('tableHolder'));
   }  
-}
+};
 
 chrome.storage.local.get(handleStorageData);
