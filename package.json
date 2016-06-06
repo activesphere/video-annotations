@@ -38,6 +38,7 @@
   "scripts": {
     "test": "mocha --compilers js:babel-core/register test/unit",
     "build": "webpack && grunt",
+    "watch": "webpack --progress --color --watch",
     "release": "node release.js"
   },
   "repository": {
