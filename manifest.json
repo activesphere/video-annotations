@@ -35,6 +35,11 @@
       ]
     }
   ],
+  "options_ui": {
+    "page": "html/options.html",
+    "chrome_style": true,
+    "open_in_tab": true
+  },
   "web_accessible_resources": [
     "html/templates.html",
     "html/chrome_oauth_receiver.html",

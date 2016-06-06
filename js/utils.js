@@ -60,6 +60,12 @@ Utils.getVideoInfo = function (host) {
   }
 };
 
+Utils.daysPassed = function (since) {
+  return Math.round(
+    (new Date() - new Date(since)) / (1000 * 60 * 60 * 24)
+  );
+};
+
 Utils.getVideoInterface = function () {
   function getProvider() {
     var host = window.location.host;

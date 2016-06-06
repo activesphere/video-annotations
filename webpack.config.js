@@ -8,7 +8,8 @@ configObj = {
   entry:  {
     videoDetection: 'videoDetectionService',
     oauth: 'chrome_oauth_receiver',
-    background: 'background'
+    background: 'background',
+    options: 'options'
   },
   output: {
     path:     'builds/bundles',
@@ -19,26 +20,27 @@ configObj = {
       path.join(__dirname, "js"),
       path.join(__dirname, "bower_components"),
       path.join(__dirname, "styles")
-    ]
+    ],
+    extensions: ['', '.js', '.jsx']
   },
   module: {
     preLoaders: [{
-      test: /\.js/,
+      test: /\.js$/,
       exclude: /node_modules|bower_components|vendor/,
       loader: 'jscs-loader'
     }, {
-      test: /\.js/,
+      test: /\.js$/,
       exclude: /node_modules|bower_components|vendor/,
       loader: 'jshint-loader'
     }],
     loaders: [
     {
-      test:   /\.js/,
+      test:   /\.jsx?$/,
       loader: 'babel',
       include: __dirname + '/js',
       exclude: /node_modules|bower_components/,
       query: {
-        presets: ['es2015']
+        presets: ['react', 'es2015']
       },
     },
     {
@@ -57,8 +59,9 @@ configObj = {
   ],
   jscs: {
     preset: 'airbnb',
-    emitErrors: true,
+    emitErrors: false,
     requireTrailingComma: false,
+    disallowTrailingWhitespace: false,
     safeContextKeyword: ["_this", "self", "that"],
   },
   jshint: {
