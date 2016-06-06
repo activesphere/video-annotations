@@ -8,8 +8,7 @@ configObj = {
   entry:  {
     videoDetection: 'videoDetectionService',
     oauth: 'chrome_oauth_receiver',
-    background: 'background',
-    options: 'options'
+    background: 'background'
   },
   output: {
     path:     'builds/bundles',
