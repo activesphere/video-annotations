@@ -272,13 +272,7 @@ var AppView = Backbone.View.extend({
   getVideoKey: function () {
     var currentUrl = window.location;
     this.hostname = Utils.hosts[currentUrl.hostname] || '';
-    this.videoKey = this.base64Url(currentUrl.href.split('#')[0]);
-  },
-
-  base64Url: function (currentUrl) {
-    return btoa(encodeURIComponent(currentUrl).replace(/%([0-9A-F]{2})/g, function (match, p1) {
-      return String.fromCharCode('0x' + p1);
-    }));
+    this.videoKey = Utils.base64Url(currentUrl);
   },
 
   getVideoId: function (name, query) {

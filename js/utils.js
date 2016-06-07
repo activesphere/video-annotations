@@ -31,6 +31,13 @@ Utils.splitAnnotation = function (annotation) {
   return { title: title, description: description, annotation: annotation };
 };
 
+Utils.base64Url = function (currentUrl) {
+  currentUrl = currentUrl.href.split('#')[0];
+  return btoa(encodeURIComponent(currentUrl).replace(/%([0-9A-F]{2})/g, function (match, p1) {
+    return String.fromCharCode('0x' + p1);
+  }));
+};
+
 Utils.userInfo = 'dropbox_userinfo';
 
 const PROVIDER_INFO = {
