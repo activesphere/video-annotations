@@ -3,10 +3,13 @@ import ReactDOM from 'react-dom';
 import Utils from 'utils.js';
 
 const TableRow = (props) => {
-  var metadata = props.video.metadata;
-  var annotations = props.video.annotations;
+  let metadata = props.video.metadata;
+  let annotations = props.video.annotations;
+  let trClassName = props.video.active ? 'active' : 'inactive';
+  let key = props.video.id;
   return (
-      <tr>
+      <tr className={trClassName}
+          onClick={props.updateNotes} data-video-key={key}>
         <th>{metadata.provider}</th>
         <td>
           <a href={metadata.url}>{metadata.videoTitle}</a>
@@ -19,9 +22,13 @@ const TableRow = (props) => {
 };
 
 const SummaryTable = (props) => {
-  var rows = props.annotations.map((annotation) =>
-    <TableRow key={annotation.id} video={annotation} />
-  );
+  let rows = props.videos.map((video) => {
+    return (
+        <TableRow key={video.id}
+                  video={video}
+                  updateNotes={props.updateNotes} />
+    );
+  });
   return (
       <table className="table table-hover">
         <thead>
