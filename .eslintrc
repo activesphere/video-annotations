@@ -1,0 +1,7 @@
+{
+    "extends": "airbnb",
+    "rules": {
+      "no-trailing-spaces": ["error", {"skipBlankLines": true}],
+      "no-param-reassign": ["error", {"props": false}],
+    }
+}

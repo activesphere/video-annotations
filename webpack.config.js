@@ -8,8 +8,7 @@ configObj = {
   entry:  {
     videoDetection: 'videoDetectionService',
     oauth: 'chrome_oauth_receiver',
-    background: 'background',
-    options: 'options'
+    background: 'background'
   },
   output: {
     path:     'builds/bundles',
@@ -32,6 +31,10 @@ configObj = {
       test: /\.js$/,
       exclude: /node_modules|bower_components|vendor/,
       loader: 'jshint-loader'
+    }, {
+      test: /\.jsx$/,
+      exclude: /node_modules|bower_components|vendor/,
+      loader: 'eslint-loader'
     }],
     loaders: [
     {

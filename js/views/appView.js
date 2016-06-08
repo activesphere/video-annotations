@@ -16,6 +16,11 @@ import config from '../config';
 import AnnotationMarker from './_appView/annotationMarker.js';
 import AnnotationsVisual from './_appView/annotationsVisual.js';
 
+/* import Summary from '../containers/Summary';
+ * import React from 'react';
+ * import ReactDOM from 'react-dom';*/
+import ReactViewManager from './ReactViewManager.jsx';
+
 var AppView = Backbone.View.extend({
   el: 'div#video-annotation',
 
@@ -75,6 +80,9 @@ var AppView = Backbone.View.extend({
     this.$el.html($(this.sidebarView.render().el));
     this.$el.find('.sidebar').addClass('sidebar-hidden');
     this.updateFrame();
+    
+    // add an element to hold the summary page when needed
+    $('body').append('<div id="summary-page" />');
   },
 
   initializeView: function () {
@@ -144,8 +152,18 @@ var AppView = Backbone.View.extend({
       self.removeAnnotationsVisual();
       return false;
     });
+
+    $(document).bind('keydown', 'shift+s', function (e) {
+      e.stopPropagation();
+      self.showSummary();
+      return false;
+    });
   },
 
+  showSummary: function() {
+    ReactViewManager.showSummary(this.videoTag);
+  },
+  
   bindResize: function () {
     $(window).bind('resize', () => {
       if ($('#video-annotation').find('.annotation-marker')[0]) {
@@ -242,13 +260,7 @@ var AppView = Backbone.View.extend({
   getVideoKey: function () {
     var currentUrl = window.location;
     this.hostname = Utils.hosts[currentUrl.hostname] || '';
-    this.videoKey = this.base64Url(currentUrl.href.split('#')[0]);
-  },
-
-  base64Url: function (currentUrl) {
-    return btoa(encodeURIComponent(currentUrl).replace(/%([0-9A-F]{2})/g, function (match, p1) {
-      return String.fromCharCode('0x' + p1);
-    }));
+    this.videoKey = Utils.base64Url(currentUrl);
   },
 
   getVideoId: function (name, query) {

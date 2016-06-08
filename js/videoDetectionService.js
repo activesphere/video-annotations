@@ -5,6 +5,7 @@ import AppView from 'views/appView.js';
 import Utils from 'utils.js';
 
 import '../styles/app.less';
+import '../styles/summary.less';
 
 $.get(chrome.extension.getURL('/html/templates.html'),
 function (data) {
