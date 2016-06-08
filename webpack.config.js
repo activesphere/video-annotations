@@ -31,6 +31,10 @@ configObj = {
       test: /\.js$/,
       exclude: /node_modules|bower_components|vendor/,
       loader: 'jshint-loader'
+    }, {
+      test: /\.jsx$/,
+      exclude: /node_modules|bower_components|vendor/,
+      loader: 'eslint-loader'
     }],
     loaders: [
     {
