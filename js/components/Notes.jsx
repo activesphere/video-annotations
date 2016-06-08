@@ -10,12 +10,12 @@ function rawMarkup(rawText) {
 
 const Note = (props) => {
   return (
-      <div className="note">
-        <h3>{props.title}</h3>
-        <div className="notearea">
-          <p dangerouslySetInnerHTML={props.description} />
-        </div>
-      </div>    
+    <div className="note">
+      <h3>{props.title}</h3>
+      <div className="notearea">
+        <p dangerouslySetInnerHTML={props.description} />
+      </div>
+    </div>    
   );
 };
 
@@ -27,7 +27,7 @@ const Notes = (props) => {
                   key={note.id} />);
   });
   return (
-      <div className="notes">{notes}</div>
+    <div className="notes">{notes}</div>
   );
 };
 
