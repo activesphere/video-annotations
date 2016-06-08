@@ -1,15 +1,18 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import Utils from 'utils.js';
+import Utils from '../utils.js';
+
 
 const TableRow = (props) => {
-  let metadata = props.video.metadata;
-  let annotations = props.video.annotations;
-  let trClassName = props.video.active ? 'active' : 'inactive';
-  let key = props.video.id;
+  const metadata = props.video.metadata;
+  const annotations = props.video.annotations;
+  const trClassName = props.video.active ? 'active' : 'inactive';
+  const key = props.video.id;
   return (
-    <tr className={trClassName}
-        onClick={props.updateNotes} data-video-key={key}>
+    <tr
+      className={trClassName}
+      onClick={props.updateNotes}
+      data-video-key={key}
+    >
       <th>{metadata.provider}</th>
       <td>
         <a href={metadata.url}>{metadata.videoTitle}</a>
@@ -21,14 +24,21 @@ const TableRow = (props) => {
   );
 };
 
+TableRow.propTypes = {
+  video: React.PropTypes.object,
+  updateNotes: React.PropTypes.func.isRequired,
+};
+
+
 const SummaryTable = (props) => {
-  let rows = props.videos.map((video) => {
-    return (
-      <TableRow key={video.id}
-                video={video}
-                updateNotes={props.updateNotes} />
-    );
-  });
+  const rows = props.videos.map((video) => (
+    <TableRow
+      key={video.id}
+      video={video}
+      updateNotes={props.updateNotes}
+    />
+  ));
+
   return (
     <table className="table table-hover">
       <thead>
@@ -45,6 +55,11 @@ const SummaryTable = (props) => {
       </tbody>
     </table>
   );
+};
+
+SummaryTable.propTypes = {
+  videos: React.PropTypes.array,
+  updateNotes: React.PropTypes.func.isRequired,
 };
 
 export default SummaryTable;

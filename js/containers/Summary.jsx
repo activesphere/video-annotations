@@ -5,26 +5,27 @@ import _ from 'lodash';
 import Utils from '../utils';
 
 class Summary extends React.Component {
-  constructor () {
+  constructor() {
     super();
     this.state = {
       videos: [],
       playingVideoKey: Utils.base64Url(window.location),
       activeVideoKey: '',
-      activeNotes: []
+      activeNotes: [],
     };
     this.updateNotes = this.updateNotes.bind(this);
   }
   
-  componentDidMount () {
+  componentDidMount() {
+    /* global chrome */
     chrome.storage.local.get((data) => {
-      let storage = _.cloneDeep(data);
-      let storedAnnotations = [];
+      const storage = _.cloneDeep(data);
+      const storedAnnotations = [];
       let activeVideoKey = '';
       let activeNotes = [];
       
       Object.keys(storage).forEach((key) => {
-        let value = storage[key];
+        const value = storage[key];
         if (typeof value === 'object') {
           value.id = key;
           value.active = false;
@@ -38,23 +39,22 @@ class Summary extends React.Component {
           }
           
           storedAnnotations.push(value);
-        }        
+        }
       });
 
       this.setState({
         videos: storedAnnotations,
-        activeVideoKey: activeVideoKey,
-        activeNotes: activeNotes
+        activeVideoKey,
+        activeNotes,
       });
-      
     });
   }
 
-  updateNotes (e) {
+  updateNotes(e) {
     e.stopPropagation();
-    let activeVideoKey = e.currentTarget.getAttribute('data-video-key');
+    const activeVideoKey = e.currentTarget.getAttribute('data-video-key');
     let activeNotes = null;
-    let videos = this.state.videos.map((video) => {
+    const videos = this.state.videos.map((video) => {
       video.active = false;
       if (video.id === activeVideoKey) {
         activeNotes = video.annotations;
@@ -66,22 +66,24 @@ class Summary extends React.Component {
     this.setState({
       videos,
       activeVideoKey,
-      activeNotes
+      activeNotes,
     });
   }
   
-  render () {
+  render() {
     return (
-        <div id="summary-table-wrapper">
-          <h2>Annotations - Summary</h2>
-          <div id="tableHolder">
-            <SummaryTable videos={this.state.videos}
-                          updateNotes={this.updateNotes} />
-          </div>
-          <Notes activeNotes={this.state.activeNotes} />
+      <div id="summary-table-wrapper">
+        <h2>Annotations - Summary</h2>
+        <div id="tableHolder">
+          <SummaryTable
+            videos={this.state.videos}
+            updateNotes={this.updateNotes}
+          />
         </div>
+        <Notes activeNotes={this.state.activeNotes} />
+      </div>
     );
   }
-};
+}
 
 export default Summary;

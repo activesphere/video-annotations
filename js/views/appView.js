@@ -16,9 +16,10 @@ import config from '../config';
 import AnnotationMarker from './_appView/annotationMarker.js';
 import AnnotationsVisual from './_appView/annotationsVisual.js';
 
-import Summary from '../containers/Summary';
-import React from 'react';
-import ReactDOM from 'react-dom';
+/* import Summary from '../containers/Summary';
+ * import React from 'react';
+ * import ReactDOM from 'react-dom';*/
+import ReactViewManager from './ReactViewManager.jsx';
 
 var AppView = Backbone.View.extend({
   el: 'div#video-annotation',
@@ -159,21 +160,8 @@ var AppView = Backbone.View.extend({
     });
   },
 
-  showSummary: function () {
-    let summaryTableWrapper = document.getElementById('summary-table-wrapper');
-    if (summaryTableWrapper) {
-      // summary box already exists; remove it
-      ReactDOM.unmountComponentAtNode(
-        document.getElementById('summary-page')
-      );
-      this.videoTag.play();
-    } else {
-      ReactDOM.render(
-        <Summary />,
-        document.getElementById('summary-page')
-      );
-      this.videoTag.pause();
-    }
+  showSummary: function() {
+    ReactViewManager.showSummary(this.videoTag);
   },
   
   bindResize: function () {
