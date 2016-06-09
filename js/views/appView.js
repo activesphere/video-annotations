@@ -160,7 +160,7 @@ var AppView = Backbone.View.extend({
     });
   },
 
-  showSummary: function() {
+  showSummary: function () {
     ReactViewManager.showSummary(this.videoTag);
   },
   
