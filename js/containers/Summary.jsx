@@ -23,10 +23,17 @@ class Summary extends React.Component {
       const storedAnnotations = [];
       let activeVideoKey = '';
       let activeNotes = [];
+      // keys to skip from the chrome storage
+      const keysToSkip = new Set([
+        'dropbox_js_default_credentials',
+        'dropbox_userinfo',
+        'video-annotation',
+      ]);
       
       Object.keys(storage).forEach((key) => {
         const value = storage[key];
-        if (typeof value === 'object') {
+
+        if (!keysToSkip.has(key)) {
           value.id = key;
           value.active = false;
           value.metadata.url = atob(key);
