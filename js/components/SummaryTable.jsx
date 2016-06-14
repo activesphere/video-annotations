@@ -31,22 +31,15 @@ TableRow.propTypes = {
 
 
 const SummaryTable = (props) => {
-  const rows = [];
-  props.videos.forEach((video) => {
-    if (video.metadata.videoTitle.toLowerCase().indexOf(props.searchQuery) < 0) {
-      /* console.log('video title now is ', video.metadata.videoTitle);
-       * console.log('searchQuery is ', props.searchQuery);
-       * console.log('matching result is ', video.metadata.videoTitle.indexOf(props.searchQuery));*/
-      return;
-    }
-    rows.push(
-      <TableRow
-        key={video.id}
-        video={video}
-        updateNotes={props.updateNotes}
-      />
-    );
-  });
+  const rows = props.videos.filter((video) =>
+    video.metadata.videoTitle.toLowerCase().indexOf(props.searchQuery) > -1
+  ).map((video) =>
+    <TableRow
+      key={video.id}
+      video={video}
+      updateNotes={props.updateNotes}
+    />
+  );
 
   return (
     <div className="table-searchbox-wrapper">

@@ -24,11 +24,11 @@ Note.propTypes = {
 
 
 const Notes = (props) => {
-  const notes = [];
-  props.activeNotes.forEach((note) => {
+  const notes = props.activeNotes.filter((note) =>
+    note.description.indexOf(props.searchQuery) > -1
+  ).map((note) => {
     const desc = rawMarkup(note.description);
-    if (note.description.indexOf(props.searchQuery) < 0) return;
-    notes.push(
+    return (
       <Note
         title={note.title}
         description={desc}
