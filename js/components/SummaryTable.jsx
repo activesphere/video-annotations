@@ -1,6 +1,6 @@
 import React from 'react';
+import SearchBox from './SearchBox';
 import Utils from '../utils.js';
-
 
 const TableRow = (props) => {
   const metadata = props.video.metadata;
@@ -31,35 +31,54 @@ TableRow.propTypes = {
 
 
 const SummaryTable = (props) => {
-  const rows = props.videos.map((video) => (
-    <TableRow
-      key={video.id}
-      video={video}
-      updateNotes={props.updateNotes}
-    />
-  ));
+  const rows = [];
+  props.videos.forEach((video) => {
+    if (video.metadata.videoTitle.toLowerCase().indexOf(props.searchQuery) < 0) {
+      /* console.log('video title now is ', video.metadata.videoTitle);
+       * console.log('searchQuery is ', props.searchQuery);
+       * console.log('matching result is ', video.metadata.videoTitle.indexOf(props.searchQuery));*/
+      return;
+    }
+    rows.push(
+      <TableRow
+        key={video.id}
+        video={video}
+        updateNotes={props.updateNotes}
+      />
+    );
+  });
 
   return (
-    <table className="table table-hover">
-      <thead>
-        <tr>
-          <th>Provider</th>
-          <th>Video</th>
-          <th>Total Annotations</th>
-          <th>Created</th>
-          <th>Updated</th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows}
-      </tbody>
-    </table>
+    <div className="table-searchbox-wrapper">
+      <SearchBox
+        which="summarySearchBox"
+        handleSearchBoxChange={props.handleSearchBoxChange}
+        searchString={props.searchQuery}
+        placeholder="type to search videos"
+      />
+      <table className="table table-hover">
+        <thead>
+          <tr>
+            <th>Provider</th>
+            <th>Video</th>
+            <th>Total Annotations</th>
+            <th>Created</th>
+            <th>Updated</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows}
+        </tbody>
+      </table>
+    </div>
   );
 };
 
 SummaryTable.propTypes = {
   videos: React.PropTypes.array,
   updateNotes: React.PropTypes.func.isRequired,
+  searchQuery: React.PropTypes.string,
+  handleSearchBoxChange: React.PropTypes.func.isRequired,
 };
 
 export default SummaryTable;

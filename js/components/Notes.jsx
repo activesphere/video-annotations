@@ -1,4 +1,5 @@
 import React from 'react';
+import SearchBox from './SearchBox';
 import Remarkable from 'remarkable';
 
 
@@ -23,9 +24,11 @@ Note.propTypes = {
 
 
 const Notes = (props) => {
-  const notes = props.activeNotes.map((note) => {
+  const notes = [];
+  props.activeNotes.forEach((note) => {
     const desc = rawMarkup(note.description);
-    return (
+    if (note.description.indexOf(props.searchQuery) < 0) return;
+    notes.push(
       <Note
         title={note.title}
         description={desc}
@@ -35,12 +38,22 @@ const Notes = (props) => {
   });
 
   return (
-    <div className="notes">{notes}</div>
+    <div className="notes-holder">
+      <SearchBox
+        which="noteSearchBox"
+        handleSearchBoxChange={props.handleSearchBoxChange}
+        searchString={props.searchQuery}
+        placeholder="Notes are shown below, type to search through them"
+      />
+      <div className="notes">{notes}</div>
+    </div>
   );
 };
 
 Notes.propTypes = {
   activeNotes: React.PropTypes.array,
+  handleSearchBoxChange: React.PropTypes.func.isRequired,
+  searchQuery: React.PropTypes.string.isRequired,
 };
 
 
