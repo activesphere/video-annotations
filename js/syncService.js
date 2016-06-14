@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import Promise from 'bluebird';
+import Utils from './utils';
 
 function promisify(fn) {
   return new Promise((resolve, reject) =>
@@ -32,6 +33,26 @@ var readingStorage = function (localStorage) {
   return promisifyStd(localStorage.get.bind(localStorage));
 };
 
+// data-structure migration specific code
+const migrateToStorageV2 = function (oldStructure) {
+  // oldStructure is supposed to be an array of objects (annotations)  
+  const now = new Date().toString();
+  let metadata = {
+    creationTime: now,
+    lastUpdate: now,
+  };
+  
+  let host = Utils.hosts[window.location.hostname];
+  let pagedata = Utils.getVideoInfo(host);
+  metadata = _.merge(metadata, pagedata);
+  
+  const newStructure = {
+    annotations: oldStructure,
+    metadata: metadata,
+  };
+  return newStructure;
+};
+
 // Exported for testing
 export function merge(sources, local, initialSync) {
   var storageData = _.cloneDeep(sources[1]);
@@ -45,6 +66,16 @@ export function merge(sources, local, initialSync) {
     return { annotations: local,
              metadata: null };
   }
+
+  // check for storageData and dropboxData if they are using
+  // old structure where base64Url -> arrayOf(annotations) exist
+  if (storageData && storageData instanceof Array) {
+    storageData = migrateToStorageV2(storageData);
+  }
+  
+  if (dropboxData && dropboxData instanceof Array) {
+    dropboxData = migrateToStorageV2(dropboxData);
+  }  
 
   if (_.isEmpty(storageData)) {
     return dropboxData;
