@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import Promise from 'bluebird';
 import Utils from './utils';
+import CONSTANTS from './constants';
 
 function promisify(fn) {
   return new Promise((resolve, reject) =>
@@ -105,7 +106,8 @@ var syncingData = function (localStorage, dropboxFile, collection, initialSync) 
     }
 
     jsonData.metadata = collection.metadata;
-
+    jsonData.storageVersion = CONSTANTS.storageStructureVersion;
+    
     localStorage.save(jsonData);
     dropboxFile.write(jsonData);
   }).catch((err) => {
