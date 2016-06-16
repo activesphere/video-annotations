@@ -1,24 +1,18 @@
 import Backbone from 'backbone';
 import _ from 'lodash';
 import $ from 'vendor/jquery.hotkeys.js';
-import Dropbox from 'dropbox_chrome.js';
 import SimpleMDE from 'vendor/simplemde.min.js';
 
 import Utils from 'utils.js';
-import DropboxFile from 'dropboxUtils.js';
 import {Frame, UserInfo} from 'models/models.js';
 import AppStorage from 'localStorageUtils.js';
 import Annotations from 'collections/collections.js';
 import SidebarView from 'views/sidebarView.js';
 import NewAnnotationView from 'views/newAnnotationView.js';
-import config from '../config';
 
 import AnnotationMarker from './_appView/annotationMarker.js';
 import AnnotationsVisual from './_appView/annotationsVisual.js';
 
-/* import Summary from '../containers/Summary';
- * import React from 'react';
- * import ReactDOM from 'react-dom';*/
 import ReactViewManager from './ReactViewManager.jsx';
 
 var AppView = Backbone.View.extend({
@@ -49,7 +43,7 @@ var AppView = Backbone.View.extend({
 
     this.getVideoKey();
     this.storage = new AppStorage({ name: this.videoKey });
-    this.dropbox();
+    this.dropboxFile = Utils.dropbox(this.videoKey);
 
     _.bindAll(this, 'render');
     _.bindAll(this, 'updateFrame');
@@ -272,16 +266,6 @@ var AppView = Backbone.View.extend({
   updateFrame: function () {
     this.$el.find('span.start_frame')
         .html(Utils.minuteSeconds(this.videoFrame.get('start_seconds')));
-  },
-
-  dropbox: function () {
-    var dropboxChrome = new Dropbox.Chrome({
-      key: config.dropbox.key,
-    });
-    this.dropboxFile = new DropboxFile({
-      dropboxObj: dropboxChrome,
-      name: this.videoKey,
-    });
   },
 
   updateMetadata: function () {

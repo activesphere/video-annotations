@@ -1,5 +1,8 @@
 import _ from 'lodash';
 import $ from 'vendor/jquery.hotkeys.js';
+import Dropbox from 'dropbox_chrome.js';
+import DropboxFile from 'dropboxUtils.js';
+import config from './config';
 
 var Utils = {};
 
@@ -23,6 +26,16 @@ Utils.hosts = (function () {
     'www.coursera.com': 'coursera',
   };
 })();
+
+Utils.dropbox = function (videoKey) {
+  var dropboxChrome = new Dropbox.Chrome({
+    key: config.dropbox.key,
+  });
+  return new DropboxFile({
+    dropboxObj: dropboxChrome,
+    name: videoKey,
+  });
+};
 
 Utils.splitAnnotation = function (annotation) {
   var list = annotation.split('\n');
