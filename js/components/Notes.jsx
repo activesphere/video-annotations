@@ -1,6 +1,6 @@
 import React from 'react';
-import SearchBox from './SearchBox';
 import Remarkable from 'remarkable';
+import NotesTopBar from '../containers/NotesTopBar/NotesTopBar';
 
 
 function rawMarkup(rawText) {
@@ -39,11 +39,10 @@ const Notes = (props) => {
 
   return (
     <div className="notes-holder">
-      <SearchBox
-        which="noteSearchBox"
+      <NotesTopBar
         handleSearchBoxChange={props.handleSearchBoxChange}
         searchString={props.searchQuery}
-        placeholder="Notes are shown below, type to search through them"
+        activeNotesKey={props.activeNotesKey}
       />
       <div className="notes">{notes}</div>
     </div>
@@ -52,8 +51,9 @@ const Notes = (props) => {
 
 Notes.propTypes = {
   activeNotes: React.PropTypes.array,
+  activeNotesKey: React.PropTypes.string.isRequired,
   handleSearchBoxChange: React.PropTypes.func.isRequired,
-  searchQuery: React.PropTypes.string.isRequired,
+  searchQuery: React.PropTypes.string,
 };
 
 

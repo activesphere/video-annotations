@@ -1,5 +1,5 @@
 import React from 'react';
-import SearchBox from './SearchBox';
+import SearchBox from './SearchBox/SearchBox';
 import Utils from '../utils.js';
 
 const TableRow = (props) => {
@@ -48,6 +48,7 @@ const SummaryTable = (props) => {
         handleSearchBoxChange={props.handleSearchBoxChange}
         searchString={props.searchQuery}
         placeholder="type to search videos"
+        display="block"
       />
       <table className="table table-hover">
         <thead>
