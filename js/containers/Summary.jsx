@@ -106,6 +106,7 @@ class Summary extends React.Component {
         </div>
         <Notes
           activeNotes={this.state.activeNotes}
+          activeNotesKey={this.state.activeVideoKey}
           searchQuery={this.state.noteSearchQuery}
           handleSearchBoxChange={this.onSearchBoxChange}
         />
