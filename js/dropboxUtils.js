@@ -42,4 +42,24 @@ DropboxFile.prototype.read = function (callback) {
   });
 };
 
+DropboxFile.prototype.makeUrl = function (callback) {
+  this.dropboxObj.client((client) => {
+    if (client.isAuthenticated()) {
+      this.dropboxObj.userInfo();
+      const options = { downloadHack: true };
+      client.makeUrl(this.name + '.json', options, function (error, data) {
+        if (error) {
+          if (error.status === 404) {
+            callback(error, []);
+          }
+        } else {
+          callback(false, data.url);
+        }
+      });
+    } else {
+      callback({ status: 403 }, []);
+    }
+  });
+};
+
 export default DropboxFile;

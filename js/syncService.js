@@ -25,6 +25,11 @@ function promisifyStd(fn) {
     }));
 }
 
+export function creatingURL(dropboxFile) {
+  return promisify(dropboxFile.makeUrl.bind(dropboxFile))
+    .catch(() => []);
+}
+
 var readingDropbox = function (dropboxFile) {
   return promisify(dropboxFile.read.bind(dropboxFile))
   .catch(() => []);
