@@ -32,17 +32,17 @@ class NotesTopBar extends React.Component {
   }
   
   render() {
-    const activeNotesKey = this.props.activeNotesKey.trim();
-    const button = activeNotesKey ?
+    const activeNotesKey = this.props.activeNotesKey;
+    const showShareOption = this.props.showShareOption;
+    const button = activeNotesKey && showShareOption ?
       <Button
         name={"Share"}
         active
         handleButtonClick={this.onShareButtonClick}
       /> : '';
     
-    const searchBox = activeNotesKey ?
+    const searchBox = this.props.showSearchBox ?
       <SearchBox
-        which="noteSearchBox"
         handleSearchBoxChange={this.props.handleSearchBoxChange}
         searchString={this.props.searchQuery}
         placeholder="Notes are shown below, type to search through them"
@@ -61,7 +61,9 @@ class NotesTopBar extends React.Component {
 NotesTopBar.propTypes = {
   handleSearchBoxChange: React.PropTypes.func.isRequired,
   searchQuery: React.PropTypes.string,
-  activeNotesKey: React.PropTypes.string.isRequired,
+  activeNotesKey: React.PropTypes.string,
+  showShareOption: React.PropTypes.bool.isRequired,
+  showSearchBox: React.PropTypes.bool.isRequired,
 };
 
 export default NotesTopBar;

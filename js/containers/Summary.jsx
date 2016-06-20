@@ -1,6 +1,6 @@
 import React from 'react';
 import SummaryTable from '../components/SummaryTable';
-import Notes from '../components/Notes';
+import Notes from '../components/Notes/Notes';
 import _ from 'lodash';
 import Utils from '../utils';
 import CONSTANTS from '../constants';
@@ -18,7 +18,6 @@ class Summary extends React.Component {
       noteSearchQuery: '',
     };
     this.updateNotes = this.updateNotes.bind(this);
-    this.onSearchBoxChange = this.onSearchBoxChange.bind(this);
   }
   
   componentDidMount() {
@@ -53,25 +52,6 @@ class Summary extends React.Component {
     });
   }
   
-  onSearchBoxChange(e) {
-    let summarySearchQuery = this.state.summarySearchQuery;
-    let noteSearchQuery = this.state.noteSearchQuery;
-    const whichBox = e.target.getAttribute('data-which');
-    
-    switch (whichBox) {
-      case 'summarySearchBox':
-        summarySearchQuery = e.target.value.toLowerCase();
-        this.setState({ summarySearchQuery });
-        break;
-      case 'noteSearchBox':
-        noteSearchQuery = e.target.value.toLowerCase();
-        this.setState({ noteSearchQuery });
-        break;
-      default:
-        throw new Error('ERROR: Missing a reference (data-which) on SearchBox');
-    }
-  }
-  
   updateNotes(e) {
     e.stopPropagation();
     const activeVideoKey = e.currentTarget.getAttribute('data-video-key');
@@ -100,15 +80,11 @@ class Summary extends React.Component {
           <SummaryTable
             videos={this.state.videos}
             updateNotes={this.updateNotes}
-            searchQuery={this.state.summarySearchQuery}
-            handleSearchBoxChange={this.onSearchBoxChange}
           />
         </div>
         <Notes
           activeNotes={this.state.activeNotes}
           activeNotesKey={this.state.activeVideoKey}
-          searchQuery={this.state.noteSearchQuery}
-          handleSearchBoxChange={this.onSearchBoxChange}
         />
       </div>
     );
