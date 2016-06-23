@@ -186,21 +186,13 @@ var AppView = Backbone.View.extend({
       autofocus: true,
     });
     this.editor.codemirror.setOption('extraKeys', {
-      Esc: () => {
-        this.cancelCreateAnnotation();
-      },
+      Esc: () => this.cancelCreateAnnotation(),
+      
+      'Alt-Enter': () => this.createByClick(),
 
-      'Alt-Enter': () => {
-        this.createByClick();
-      },
-
-      'Alt-P': () => {
-        if (this.videoTag.isPaused()) {
-          this.videoTag.play();
-        } else {
-          this.videoTag.pause();
-        }
-      }
+      'Alt-P': () => this.videoTag.togglePlayback(),
+      'Alt-[': () => this.videoTag.seek('backward'),
+      'Alt-]': () => this.videoTag.seek('forward'),
     });
   },
 

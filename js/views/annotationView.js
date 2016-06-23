@@ -106,13 +106,13 @@ var AnnotationView = Backbone.View.extend({
       autofocus: true,
     });
     this.editor.codemirror.setOption('extraKeys', {
-      Esc: () => {
-        this.cancelUpdate();
-      },
+      Esc: () => this.cancelUpdate(),
 
-      'Alt-Enter': () => {
-        this.update();
-      }
+      'Alt-Enter': this.update(),
+
+      'Alt-P': () => this.videoTag.togglePlayback(),
+      'Alt-[': () => this.videoTag.seek('backward'),
+      'Alt-]': () => this.videoTag.seek('forward'),
     });
     this.editor.value(annotation);
   },
