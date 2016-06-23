@@ -1,8 +1,6 @@
 import React from 'react';
 import Notes from '../../components/Notes/Notes';
 
-import $ from 'jquery';
-
 class ShareAppRoot extends React.Component {
   constructor() {
     super();
@@ -10,13 +8,13 @@ class ShareAppRoot extends React.Component {
       notes: [],
       metadata: null,
     };
-    this.fetchNotes = this.fetchNotes.bind(this);
+    this.processNotes = this.processNotes.bind(this);
   }
 
   componentDidMount() {
     const targetEncodedUrl = window.location.hash.slice(1);
     if (!targetEncodedUrl) {
-      // TODO show signs of URL absence
+      // TODO show signs of URL absense
       return;
     }
 
@@ -25,22 +23,26 @@ class ShareAppRoot extends React.Component {
       targetUrl = atob(targetEncodedUrl);
     } catch (error) {
       // TODO show warning about invalid URL
+      return;
     }
+    
     // everything seems OK.
-    this.fetchNotes(targetUrl);
+    fetch(targetUrl).then(
+      (response) => {
+        if (response.status !== 200) {
+          // TODO show fetch error
+          return;
+        }
+        
+        response.json().then(this.processNotes);
+      }
+    );
   }
-
-  fetchNotes(targetUrl) {
-    $.ajax({
-      url: targetUrl,
-      dataType: 'json',
-      cache: false,
-      success: (data) => {
-        this.setState({
-          notes: data.annotations,
-          metadata: data.metadata,
-        });
-      },
+  
+  processNotes(notes) {
+    this.setState({
+      notes: notes.annotations,
+      metadata: notes.metadata,
     });
   }
   
