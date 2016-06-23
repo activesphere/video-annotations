@@ -1,5 +1,5 @@
 import React from 'react';
-import SearchBox from './SearchBox';
+import SearchBox from './SearchBox/SearchBox';
 import Utils from '../utils.js';
 
 const TableRow = (props) => {
@@ -30,48 +30,68 @@ TableRow.propTypes = {
 };
 
 
-const SummaryTable = (props) => {
-  const rows = props.videos.filter((video) =>
-    video.metadata.videoTitle.toLowerCase().indexOf(props.searchQuery) > -1
-  ).map((video) =>
-    <TableRow
-      key={video.id}
-      video={video}
-      updateNotes={props.updateNotes}
-    />
-  );
+class SummaryTable extends React.Component {
+  constructor() {
+    super();
+    this.state = {
+      searchQuery: '',
+    };
+    this.onSearchBoxChange = this.onSearchBoxChange.bind(this);
+  }
 
-  return (
-    <div className="table-searchbox-wrapper">
-      <SearchBox
-        which="summarySearchBox"
-        handleSearchBoxChange={props.handleSearchBoxChange}
-        searchString={props.searchQuery}
-        placeholder="type to search videos"
+  onSearchBoxChange(e) {
+    this.setState({
+      searchQuery: e.target.value.toLowerCase(),
+    });
+  }
+  
+  render() {
+    const hasSearchQuery = (videoTitle, query) =>
+      videoTitle.toLowerCase().indexOf(query) > -1;
+    
+    const rows = this.props.videos.filter((video) =>
+      hasSearchQuery(
+        video.metadata.videoTitle,
+        this.state.searchQuery
+      )
+    ).map((video) =>
+      <TableRow
+        key={video.id}
+        video={video}
+        updateNotes={this.props.updateNotes}
       />
-      <table className="table table-hover">
-        <thead>
-          <tr>
-            <th>Provider</th>
-            <th>Video</th>
-            <th>Total Annotations</th>
-            <th>Created</th>
-            <th>Updated</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows}
-        </tbody>
-      </table>
-    </div>
-  );
-};
+    );
+
+    return (
+      <div className="table-searchbox-wrapper">
+        <SearchBox
+          handleSearchBoxChange={this.onSearchBoxChange}
+          searchString={this.state.searchQuery}
+          placeholder="type to search videos"
+          display="block"
+        />
+        <table className="table table-hover">
+          <thead>
+            <tr>
+              <th>Provider</th>
+              <th>Video</th>
+              <th>Total Annotations</th>
+              <th>Created</th>
+              <th>Updated</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+}
 
 SummaryTable.propTypes = {
   videos: React.PropTypes.array,
   updateNotes: React.PropTypes.func.isRequired,
-  searchQuery: React.PropTypes.string,
-  handleSearchBoxChange: React.PropTypes.func.isRequired,
 };
 
 export default SummaryTable;

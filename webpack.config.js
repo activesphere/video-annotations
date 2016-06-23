@@ -8,15 +8,17 @@ configObj = {
   entry:  {
     videoDetection: 'videoDetectionService',
     oauth: 'chrome_oauth_receiver',
-    background: 'background'
+    background: 'background',
+    shareApp: 'ShareApp',
   },
   output: {
-    path:     'builds/bundles',
+    path:     'builds/extension/bundles',
     filename: '[name].bundle.js',
   },
   resolve: {
     root: [
       path.join(__dirname, "js"),
+      path.join(__dirname, "js/share_app"),
       path.join(__dirname, "bower_components"),
       path.join(__dirname, "styles")
     ],
