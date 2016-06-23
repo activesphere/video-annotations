@@ -127,6 +127,26 @@ Utils.getVideoInterface = function () {
         return player.pause();
       },
 
+      togglePlayback: function () {
+        return this.isPaused() ? this.play() : this.pause();
+      },
+
+      seekForth: function () {
+        this.setCurrentTime(this.getCurrentTime() + 5);
+      },
+
+      seekBack: function () {
+        this.setCurrentTime(this.getCurrentTime() - 5);
+      },
+
+      seek: function (direction) {
+        if (direction === 'forward') {
+          this.seekForth();
+        } else if (direction === 'backward') {
+          this.seekBack();
+        }
+      },
+
       getControlsHeight: function () {
         return provider.controlsHeight;
       },
