@@ -3,6 +3,7 @@ import React from 'react';
 import Button from '../../components/Button/Button';
 
 import Utils from '../../utils';
+import CONSTANTS from '../../constants';
 import { creatingURL } from '../../syncService';
 
 import './LinkSharePrompt.less';
@@ -40,7 +41,10 @@ class LinkSharePrompt extends React.Component {
     this.dropboxFile = Utils.dropbox(this.props.activeNotesKey);
     
     creatingURL(this.dropboxFile).then((url) => {
-      this.setState({ inputBoxValue: url });
+      const base64url = btoa(url);
+      this.setState({
+        inputBoxValue: `${CONSTANTS.shareAppUrl}/#${base64url}`,
+      });
       this.changeButtonState('Copy Link', true, this.onCopyLinkClick);
     });
   }

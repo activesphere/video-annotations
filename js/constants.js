@@ -12,4 +12,7 @@ CONSTANTS.localStorageNonVideoKeys = new Set([
   'video-annotation',
 ]);
 
+// where do we host the webapp which fetches and shows shared annotations.
+CONSTANTS.shareAppUrl = 'https://video-annotations.github.io';
+
 export default CONSTANTS;
