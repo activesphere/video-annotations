@@ -18,7 +18,34 @@ function (data) {
     if ($('video').length > 0 && $('video')[0].getAttribute('src')) {
       if (!$('#video-annotation')[0]) {
         var $video = Utils.getVideoInterface();
-        $video.append($('#video-main-template').html());
+
+        if (window.location.hostname.match(/coursera/i)) {
+          // coursera - stick with the old UI (a layer above the page)
+          $video.append($('#video-main-template').html()); 
+        } else if (window.location.hostname.match(/youtube/i)) {
+          
+          // new UI - annotations box becomes a part of the page
+          $('.watch-sidebar').prepend($('#video-main-template').html());
+          
+          $('head').append(
+            `<style>
+            #video-annotation {
+              position: static !important;
+            }
+            #video-annotation .sidebar {
+              position: static !important;
+              width: 439px;
+            }
+            span.caret {
+              display: none;
+            }
+            </style>`
+          );
+          
+        } else {
+          console.log('No site was detected');
+        }
+        
       }
 
       if (!app) {
