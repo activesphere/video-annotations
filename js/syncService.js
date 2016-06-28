@@ -101,20 +101,19 @@ export function merge(sources, local, initialSync) {
   return storageData;
 }
 
-var syncingData = function (localStorage, dropboxFile, collection, initialSync) {
+var syncingData = function (localStorage, dropboxFile, notes, initialSync) {
   return Promise.all([readingDropbox(dropboxFile), readingStorage(localStorage)]).then((data) =>
-    merge(data, _.map(collection.models, (model) => model.toJSON()), initialSync)
+    merge(data, notes.annotations.slice(), initialSync)
   ).then((jsonData) => {
-    if (initialSync) {
-      collection.set(jsonData.annotations, { silent: true });
-      collection.metadata = jsonData.metadata;
-    }
 
-    jsonData.metadata = collection.metadata;
+    jsonData.metadata = notes.metadata;
     jsonData.storageVersion = CONSTANTS.storageStructureVersion;
     
     localStorage.save(jsonData);
     dropboxFile.write(jsonData);
+
+    return jsonData;
+    
   }).catch((err) => {
     console.error(err);
   });
