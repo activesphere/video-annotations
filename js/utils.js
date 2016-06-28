@@ -51,6 +51,11 @@ Utils.base64Url = function (currentUrl) {
   }));
 };
 
+Utils.getVideoKey = function () {
+  const currentUrl = window.location;
+  return this.base64Url(currentUrl);
+},
+
 Utils.userInfo = 'dropbox_userinfo';
 
 const PROVIDER_INFO = {
@@ -162,7 +167,9 @@ Utils.getVideoInterface = function () {
         }
 
         return provider.paddingForSeeker + time * this.getPixelsPerSecond();
-      }
+      },
+
+      player: player,
     };
     _.extend(container, videoMethodsObject);
     return container;
