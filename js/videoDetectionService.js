@@ -7,6 +7,11 @@ import Utils from 'utils.js';
 import '../styles/app.less';
 import '../styles/summary.less';
 
+import React from 'react';
+import ReactDOM from 'react-dom';
+import VideoAnnotation from './containers/VideoAnnotation/VideoAnnotation';
+
+
 $.get(chrome.extension.getURL('/html/templates.html'),
 function (data) {
   $('body').append(data);
@@ -26,7 +31,7 @@ function (data) {
           
           // new UI - annotations box becomes a part of the page
           $('.watch-sidebar').prepend($('#video-main-template').html());
-          
+                    
           $('head').append(
             `<style>
             #video-annotation {
@@ -41,6 +46,15 @@ function (data) {
             }
             </style>`
           );
+
+          // add react static box
+          const videoKey = Utils.getVideoKey();
+          $('.watch-sidebar').prepend('<div id="react-video-annotation" />');
+          ReactDOM.render(
+            <VideoAnnotation videoKey={videoKey}/>,
+            document.querySelector('#react-video-annotation')
+          );          
+          
           
         } else {
           console.log('No site was detected');
@@ -48,11 +62,11 @@ function (data) {
         
       }
 
-      if (!app) {
-        app = new AppView();
-      }
+      /* if (!app) {
+       *   app = new AppView();
+       * }
 
-      app.render(videokey);
+       * app.render(videokey);*/
     } else {
       if ($('#video-annotation')[0]) {
         $('#video-annotation').remove();
