@@ -1,6 +1,8 @@
 import React from 'react';
 import AnnotationItem from '../AnnotationItem/AnnotationItem';
 
+import './Annotations.less';
+
 class Annotations extends React.Component {
   constructor(props) {
     super(props);

@@ -4,7 +4,6 @@ import $ from './vendor/jquery.hotkeys.js';
 import AppView from './views/appView.js';
 import Utils from './utils.js';
 
-import '../styles/app.less';
 import '../styles/summary.less';
 
 import React from 'react';

@@ -12,6 +12,7 @@ import syncingData from '../../syncService.js';
 import AppStorage from '../../localStorageUtils.js';
 import Utils from '../../utils.js';
 
+import './VideoAnnotation.less';
 
 class VideoAnnotation extends React.Component {
   constructor() {

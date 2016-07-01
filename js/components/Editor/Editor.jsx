@@ -1,6 +1,7 @@
 import React from 'react';
 import SimpleMDEReact from '../SimpleMDEWrapper/SimpleMDEWrapper';
 
+import './Editor.less';
 
 class Editor extends React.Component {
   constructor() {

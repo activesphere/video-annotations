@@ -1,4 +1,5 @@
 import React from 'react';
+import './HelpMessage.less';
 
 const HelpMessage = (props) => {
   const visibility = props.visibility ? 'block' : 'none';

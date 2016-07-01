@@ -1,0 +1,190 @@
+
+@color: #666;
+@colorLighter: #ccc;
+@lightBlue: #167ac6;
+
+.annotations-list {
+    position: realtive;
+    top: 0;
+
+    display: inline-block;
+
+    width: inherit;
+    height: 85vh;
+    min-height: 255px;
+
+    overflow-y: scroll;
+
+    background-color: #fff;
+
+    border: 1px solid @colorLighter;
+    border-radius: 4px 0px 0px 4px;
+
+    padding: 5px 20px 20px 20px;
+    box-sizing: border-box;
+
+    .resizer {
+	position: absolute;
+	top: 0;
+	left: -1px;
+
+	height: inherit;
+	width: 2px;
+
+	background-color: @colorLighter;
+
+	cursor: w-resize;
+    }
+
+
+    .user-info {
+	float: right;
+
+	text-align: right;
+	font-size: 10px;
+	line-height: 12px;
+
+	p {
+	    color: @color;
+
+	    font-size: inherit;
+
+	    margin: 0;
+	}
+
+	a {
+	    color: @lightBlue;
+	}
+    }
+
+    .search-annotations {
+	margin-top: 10px;
+
+	height: 36px;
+	width: 100%;
+
+	font-size:13px;
+
+	border: 1px solid @colorLighter;
+	border-radius: 3px;
+
+	padding-left: 10px;
+	box-sizing: border-box;
+    }
+
+    .border-line {
+	padding: 5px 0px;
+	box-sizing: border-box;
+
+	border-bottom: solid 1px #F1F1F1;
+    }
+
+    .annotations {
+	width: 100%;
+
+	padding: 0;
+
+	overflow-x: hidden;
+	overflow-y: auto;
+
+	.video-annotation {
+	    display: inline-block;
+
+	    width: 98%;
+
+	    font-size: 14px;
+
+	    padding: 5px;
+	    box-sizing: border-box;
+
+	    border-bottom: solid 1px #F1F1F1;
+
+	    .annotation-detail {
+		margin-top: 5px;
+
+		display: flex;
+		flex-wrap: nowrap;
+
+		.fa {
+		    width: 5%;
+		}
+
+		.icon-title {
+		    color: @color;
+		    cursor: pointer;
+		    cursor: hand;
+		}
+
+		.seek {
+		    width: 55%;
+
+		    .annotation-title {
+			color: #222C36;
+			text-transform: capitalize;
+			margin: 0;
+		    }
+		}
+
+		.label {
+		    width: 30%;
+		    max-height: 21px;
+
+		    color: #333;
+
+		    text-align: center;
+
+		    margin: 0px 4px 0px 4px;
+		}
+	    }
+
+	    .annotation-description {
+		margin-top: 10px;
+
+		padding: 10px;
+		box-sizing: border-box;
+
+		border: 1px solid @colorLighter;
+
+		.span {
+		    color: @color;
+
+		    line-height: 18px;
+		    letter-spacing: 0.7px;
+
+		    white-space: pre-wrap;
+		}
+	    }
+
+	    .edit-annotation-text {
+		width: 98%;
+	    }
+	}
+
+	li {
+	    &:last-child {
+		border-bottom: none;
+	    }
+	}
+    }
+
+    .fa-container {
+	padding: 5px;
+	height: 1.5em;
+	margin-top: 5px;
+
+
+	.toggle-info {
+	    float: left;
+	    cursor: pointer;
+	}
+
+	.toggle-highlight {
+	    float: right;
+	    display: inline;
+	    margin-right: 5px;
+
+	    line-height: 14px;
+	}
+    }
+
+}
