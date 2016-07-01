@@ -54,7 +54,7 @@ Utils.base64Url = function (currentUrl) {
 Utils.getVideoKey = function () {
   const currentUrl = window.location;
   return this.base64Url(currentUrl);
-},
+};
 
 Utils.userInfo = 'dropbox_userinfo';
 
