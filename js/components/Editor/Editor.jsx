@@ -1,5 +1,5 @@
 import React from 'react';
-import SimpleMDEReact from './SimpleMDEWrapper';
+import SimpleMDEReact from '../SimpleMDEWrapper/SimpleMDEWrapper';
 
 
 class Editor extends React.Component {

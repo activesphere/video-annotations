@@ -2,10 +2,11 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import SearchBox from '../../components/SearchBox/SearchBox';
-import HelpMessage from './HelpMessage';
-import UserInfo from './UserInfo';
-import Annotations from './Annotations';
-import Editor from './Editor';
+
+import HelpMessage from '../../components/HelpMessage/HelpMessage';
+import UserInfo from '../../components/UserInfo/UserInfo';
+import Annotations from '../../components/Annotations/Annotations';
+import Editor from '../../components/Editor/Editor';
 
 import syncingData from '../../syncService.js';
 import AppStorage from '../../localStorageUtils.js';

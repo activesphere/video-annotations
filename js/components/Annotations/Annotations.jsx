@@ -1,5 +1,5 @@
 import React from 'react';
-import AnnotationItem from './AnnotationItem';
+import AnnotationItem from '../AnnotationItem/AnnotationItem';
 
 class Annotations extends React.Component {
   constructor(props) {
