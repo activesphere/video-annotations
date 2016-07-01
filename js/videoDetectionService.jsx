@@ -1,8 +1,8 @@
 import _ from 'lodash';
-import $ from 'vendor/jquery.hotkeys.js';
+import $ from './vendor/jquery.hotkeys.js';
 
-import AppView from 'views/appView.js';
-import Utils from 'utils.js';
+import AppView from './views/appView.js';
+import Utils from './utils.js';
 
 import '../styles/app.less';
 import '../styles/summary.less';
@@ -15,20 +15,19 @@ import VideoAnnotation from './containers/VideoAnnotation/VideoAnnotation';
 $.get(chrome.extension.getURL('/html/templates.html'),
 function (data) {
   $('body').append(data);
-  var app;
+  let app;
   const videokey = {};
 
   const checkAndEnableFeature = () => {
     // application works on assumption that there is only one video in page
     if ($('video').length > 0 && $('video')[0].getAttribute('src')) {
       if (!$('#video-annotation')[0]) {
-        var $video = Utils.getVideoInterface();
+        const $video = Utils.getVideoInterface();
 
         if (window.location.hostname.match(/coursera/i)) {
           // coursera - stick with the old UI (a layer above the page)
-          $video.append($('#video-main-template').html()); 
+          $video.append($('#video-main-template').html());
         } else if (window.location.hostname.match(/youtube/i)) {
-          
           // new UI - annotations box becomes a part of the page
           $('.watch-sidebar').prepend($('#video-main-template').html());
                     
@@ -51,15 +50,10 @@ function (data) {
           const videoKey = Utils.getVideoKey();
           $('.watch-sidebar').prepend('<div id="react-video-annotation" />');
           ReactDOM.render(
-            <VideoAnnotation videoKey={videoKey}/>,
+            <VideoAnnotation videoKey={videoKey} />,
             document.querySelector('#react-video-annotation')
-          );          
-          
-          
-        } else {
-          console.log('No site was detected');
+          );
         }
-        
       }
 
       /* if (!app) {
