@@ -35,8 +35,9 @@ class Annotations extends React.Component {
           data={annotation}
           currentTime={this.state.currentTime}
           key={index}
-          index={index}            
+          index={index}
           handleItemDelete={this.props.handleItemDelete}
+          handleItemEdit={this.props.handleItemEdit}
           handleSeek={this.props.handleSeek}
         />
       );
@@ -54,6 +55,7 @@ Annotations.propTypes = {
   searchQuery: React.PropTypes.string,
   videoTag: React.PropTypes.object,
   handleItemDelete: React.PropTypes.func,
+  handleItemEdit: React.PropTypes.func,
   handleSeek: React.PropTypes.func,
 };
 

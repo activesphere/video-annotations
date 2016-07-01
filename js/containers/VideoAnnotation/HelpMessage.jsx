@@ -2,7 +2,6 @@ import React from 'react';
 
 const HelpMessage = (props) => {
   const visibility = props.visibility ? 'block' : 'none';
-  console.log('visibility now is , ', visibility);
   return (
     <div className="info" style={{ display: visibility }}>
       <h3>

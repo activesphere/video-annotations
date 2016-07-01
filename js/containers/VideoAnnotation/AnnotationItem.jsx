@@ -14,6 +14,7 @@ class AnnotationItem extends React.Component {
 
     this.toggleDescVisibility = this.toggleDescVisibility.bind(this);
     this.onItemDelete = this.onItemDelete.bind(this);
+    this.onItemEdit = this.onItemEdit.bind(this);
     this.onSeek = this.onSeek.bind(this);
   }
 
@@ -23,6 +24,10 @@ class AnnotationItem extends React.Component {
 
   onItemDelete() {
     this.props.handleItemDelete(this.props.index);
+  }
+
+  onItemEdit() {
+    this.props.handleItemEdit(this.props.index);
   }
 
   onSeek() {
@@ -70,7 +75,12 @@ class AnnotationItem extends React.Component {
             title="Delete"
             onClick={this.onItemDelete}
           ></a>
-          <a href="#" className="edit fa fa-pencil" title="Edit"></a>
+          <a
+            href="#"
+            className="edit fa fa-pencil"
+            title="Edit"
+            onClick={this.onItemEdit}
+          ></a>
         </div>
         <div className="clear"></div>
         <div className="annotation-description" style={{ display }}>
@@ -87,6 +97,7 @@ AnnotationItem.propTypes = {
   currentTime: React.PropTypes.number,
   index: React.PropTypes.number,
   handleItemDelete: React.PropTypes.func,
+  handleItemEdit: React.PropTypes.func,
   handleSeek: React.PropTypes.func,
 };
 
