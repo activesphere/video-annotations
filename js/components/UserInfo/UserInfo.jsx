@@ -56,7 +56,7 @@ class UserInfo extends React.Component {
       Object.keys(changes).forEach((each) => {
         if (each === Utils.userInfo) {
           this.fetchUser();
-        } 
+        }
       });
     });
   }

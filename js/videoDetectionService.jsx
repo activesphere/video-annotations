@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import $ from './vendor/jquery.hotkeys.js';
 
-import AppView from './views/appView.js';
 import Utils from './utils.js';
 
 import '../styles/summary.less';
@@ -10,12 +9,11 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import VideoAnnotation from './containers/VideoAnnotation/VideoAnnotation';
 
+/* global chrome */
 
 $.get(chrome.extension.getURL('/html/templates.html'),
-function (data) {
+(data) => {
   $('body').append(data);
-  let app;
-  const videokey = {};
 
   const checkAndEnableFeature = () => {
     // application works on assumption that there is only one video in page
@@ -69,14 +67,14 @@ function (data) {
 
   const observer = new MutationObserver(_.debounce(checkAndEnableFeature, 100));
 
-  chrome.storage.local.get(data => {
-    if (typeof data['video-annotation'] === 'undefined' || data['video-annotation']) {
+  chrome.storage.local.get(_data => {
+    if (typeof _data['video-annotation'] === 'undefined' || _data['video-annotation']) {
       observer.observe(document.querySelector('body'), { childList: true });
       return;
     }
   });
 
-  chrome.storage.onChanged.addListener(data => {
+  chrome.storage.onChanged.addListener(dataChanged => {
     const toggleDomObservation = enabled => {
       if (enabled) {
         observer.observe(document.querySelector('body'), { childList: true });
@@ -87,8 +85,8 @@ function (data) {
       observer.disconnect();
     };
 
-    if (data['video-annotation']) {
-      toggleDomObservation(data['video-annotation'].newValue);
+    if (dataChanged['video-annotation']) {
+      toggleDomObservation(dataChanged['video-annotation'].newValue);
     }
   });
 }, 'html');
