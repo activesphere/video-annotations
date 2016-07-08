@@ -105,8 +105,8 @@ var syncingData = function (localStorage, dropboxFile, notes, initialSync) {
   return Promise.all([readingDropbox(dropboxFile), readingStorage(localStorage)]).then((data) =>
     merge(data, notes.annotations.slice(), initialSync)
   ).then((jsonData) => {
-
-    jsonData.metadata = notes.metadata;
+    
+    if(!initialSync) jsonData.metadata = notes.metadata;
     jsonData.storageVersion = CONSTANTS.storageStructureVersion;
     
     localStorage.save(jsonData);
