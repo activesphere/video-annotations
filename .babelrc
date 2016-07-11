@@ -1,4 +1,4 @@
 {
-    presets: ["es2015"],
+    presets: ["stage-2"],
     plugins: ["lodash"]
 }
