@@ -9,7 +9,7 @@ class Editor extends React.Component {
     this.state = {
       newAnnotationText: '',
     };
-    
+
     this.onEditorChange = this.onEditorChange.bind(this);
     this.onCreate = this.onCreate.bind(this);
   }
@@ -29,10 +29,12 @@ class Editor extends React.Component {
   }
 
   onCreate() {
+    const oldAnnotation = this.props.annotation;
+    const id = oldAnnotation ? oldAnnotation.id : '';
     this.props.handleAnnotationCreate(
       this.props.start_seconds,
       this.state.newAnnotationText,
-      this.props.annotation
+      id
     );
   }
 
@@ -94,6 +96,7 @@ class Editor extends React.Component {
 Editor.propTypes = {
   handleAnnotationCreate: React.PropTypes.func.isRequired,
   handleAnnotationCancel: React.PropTypes.func.isRequired,
+  
   annotation: React.PropTypes.object,
   start_seconds: React.PropTypes.number,
   videoTag: React.PropTypes.object,

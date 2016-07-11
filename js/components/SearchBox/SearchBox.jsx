@@ -5,7 +5,7 @@ const SearchBox = props => (
   <input
     type="text"
     placeholder={props.placeholder}
-    className="center"
+    className="search-annotations"
     onChange={props.handleSearchBoxChange}
     value={props.searchString}
     style={{ display: props.display }}
