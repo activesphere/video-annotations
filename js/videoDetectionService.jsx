@@ -2,6 +2,8 @@ import _ from 'lodash';
 import $ from './vendor/jquery.hotkeys.js';
 
 import Utils from './utils.js';
+import syncingData, { syncOnChange } from './syncService.js';
+import AppStorage from './localStorageUtils.js';
 
 import '../styles/summary.less';
 
@@ -9,8 +11,14 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import VideoAnnotation from './containers/VideoAnnotation/VideoAnnotation';
 
-/* global chrome */
+import { receiveInitialState } from './actions';
+import rootReducer from './reducers';
 
+import { createStore } from 'redux';
+import { Provider } from 'react-redux';
+
+
+/* global chrome */
 $.get(chrome.extension.getURL('/html/templates.html'),
 (data) => {
   $('body').append(data);
@@ -45,19 +53,43 @@ $.get(chrome.extension.getURL('/html/templates.html'),
 
           // add react static box
           const videoKey = Utils.getVideoKey();
+          const store = createStore(rootReducer);
+          
           $('.watch-sidebar').prepend('<div id="react-video-annotation" />');
+          
           ReactDOM.render(
-            <VideoAnnotation videoKey={videoKey} />,
+            <Provider store={store}>
+              <VideoAnnotation />
+            </Provider>,
             document.querySelector('#react-video-annotation')
           );
+
+          const storage = new AppStorage({ name: videoKey });
+          const dropboxFile = Utils.dropbox(videoKey);
+          storage.name = videoKey;
+          dropboxFile.name = videoKey;
+          
+          // sync up all three sources (localStorage, dropbox, memory)
+          // initial sync
+          syncingData(
+            storage,
+            dropboxFile,
+            { annotations: [], metadata: {} },
+            true
+          ).then((notes) => {
+            store.dispatch(receiveInitialState(notes));
+          });
+
+          let currState;
+          const stateChangeTracker = () => {
+            const prevState = currState;
+            currState = store.getState();
+            syncOnChange(prevState, currState, storage, dropboxFile);
+          };
+          
+          store.subscribe(stateChangeTracker);
         }
       }
-
-      /* if (!app) {
-       *   app = new AppView();
-       * }
-
-       * app.render(videokey);*/
     } else {
       if ($('#video-annotation')[0]) {
         $('#video-annotation').remove();
