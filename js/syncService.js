@@ -96,17 +96,16 @@ export function merge(sources, local, initialSync) {
     return record;
   });
 
-  //return merged.concat(storageData['annotations']);
   storageData.annotations = merged.concat(storageData.annotations);
   return storageData;
 }
 
-var syncingData = function (localStorage, dropboxFile, notes, initialSync) {
+var syncingData = function (localStorage, dropboxFile, state, initialSync) {
   return Promise.all([readingDropbox(dropboxFile), readingStorage(localStorage)]).then((data) =>
-    merge(data, notes.annotations.slice(), initialSync)
+    merge(data, state.annotations.slice(), initialSync)
   ).then((jsonData) => {
     
-    if(!initialSync) jsonData.metadata = notes.metadata;
+    if(!initialSync) jsonData.metadata = state.metadata;
     jsonData.storageVersion = CONSTANTS.storageStructureVersion;
     
     localStorage.save(jsonData);
@@ -118,6 +117,23 @@ var syncingData = function (localStorage, dropboxFile, notes, initialSync) {
     console.error(err);
   });
   
+};
+
+export const syncOnChange =
+(prevState, currState, storage, dropboxFile) => {
+  // Don't need to sync up on UI state changes
+  if (prevState.searchQuery === currState.searchQuery &&
+      prevState.helpMessageShown === currState.helpMessageShown) {
+        const localState = {
+          annotations: currState.notes,
+          metadata: currState.metadata,
+        };
+        syncingData(
+          storage,
+          dropboxFile,
+          localState
+        );
+  }
 };
 
 export default syncingData;
