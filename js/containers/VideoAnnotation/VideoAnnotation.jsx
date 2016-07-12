@@ -7,6 +7,8 @@ import Editor from '../../components/Editor/Editor';
 import HelpMessage from '../../components/HelpMessage/HelpMessage';
 import UserInfo from '../../components/UserInfo/UserInfo';
 import Annotations from '../../components/Annotations/Annotations';
+import Summary from '../Summary/Summary';
+
 import Utils from '../../utils';
 
 import './VideoAnnotation.less';
@@ -38,6 +40,9 @@ class VideoAnnotation extends React.Component {
       // bring up the editor to create a new annotation.
       e.preventDefault();
       this.insertEditor();
+    } else if (e.shiftKey && e.key === 'S') {
+      // wants to share!
+      this.showSummary();
     }
   }
 
@@ -86,6 +91,23 @@ class VideoAnnotation extends React.Component {
       document.querySelector('.create-annotation')
     );
     this.videoTag.play();
+  }
+
+  showSummary() {
+    const summaryBox = document.querySelector('.summary-table-wrapper');
+    if (summaryBox) {
+      // summary box already exists; remove it
+      ReactDOM.unmountComponentAtNode(
+        document.querySelector('.summary-page')
+      );
+      this.videoTag.play();
+    } else {
+      ReactDOM.render(
+        <Summary />,
+        document.querySelector('.summary-page')
+      );
+      this.videoTag.pause();
+    }
   }
   
   render() {

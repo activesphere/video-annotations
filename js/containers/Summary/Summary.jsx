@@ -1,7 +1,6 @@
 import React from 'react';
 import SummaryTable from '../../components/SummaryTable/SummaryTable';
 import Notes from '../../components/Notes/Notes';
-import _ from 'lodash';
 import Utils from '../../utils';
 import CONSTANTS from '../../constants';
 
@@ -23,7 +22,7 @@ class Summary extends React.Component {
   componentDidMount() {
     /* global chrome */
     chrome.storage.local.get((data) => {
-      const storage = _.cloneDeep(data);
+      const storage = Object.assign({}, data);
       let activeVideoKey = '';
       let activeNotes = [];
       
