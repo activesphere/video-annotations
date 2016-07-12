@@ -5,7 +5,7 @@ import Utils from '../../utils';
 
 import './Annotations.less';
 
-import { deleteAnnotation, setMetadata } from '../../actions';
+import { deleteAnnotation } from '../../actions';
 
 class Annotations extends React.Component {
   constructor(props) {
@@ -19,7 +19,6 @@ class Annotations extends React.Component {
     this.onItemDelete = this.onItemDelete.bind(this);
     this.onItemEdit = this.onItemEdit.bind(this);
     this.onSeek = this.onSeek.bind(this);
-    this.updateMetadata = this.updateMetadata.bind(this);
   }
 
   componentDidMount() {
@@ -46,12 +45,6 @@ class Annotations extends React.Component {
 
   onSeek(toTime) {
     this.videoTag.setCurrentTime(toTime);
-  }
-
-  updateMetadata() {
-    const host = Utils.hosts[window.location.hostname];
-    const pagedata = Utils.getVideoInfo(host);
-    this.store.dispatch(setMetadata(pagedata));
   }
 
   render() {
