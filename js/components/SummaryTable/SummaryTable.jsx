@@ -1,6 +1,6 @@
 import React from 'react';
-import SearchBox from './SearchBox/SearchBox';
-import Utils from '../utils.js';
+import SearchBox from '../SearchBox/SearchBox';
+import Utils from '../../utils.js';
 
 const TableRow = (props) => {
   const metadata = props.video.metadata;

@@ -1,9 +1,9 @@
 import React from 'react';
-import SummaryTable from '../components/SummaryTable';
-import Notes from '../components/Notes/Notes';
+import SummaryTable from '../../components/SummaryTable/SummaryTable';
+import Notes from '../../components/Notes/Notes';
 import _ from 'lodash';
-import Utils from '../utils';
-import CONSTANTS from '../constants';
+import Utils from '../../utils';
+import CONSTANTS from '../../constants';
 
 
 class Summary extends React.Component {
@@ -74,9 +74,9 @@ class Summary extends React.Component {
 
   render() {
     return (
-      <div id="summary-table-wrapper">
+      <div className="summary-table-wrapper">
         <h2>Annotations - Summary</h2>
-        <div id="tableHolder">
+        <div className="tableHolder">
           <SummaryTable
             videos={this.state.videos}
             updateNotes={this.updateNotes}
