@@ -5,8 +5,6 @@ import Utils from './utils.js';
 import syncingData, { syncOnChange } from './syncService.js';
 import AppStorage from './localStorageUtils.js';
 
-import '../styles/summary.less';
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import VideoAnnotation from './containers/VideoAnnotation/VideoAnnotation';
