@@ -71,12 +71,6 @@ const metadata = (state = initialMetadata, action) => {
   switch (action.type) {
     case RECEIVE_INITIAL_STATE:
       return { ...action.state.metadata };
-
-    case SET_METADATA:
-      return {
-        ...state,
-        ...action.pagedata,
-      };
       
     case ADD_ANNOTATION:
       return {

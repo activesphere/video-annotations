@@ -4,7 +4,6 @@ export const EDIT_ANNOTATION = 'EDIT_ANNOTATION';
 export const RECEIVE_INITIAL_STATE = 'RECEIVE_INITIAL_STATE';
 export const CHANGE_SEARCH_QUERY = 'CHANGE_SEARCH_QUERY';
 export const TOGGLE_HELP_MESSAGE = 'TOGGLE_HELP_MESSAGE';
-export const SET_METADATA = 'SET_METADATA';
 
 
 export const receiveInitialState = (state) => {
@@ -14,7 +13,7 @@ export const receiveInitialState = (state) => {
       ...state,
       notes: state.annotations,
     },
-  }
+  };
 }
 
 export const addAnnotation =
@@ -46,13 +45,6 @@ export const editAnnotation =
     text,
     metadata,
   }
-}
-
-export const setMetadata = (pagedata) => {
-  return {
-    type: SET_METADATA,
-    pagedata,
-  };
 }
 
 export const changeSearchQuery = (text) => {
