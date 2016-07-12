@@ -4,6 +4,8 @@ import Notes from '../../components/Notes/Notes';
 import Utils from '../../utils';
 import CONSTANTS from '../../constants';
 
+import './Summary.less';
+
 
 class Summary extends React.Component {
   constructor() {

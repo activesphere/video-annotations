@@ -2,6 +2,8 @@ import React from 'react';
 import SearchBox from '../SearchBox/SearchBox';
 import Utils from '../../utils.js';
 
+import './SummaryTable.less';
+
 const TableRow = (props) => {
   const metadata = props.video.metadata;
   const annotations = props.video.annotations;
