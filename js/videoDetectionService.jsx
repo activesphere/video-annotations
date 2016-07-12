@@ -50,45 +50,60 @@ $.get(chrome.extension.getURL('/html/templates.html'),
             }
             </style>`
           );
-
-          // add react static box
-          const videoKey = Utils.getVideoKey();
-          const store = createStore(rootReducer);
-          
-          $('.watch-sidebar').prepend('<div id="react-video-annotation" />');
-          
-          ReactDOM.render(
-            <Provider store={store}>
-              <VideoAnnotation />
-            </Provider>,
-            document.querySelector('#react-video-annotation')
-          );
-
-          const storage = new AppStorage({ name: videoKey });
-          const dropboxFile = Utils.dropbox(videoKey);
-          storage.name = videoKey;
-          dropboxFile.name = videoKey;
-          
-          // sync up all three sources (localStorage, dropbox, memory)
-          // initial sync
-          syncingData(
-            storage,
-            dropboxFile,
-            { annotations: [], metadata: {} },
-            true
-          ).then((notes) => {
-            store.dispatch(receiveInitialState(notes));
-          });
-
-          let currState;
-          const stateChangeTracker = () => {
-            const prevState = currState;
-            currState = store.getState();
-            syncOnChange(prevState, currState, storage, dropboxFile);
-          };
-          
-          store.subscribe(stateChangeTracker);
         }
+
+        // inject this div for the summary/share thing in DOM
+        const summaryHolder = document.createElement('div');
+        summaryHolder.className = 'summary-page';
+        document.getElementsByTagName('body')[0]
+                .appendChild(summaryHolder);
+
+        // add react static box
+        const videoKey = Utils.getVideoKey();
+        const store = createStore(rootReducer);
+        
+        $('.watch-sidebar').prepend('<div id="react-video-annotation" />');
+        
+        ReactDOM.render(
+          <Provider store={store}>
+            <VideoAnnotation />
+          </Provider>,
+          document.querySelector('#react-video-annotation')
+        );
+
+        const storage = new AppStorage({ name: videoKey });
+        const dropboxFile = Utils.dropbox(videoKey);
+        storage.name = videoKey;
+        dropboxFile.name = videoKey;
+        
+        // sync up all three sources (localStorage, dropbox, memory)
+        // initial sync
+        syncingData(
+          storage,
+          dropboxFile,
+          { annotations: [], metadata: {} },
+          true
+        ).then((notes) => {
+          const host = Utils.hosts[window.location.hostname];
+          const pagedata = Utils.getVideoInfo(host);
+          // if it's first time visiting this video,
+          // notes will be undefined, hense
+          const $notes = typeof notes === 'undefined' ?
+                         { annotations: [],
+                           metadata: {},
+                         } : notes;
+          $notes.metadata = Object.assign({}, $notes.metadata, pagedata);
+          store.dispatch(receiveInitialState($notes));
+        });
+
+        let currState;
+        const stateChangeTracker = () => {
+          const prevState = currState;
+          currState = store.getState();
+          syncOnChange(prevState, currState, storage, dropboxFile);
+        };
+        
+        store.subscribe(stateChangeTracker);
       }
     } else {
       if ($('#video-annotation')[0]) {
