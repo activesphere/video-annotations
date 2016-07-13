@@ -1,6 +1,6 @@
 import React from 'react';
 
-import AnnotationItem from '../AnnotationItem/AnnotationItem';
+import AnnotationItemWrapper from '../../containers/AnnotationItemWrapper/AnnotationItemWrapper';
 import Utils from '../../utils';
 
 import './Annotations.less';
@@ -47,7 +47,10 @@ class Annotations extends React.Component {
   }
 
   onSeek(toTime) {
-    this.videoTag.setCurrentTime(toTime);
+    return (e) => {
+      e.preventDefault();
+      this.videoTag.setCurrentTime(toTime);
+    };
   }
 
   handleTimeUpdate() {
@@ -68,13 +71,13 @@ class Annotations extends React.Component {
       return Object.assign({}, annotation, { nextStart });
     };
     const stateToComponent = (note) =>
-      <AnnotationItem
+      <AnnotationItemWrapper
         data={note}
         currentTime={this.state.currentTime}
         key={note.id}
         handleItemDelete={this.onItemDelete(note.id)}
         handleItemEdit={this.onItemEdit(note.id)}
-        handleSeek={this.onSeek}
+        handleSeek={this.onSeek(note.start_seconds)}
       />;
     
     const filteredAnnotations = state
