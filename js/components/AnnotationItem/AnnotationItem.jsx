@@ -1,71 +1,42 @@
 import React from 'react';
 
 class AnnotationItem extends React.Component {
-  constructor(props) {
-    super(props);
-    const endTime = props.data.end_seconds ?
-                    props.data.end_seconds :
-                    props.data.start_seconds + 1;
+  constructor() {
+    super();
     this.state = {
-      descShown: false,
-      startTime: props.data.start_seconds,
-      endTime,
+      expanded: false,
     };
-
-    this.toggleDescVisibility = this.toggleDescVisibility.bind(this);
-    this.onItemDelete = this.onItemDelete.bind(this);
-    this.onItemEdit = this.onItemEdit.bind(this);
-    this.onSeek = this.onSeek.bind(this);
+    this.toggleExpanded = this.toggleExpanded.bind(this);
   }
 
-  componentWillReceiveProps(newProps) {
-    this.highlight(newProps.currentTime);
-  }
-
-  onItemDelete() {
-    this.props.handleItemDelete(this.props.index);
-  }
-
-  onItemEdit() {
-    this.props.handleItemEdit(this.props.index);
-  }
-
-  onSeek() {
-    this.props.handleSeek(this.state.startTime);
-  }
-
-  toggleDescVisibility() {
+  toggleExpanded() {
+    console.log('im here n imma dance');
     this.setState({
-      descShown: !this.state.descShown,
+      expanded: !this.state.expanded,
     });
   }
 
-  highlight(time) {
-    if (time >= this.state.startTime &&
-        time <= this.state.endTime) {
-      this.setState({ descShown: true });
-    } else {
-      this.setState({ descShown: false });
-    }
-  }
-  
   render() {
     const data = this.props.data;
-    // visibility of the description for this annotation
-    const display = this.state.descShown ? 'block' : 'none';
-    const arrowDirection = this.state.descShown ?
-                           'icon-title fa fa-caret-down' :
-                           'icon-title fa fa-caret-right';
+    const now = this.props.currentTime;
 
+    let arrowDirection = 'icon-title fa fa-caret-right';
+    let display = 'none';
+    if ((now >= data.start_seconds && now <= data.nextStart) ||
+        this.state.expanded) {
+      arrowDirection = 'icon-title fa fa-caret-down';
+      display = 'block';
+    }
+    
     return (
       <li className="video-annotation">
         <div className="annotation-detail">
           <span
             className={arrowDirection}
             data-type="auto"
-            onClick={this.toggleDescVisibility}
+            onClick={this.toggleExpanded}
           ></span>
-          <a href="#" className="seek" onClick={this.onSeek}>
+          <a href="#" className="seek" onClick={this.props.handleSeek}>
             <p className="annotation-title">{data.title}</p>
           </a>
           <span className="label quick">{data.start_minutes}</span>
@@ -73,13 +44,13 @@ class AnnotationItem extends React.Component {
             href="#"
             className="delete fa fa-trash"
             title="Delete"
-            onClick={this.onItemDelete}
+            onClick={this.props.handleItemDelete}
           ></a>
           <a
             href="#"
             className="edit fa fa-pencil"
             title="Edit"
-            onClick={this.onItemEdit}
+            onClick={this.props.handleItemEdit}
           ></a>
         </div>
         <div className="clear"></div>
@@ -94,8 +65,7 @@ class AnnotationItem extends React.Component {
 
 AnnotationItem.propTypes = {
   data: React.PropTypes.object,
-  currentTime: React.PropTypes.number,
-  index: React.PropTypes.number,
+  currentTime: React.PropTypes.Number,
   handleItemDelete: React.PropTypes.func,
   handleItemEdit: React.PropTypes.func,
   handleSeek: React.PropTypes.func,
