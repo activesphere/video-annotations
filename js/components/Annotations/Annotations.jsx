@@ -19,11 +19,14 @@ class Annotations extends React.Component {
     this.onItemDelete = this.onItemDelete.bind(this);
     this.onItemEdit = this.onItemEdit.bind(this);
     this.onSeek = this.onSeek.bind(this);
+    this.handleTimeUpdate = this.handleTimeUpdate.bind(this);
   }
 
   componentDidMount() {
     this.store = this.context.store;
     this.unsubscribe = this.store.subscribe(() => this.forceUpdate());
+    // listen on time updates from the video playback time
+    this.videoTag.player.ontimeupdate = this.handleTimeUpdate;
   }
 
   componentWillUnmount() { this.unsubscribe(); }
@@ -47,27 +50,42 @@ class Annotations extends React.Component {
     this.videoTag.setCurrentTime(toTime);
   }
 
+  handleTimeUpdate() {
+    const currentTime = this.videoTag.player.currentTime;
+    this.setState({ currentTime });
+  }
+
   render() {
     this.store = this.context.store;
     const state = this.store.getState();
     
     const hasSearchQuery = (text, query) =>
       text.toLowerCase().indexOf(query) > -1;
+    const setTimes = (annotation, index, list) => {
+      const nextStart = index < list.length - 1 ?
+                        list[index + 1].start_seconds :
+                        annotation.end_seconds;
+      return Object.assign({}, annotation, { nextStart });
+    };
+    const stateToComponent = (note) =>
+      <AnnotationItem
+        data={note}
+        currentTime={this.state.currentTime}
+        key={note.id}
+        handleItemDelete={this.onItemDelete(note.id)}
+        handleItemEdit={this.onItemEdit(note.id)}
+        handleSeek={this.onSeek}
+      />;
+    
     const filteredAnnotations = state
       .notes.filter((note) =>
         hasSearchQuery(
           note.annotation,
           state.searchQuery
         )
-      ).map((note) =>
-        <AnnotationItem
-          data={note}
-          key={note.id}
-          handleItemDelete={this.onItemDelete(note.id)}
-          handleItemEdit={this.onItemEdit(note.id)}
-          handleSeek={this.onSeek}
-        />
-      );
+      )
+      .map(setTimes)
+      .map(stateToComponent);
     
     return (
       <ul className="annotations">
