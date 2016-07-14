@@ -1,11 +1,9 @@
 import React from 'react';
 
-import AnnotationItemWrapper from '../../containers/AnnotationItemWrapper/AnnotationItemWrapper';
+import AnnotationItem from '../AnnotationItem/AnnotationItem';
 import Utils from '../../utils';
 
 import './Annotations.less';
-
-import { deleteAnnotation } from '../../actions';
 
 class Annotations extends React.Component {
   constructor(props) {
@@ -16,33 +14,20 @@ class Annotations extends React.Component {
 
     this.videoTag = Utils.getVideoInterface();
 
-    this.onItemDelete = this.onItemDelete.bind(this);
     this.onItemEdit = this.onItemEdit.bind(this);
     this.onSeek = this.onSeek.bind(this);
     this.handleTimeUpdate = this.handleTimeUpdate.bind(this);
   }
 
   componentDidMount() {
-    this.store = this.context.store;
-    this.unsubscribe = this.store.subscribe(() => this.forceUpdate());
     // listen on time updates from the video playback time
     this.videoTag.player.ontimeupdate = this.handleTimeUpdate;
   }
 
-  componentWillUnmount() { this.unsubscribe(); }
-
-  onItemDelete(id) {
-    return () => {
-      this.store.dispatch(deleteAnnotation(id));
-    };
-  }
-
-  onItemEdit(id) {
-    return () => {
-      const state = this.store.getState();
-      const targetAnnotation = state
-        .notes.find((note) => note.id === id);
-      this.props.insertEditor(targetAnnotation);
+  onItemEdit(annotationItem) {
+    return (e) => {
+      e.preventDefault();
+      this.props.insertEditor(annotationItem);
     };
   }
 
@@ -59,9 +44,7 @@ class Annotations extends React.Component {
   }
 
   render() {
-    this.store = this.context.store;
-    const state = this.store.getState();
-    
+    const props = this.props;
     const hasSearchQuery = (text, query) =>
       text.toLowerCase().indexOf(query) > -1;
     const setTimes = (annotation, index, list) => {
@@ -71,20 +54,20 @@ class Annotations extends React.Component {
       return Object.assign({}, annotation, { nextStart });
     };
     const stateToComponent = (note) =>
-      <AnnotationItemWrapper
+      <AnnotationItem
         data={note}
         currentTime={this.state.currentTime}
         key={note.id}
-        handleItemDelete={this.onItemDelete(note.id)}
-        handleItemEdit={this.onItemEdit(note.id)}
+        handleItemDelete={props.deleteItem(note.id)}
+        handleItemEdit={this.onItemEdit(note)}
         handleSeek={this.onSeek(note.start_seconds)}
       />;
     
-    const filteredAnnotations = state
+    const filteredAnnotations = props
       .notes.filter((note) =>
         hasSearchQuery(
           note.annotation,
-          state.searchQuery
+          props.searchQuery
         )
       )
       .map(setTimes)
@@ -98,12 +81,12 @@ class Annotations extends React.Component {
   }
 }
 
-Annotations.contextTypes = {
-  store: React.PropTypes.object,
-};
-
 Annotations.propTypes = {
+  notes: React.PropTypes.array,
+  searchQuery: React.PropTypes.string,
+  
   insertEditor: React.PropTypes.func,
+  deleteItem: React.PropTypes.func,
 };
 
 export default Annotations;

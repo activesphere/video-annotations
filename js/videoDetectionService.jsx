@@ -7,7 +7,7 @@ import AppStorage from './localStorageUtils.js';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import VideoAnnotation from './containers/VideoAnnotation/VideoAnnotation';
+import VideoAnnotationWrapper from './containers/VideoAnnotationWrapper/VideoAnnotationWrapper';
 
 import { receiveInitialState } from './actions';
 import rootReducer from './reducers';
@@ -58,21 +58,20 @@ $.get(chrome.extension.getURL('/html/templates.html'),
 
         // add react static box
         const videoKey = Utils.getVideoKey();
+        const storage = new AppStorage({ name: videoKey });
+        const dropboxFile = Utils.dropbox(videoKey);
+        storage.name = videoKey;
+        dropboxFile.name = videoKey;
         const store = createStore(rootReducer);
         
         $('.watch-sidebar').prepend('<div id="react-video-annotation" />');
         
         ReactDOM.render(
           <Provider store={store}>
-            <VideoAnnotation />
+            <VideoAnnotationWrapper />
           </Provider>,
           document.querySelector('#react-video-annotation')
         );
-
-        const storage = new AppStorage({ name: videoKey });
-        const dropboxFile = Utils.dropbox(videoKey);
-        storage.name = videoKey;
-        dropboxFile.name = videoKey;
         
         // sync up all three sources (localStorage, dropbox, memory)
         // initial sync
@@ -110,11 +109,15 @@ $.get(chrome.extension.getURL('/html/templates.html'),
     }
   };
 
-  const observer = new MutationObserver(_.debounce(checkAndEnableFeature, 100));
+  const observer = new MutationObserver(
+    _.debounce(checkAndEnableFeature, 100)
+  );
 
   chrome.storage.local.get(_data => {
-    if (typeof _data['video-annotation'] === 'undefined' || _data['video-annotation']) {
-      observer.observe(document.querySelector('body'), { childList: true });
+    if (typeof _data['video-annotation'] === 'undefined' ||
+        _data['video-annotation']) {
+      observer.observe(document.querySelector('body'),
+                       { childList: true });
       return;
     }
   });
@@ -122,7 +125,8 @@ $.get(chrome.extension.getURL('/html/templates.html'),
   chrome.storage.onChanged.addListener(dataChanged => {
     const toggleDomObservation = enabled => {
       if (enabled) {
-        observer.observe(document.querySelector('body'), { childList: true });
+        observer.observe(document.querySelector('body'),
+                         { childList: true });
         checkAndEnableFeature();
         return;
       }

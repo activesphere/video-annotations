@@ -1,20 +1,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import SearchBox from '../../components/SearchBox/SearchBox';
-import Editor from '../../components/Editor/Editor';
+import SearchBox from '../SearchBox/SearchBox';
+import Editor from '../Editor/Editor';
 
-import HelpMessage from '../../components/HelpMessage/HelpMessage';
-import UserInfo from '../../components/UserInfo/UserInfo';
-import Annotations from '../../components/Annotations/Annotations';
-import Summary from '../Summary/Summary';
+import HelpMessage from '../HelpMessage/HelpMessage';
+import UserInfo from '../UserInfo/UserInfo';
+import Summary from '../../containers/Summary/Summary';
+
+import AnnotationsWrapper from '../../containers/AnnotationsWrapper/AnnotationsWrapper';
 
 import Utils from '../../utils';
 
 import './VideoAnnotation.less';
-
-import { changeSearchQuery, toggleHelpMessage,
-         editAnnotation, addAnnotation } from '../../actions';
 
 
 class VideoAnnotation extends React.Component {
@@ -29,11 +27,8 @@ class VideoAnnotation extends React.Component {
   }
   
   componentDidMount() {
-    this.unsubscribe = this.store.subscribe(() => this.forceUpdate());
     document.onkeydown = this.onKeyDown;
   }
-
-  componentWillUnmount() { this.unsubscribe(); }
 
   onKeyDown(e) {
     if (e.altKey && e.key === 'd') {
@@ -47,24 +42,13 @@ class VideoAnnotation extends React.Component {
   }
 
   onAnnotationCreate(start_seconds, text, editId) {
-    const state = this.store.getState();
-    if (editId) {
-      // this is to edit, not to create
-      this.store.dispatch(editAnnotation(
-        editId,
-        text,
-        state.metadata
-      ));
-    } else {
-      // creating a new note
-      this.store.dispatch(addAnnotation(
-        text,
-        state.metadata,
-        start_seconds,
-        this.videoTag.getCurrentTime()
-      ));
-    }
-    
+    const currentVideoTime = this.videoTag.currentTime;
+    this.props.createAnnotation(
+      start_seconds,
+      text,
+      editId,
+      currentVideoTime
+    );
     // remove editor
     this.removeEditor();
   }
@@ -111,28 +95,21 @@ class VideoAnnotation extends React.Component {
   }
   
   render() {
-    this.store = this.context.store;
-    const state = this.store.getState();
+    const props = this.props;
     return (
       <div id="video-annotation">
         <div className="sidebar sidebar-visible">
           <div className="annotations-list">
             <UserInfo />
             <SearchBox
-              handleSearchBoxChange={(e) => {
-                this.store.dispatch(changeSearchQuery(
-                  e.target.value.toLowerCase()
-                ));
-              }}
-              searchQuery={state.searchQuery}
+              handleSearchBoxChange={props.handleSearchBoxChange}
+              searchQuery={props.searchQuery}
             />
             <div className="fa-container">
               <i
                 className="fa fa-question toggle-info"
                 title="Show Help"
-                onClick={() => {
-                  this.store.dispatch(toggleHelpMessage());
-                }}
+                onClick={props.toggleHelpShown}
               />
               <p
                 className="toggle-highlight"
@@ -141,8 +118,8 @@ class VideoAnnotation extends React.Component {
               <i className="toggle-highlight fa fa-check-square-o"></i>
             </div>
             <div className="create-annotation"></div>
-            <HelpMessage visibility={state.helpMessageShown} />
-            <Annotations insertEditor={this.insertEditor} />
+            <HelpMessage visibility={props.helpMessageShown} />
+            <AnnotationsWrapper insertEditor={this.insertEditor} />
           </div>
         </div>
       </div>
@@ -150,8 +127,13 @@ class VideoAnnotation extends React.Component {
   }
 }
 
-VideoAnnotation.contextTypes = {
-  store: React.PropTypes.object,
+VideoAnnotation.propTypes = {
+  searchQuery: React.PropTypes.string,
+  helpMessageShown: React.PropTypes.bool,
+
+  handleSearchBoxChange: React.PropTypes.func,
+  toggleHelpShown: React.PropTypes.func,
+  createAnnotation: React.PropTypes.func,
 };
 
 export default VideoAnnotation;
