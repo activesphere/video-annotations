@@ -73,15 +73,19 @@ const metadata = (state = initialMetadata, action) => {
       return { ...action.state.metadata };
       
     case ADD_ANNOTATION:
+      const creationTime = state.creationTime ?
+                           state.creationTime :
+                           action.timeNow;
+      const lastUpdate = action.timeNow;
       return {
-        ...action.metadata,
-        creationTime: action.timeNow,
-        lastUpdate: action.timeNow,
+        ...state,
+        creationTime,
+        lastUpdate,
       };
 
     case EDIT_ANNOTATION:
       return {
-        ...action.metadata,
+        ...state,
         lastUpdate: action.timeNow,
       };
 

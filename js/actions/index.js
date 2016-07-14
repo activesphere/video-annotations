@@ -17,13 +17,12 @@ export const receiveInitialState = (state) => {
 }
 
 export const addAnnotation =
-(text, metadata, start_seconds, currentVideoTime) => {
+(text, start_seconds, currentVideoTime) => {
   return {
     type: ADD_ANNOTATION,
     timeNow: new Date().toString(),
     id: Date.now(),
     text,
-    metadata,
     start_seconds,
     currentVideoTime,
   }
@@ -37,13 +36,12 @@ export const deleteAnnotation = (id) => {
 }
 
 export const editAnnotation =
-(id, text, metadata) => {
+(id, text) => {
   return {
     type: EDIT_ANNOTATION,
     timeNow: new Date().toString(),
     id,
     text,
-    metadata,
   }
 }
 
