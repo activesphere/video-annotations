@@ -96,6 +96,9 @@ class VideoAnnotation extends React.Component {
   
   render() {
     const props = this.props;
+    let autoHighlightClass = props.autoHighlight ?
+                             'toggle-highlight fa fa-check-square-o' :
+                             'toggle-highlight fa fa-square-o';
     return (
       <div id="video-annotation">
         <div className="sidebar sidebar-visible">
@@ -115,7 +118,10 @@ class VideoAnnotation extends React.Component {
                 className="toggle-highlight"
                 title="Show descriptions for annotations made while playing"
               >Auto Highlight</p>
-              <i className="toggle-highlight fa fa-check-square-o"></i>
+              <i
+                className={autoHighlightClass}
+                onClick={props.toggleAutoHighlight}
+              />
             </div>
             <div className="create-annotation"></div>
             <HelpMessage visibility={props.helpMessageShown} />
@@ -130,9 +136,11 @@ class VideoAnnotation extends React.Component {
 VideoAnnotation.propTypes = {
   searchQuery: React.PropTypes.string,
   helpMessageShown: React.PropTypes.bool,
+  autoHighlight: React.PropTypes.bool,
 
   handleSearchBoxChange: React.PropTypes.func,
   toggleHelpShown: React.PropTypes.func,
+  toggleAutoHighlight: React.PropTypes.func,
   createAnnotation: React.PropTypes.func,
 };
 

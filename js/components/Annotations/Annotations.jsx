@@ -57,6 +57,7 @@ class Annotations extends React.Component {
       <AnnotationItem
         data={note}
         currentTime={this.state.currentTime}
+        autoHighlight={props.autoHighlight}
         key={note.id}
         handleItemDelete={props.deleteItem(note.id)}
         handleItemEdit={this.onItemEdit(note)}
@@ -84,6 +85,7 @@ class Annotations extends React.Component {
 Annotations.propTypes = {
   notes: React.PropTypes.array,
   searchQuery: React.PropTypes.string,
+  autoHighlight: React.PropTypes.bool,
   
   insertEditor: React.PropTypes.func,
   deleteItem: React.PropTypes.func,

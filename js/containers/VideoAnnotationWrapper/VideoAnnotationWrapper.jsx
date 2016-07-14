@@ -3,12 +3,14 @@ import VideoAnnotation from '../../components/VideoAnnotation/VideoAnnotation';
 import { connect } from 'react-redux';
 
 import { changeSearchQuery, toggleHelpMessage,
-         editAnnotation, addAnnotation } from '../../actions';
+         editAnnotation, addAnnotation,
+         toggleAutoHighlight } from '../../actions';
 
 
 const mapStateToProps = state => ({
   searchQuery: state.searchQuery,
   helpMessageShown: state.helpMessageShown,
+  autoHighlight: state.autoHighlight,
 });
 
 const mapDispatchToProps = dispatch => ({
@@ -18,6 +20,10 @@ const mapDispatchToProps = dispatch => ({
   
   toggleHelpShown: () => {
     dispatch(toggleHelpMessage());
+  },
+
+  toggleAutoHighlight: () => {
+    dispatch(toggleAutoHighlight());
   },
   
   createAnnotation: (

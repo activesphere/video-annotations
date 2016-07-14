@@ -7,6 +7,7 @@ import { deleteAnnotation } from '../../actions';
 const mapStateToProps = (state, ownProps) => ({
   notes: state.notes,
   searchQuery: state.searchQuery,
+  autoHighlight: state.autoHighlight,
   insertEditor: ownProps.insertEditor,
 });
 
