@@ -1,7 +1,7 @@
 import {
   RECEIVE_INITIAL_STATE,
   ADD_ANNOTATION, EDIT_ANNOTATION, DELETE_ANNOTATION,
-  CHANGE_SEARCH_QUERY, TOGGLE_HELP_MESSAGE, SET_METADATA,
+  CHANGE_SEARCH_QUERY, TOGGLE_HELP_MESSAGE, TOGGLE_AUTOHIGHLIGHT,
 } from '../actions/index';
 
 import Utils from '../utils';
@@ -112,11 +112,21 @@ const helpMessageShown = (state = false, action) => {
   }
 }
 
+const autoHighlight = (state = true, action) => {
+  switch (action.type) {
+    case TOGGLE_AUTOHIGHLIGHT:
+      return !state;
+    default:
+      return state;
+  }
+}
+
 const rootReducer = combineReducers({
   notes,
   metadata,
   searchQuery,
   helpMessageShown,
+  autoHighlight,
 });
 
 export default rootReducer;

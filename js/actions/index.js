@@ -4,6 +4,7 @@ export const EDIT_ANNOTATION = 'EDIT_ANNOTATION';
 export const RECEIVE_INITIAL_STATE = 'RECEIVE_INITIAL_STATE';
 export const CHANGE_SEARCH_QUERY = 'CHANGE_SEARCH_QUERY';
 export const TOGGLE_HELP_MESSAGE = 'TOGGLE_HELP_MESSAGE';
+export const TOGGLE_AUTOHIGHLIGHT = 'TOGGLE_AUTOHIGHLIGHT';
 
 
 export const receiveInitialState = (state) => {
@@ -55,5 +56,11 @@ export const changeSearchQuery = (text) => {
 export const toggleHelpMessage = () => {
   return {
     type: TOGGLE_HELP_MESSAGE,
+  }
+}
+
+export const toggleAutoHighlight = () => {
+  return {
+    type: TOGGLE_AUTOHIGHLIGHT,
   }
 }
