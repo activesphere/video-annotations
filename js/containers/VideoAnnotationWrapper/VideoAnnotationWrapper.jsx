@@ -11,6 +11,8 @@ const mapStateToProps = state => ({
   searchQuery: state.searchQuery,
   helpMessageShown: state.helpMessageShown,
   autoHighlight: state.autoHighlight,
+
+  notes: state.notes,
 });
 
 const mapDispatchToProps = dispatch => ({

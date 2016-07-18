@@ -1,0 +1,79 @@
+@timelineColour: #F7803C;
+#visualizations .theVisualStuff .annotation-visual {
+    position: absolute;
+    z-index: 999;
+    height: 4px;
+    pointer-events: all;
+    background-color: @timelineColour;
+    cursor: pointer;
+
+    .time-display {
+        z-index: 1000;
+        position: absolute;
+        height: 6px;
+        width: 3px;
+        padding: 1px;
+        box-sizing: border-box;
+        top: -10px;
+        color: #fff;
+        background-color: @timelineColour;
+    }
+
+    .start {
+        left: 0;
+    }
+
+    .end {
+        right: 0;
+    }
+}
+
+#visualizations .theVisualStuff div.focused {
+    z-index: 1001;
+}
+
+#visualizations .theVisualStuff .quick-annotation-visual {
+    #visualizations .theVisualStuff .annotation-visual;
+    background-color: #3299BB;
+    height: 7px;
+    width: 7px;
+
+    .time-display {
+        color: #fff;
+        background-color: #3299BB;
+    }
+
+    &.faded-visual {
+        background-color: tint(#3299BB);
+    }
+}
+
+#visualizations .theVisualStuff .remove-visual {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    z-index: 999;
+    padding: 2px;
+    box-sizing: border-box;
+    pointer-events: all;
+    cursor: pointer;
+    background-color: #fff;
+    color: black;
+    border: 1px solid @timelineColour;
+    border-radius: 2px;
+}
+
+#visualizations .theVisualStuff .faded-visual {
+    background-color: tint(@timelineColour);
+}
+
+#visualizations .theVisualStuff .annotation-visual-chevron {
+    position: absolute;
+    z-index: 999;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid @timelineColour;
+    margin-right: -5px;
+}

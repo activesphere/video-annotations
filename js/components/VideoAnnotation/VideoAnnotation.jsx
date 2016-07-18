@@ -10,6 +10,8 @@ import Summary from '../../containers/Summary/Summary';
 
 import AnnotationsWrapper from '../../containers/AnnotationsWrapper/AnnotationsWrapper';
 
+import AnnotationsVisual from '../AnnotationsVisual/AnnotationsVisual';
+
 import Utils from '../../utils';
 
 import './VideoAnnotation.less';
@@ -18,16 +20,23 @@ import './VideoAnnotation.less';
 class VideoAnnotation extends React.Component {
   constructor() {
     super();
+    
     this.videoTag = Utils.getVideoInterface();
     
     this.onKeyDown = this.onKeyDown.bind(this);
     this.onAnnotationCreate = this.onAnnotationCreate.bind(this);
     this.insertEditor = this.insertEditor.bind(this);
     this.removeEditor = this.removeEditor.bind(this);
+    
+    this.toggleVisualization = this.toggleVisualization.bind(this);
+    this.removeVisualization = this.removeVisualization.bind(this);
   }
   
   componentDidMount() {
     document.onkeydown = this.onKeyDown;
+    
+    const $video = Utils.getVideoInterface();
+    $video.append('<div id="visualizations" />');
   }
 
   onKeyDown(e) {
@@ -37,7 +46,9 @@ class VideoAnnotation extends React.Component {
       this.insertEditor();
     } else if (e.shiftKey && e.key === 'S') {
       // wants to share!
-      this.showSummary();
+      this.toggleSummary();
+    } else if (e.altKey && e.key === 'v') {
+      this.toggleVisualization();
     }
   }
 
@@ -77,7 +88,7 @@ class VideoAnnotation extends React.Component {
     this.videoTag.play();
   }
 
-  showSummary() {
+  toggleSummary() {
     const summaryBox = document.querySelector('.summary-table-wrapper');
     if (summaryBox) {
       // summary box already exists; remove it
@@ -92,6 +103,27 @@ class VideoAnnotation extends React.Component {
       );
       this.videoTag.pause();
     }
+  }
+
+  toggleVisualization() {
+    const alreadyExists = document.querySelector('.theVisualStuff');
+    if (alreadyExists) {
+      this.removeVisualization();
+    } else {
+      ReactDOM.render(
+        <AnnotationsVisual
+          notes={this.props.notes}
+          onRemove={this.removeVisualization}
+        />,
+        document.getElementById('visualizations')
+      );
+    }
+  }
+
+  removeVisualization() {
+    ReactDOM.unmountComponentAtNode(
+      document.getElementById('visualizations')
+    );
   }
   
   render() {
@@ -137,6 +169,7 @@ VideoAnnotation.propTypes = {
   searchQuery: React.PropTypes.string,
   helpMessageShown: React.PropTypes.bool,
   autoHighlight: React.PropTypes.bool,
+  notes: React.PropTypes.array,
 
   handleSearchBoxChange: React.PropTypes.func,
   toggleHelpShown: React.PropTypes.func,
