@@ -1,4 +1,5 @@
 import React from 'react';
+import marked from 'marked';
 
 class AnnotationItem extends React.Component {
   constructor() {
@@ -13,6 +14,12 @@ class AnnotationItem extends React.Component {
     this.setState({
       expanded: !this.state.expanded,
     });
+  }
+
+  rawMarkup(mdText) {
+    return {
+      __html: marked(mdText),
+    };
   }
 
   render() {
@@ -59,7 +66,7 @@ class AnnotationItem extends React.Component {
         </div>
         <div className="clear"></div>
         <div className="annotation-description" style={{ display }}>
-          <p>{data.description}</p>
+          <p dangerouslySetInnerHTML={this.rawMarkup(data.description)} />
         </div>
         <div className="edit-annotation"></div>
       </li>
