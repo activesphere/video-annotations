@@ -61,7 +61,7 @@ class Editor extends React.Component {
 
         'Alt-Enter': () => this.onCreate(),
 
-        'Alt-P': () => videoTag.togglePlayback,
+        'Alt-P': () => videoTag.togglePlayback(),
         'Alt-[': () => videoTag.seek('backward'),
         'Alt-]': () => videoTag.seek('forward'),
       },
