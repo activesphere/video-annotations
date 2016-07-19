@@ -1,33 +1,32 @@
+
+/* global chrome */
+
 function AppStorage(options) {
   this.name = options.name;
 }
 
-AppStorage.prototype.save = function (jsonData) {
-  this.set(jsonData, function () {});
+AppStorage.prototype.save = function saveFn(jsonData) {
+  this.set(jsonData, () => {});
 };
 
-AppStorage.prototype.set = function (data, callback) {
-  var opt = {};
+AppStorage.prototype.set = function setFn(data, callback) {
+  const opt = {};
   opt[this.name] = data;
-  chrome.storage.local.set(opt, function () {
-    callback();
-  });
+  chrome.storage.local.set(opt, () => callback());
 };
 
-AppStorage.prototype.get = function (callback) {
-  chrome.storage.local.get(this.name, (function (_this) {
-    return function (items) {
-      if (items && items[_this.name]) {
-        try {
-          return callback(items[_this.name]);
-        } catch (error) {
-
-        }
+AppStorage.prototype.get = function getFn(callback) {
+  chrome.storage.local.get(this.name, (items) => {
+    if (items && items[this.name]) {
+      try {
+        return callback(items[this.name]);
+      } catch (error) {
+        return error;
       }
+    }
 
-      return callback(null);
-    };
-  })(this));
+    return callback(null);
+  });
 };
 
 export default AppStorage;

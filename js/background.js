@@ -1,11 +1,13 @@
-import Dropbox from 'dropbox_chrome.js';
+import Dropbox from './dropbox_chrome.js';
 import config from './config';
 
-var EventPageController = {}.hasOwnProperty;
-var dropboxChrome = {}.hasOwnProperty;
+/* global chrome */
 
-EventPageController = function (dropboxChrome) {
-  this.dropboxChrome = dropboxChrome;
+let EventPageController = {}.hasOwnProperty;
+let dropboxChrome = {}.hasOwnProperty;
+
+EventPageController = function eventPageController(rDropboxChrome) {
+  this.dropboxChrome = rDropboxChrome;
   chrome.browserAction.onClicked.addListener(() => {
     chrome.storage.local.get('video-annotation', (data) => {
       if (!data['video-annotation']) {
@@ -42,30 +44,31 @@ EventPageController = function (dropboxChrome) {
     if (request.type === 'signIn') {
       return this.signInHandler();
     } else if (request.type === 'signOut') {
-      return this.signOut(function () {
+      return this.signOut(() => {
         sendResponse();
       });
     }
+    // should never get here.
+    return false;
   });
 };
 
-EventPageController.prototype.signInHandler = function () {
-    return this.dropboxChrome.client((client) => {
-      var credentials;
-      if (client.isAuthenticated()) {
-        this.dropboxChrome.userInfo();
-      }
+EventPageController.prototype.signInHandler = function signInHandler() {
+  return this.dropboxChrome.client((client) => {
+    if (client.isAuthenticated()) {
+      this.dropboxChrome.userInfo();
+    }
 
-      credentials = client.credentials();
-      if (credentials.authState) {
-        client.reset();
-      }
+    const credentials = client.credentials();
+    if (credentials.authState) {
+      client.reset();
+    }
 
-      return this.signIn(() => null);
-    });
-  };
+    return this.signIn(() => null);
+  });
+};
 
-EventPageController.prototype.signIn = function (callback) {
+EventPageController.prototype.signIn = function signIn(callback) {
   return this.dropboxChrome.client((client) =>
     client.authenticate((error) => {
       if (error) {
@@ -76,24 +79,26 @@ EventPageController.prototype.signIn = function (callback) {
     }));
 };
 
-EventPageController.prototype.signOut = function (callback) {
-  this.dropboxChrome.signOut(function () {
+EventPageController.prototype.signOut = function signOut(callback) {
+  this.dropboxChrome.signOut(() => {
     callback();
   });
 };
 
-EventPageController.prototype.onDropboxAuthChange = function (client) {
+EventPageController.prototype.onDropboxAuthChange = function dbAuthChange(client) {
   if (client.isAuthenticated()) {
     this.dropboxChrome.userInfo();
   }
 };
 
-EventPageController.prototype.onDropboxError = function (client, error) {
-  this.errorNotice('Something went wrong while talking to Dropbox: ' + error);
+EventPageController.prototype.onDropboxError = function dbError(client, error) {
+  this.errorNotice(
+    `Something went wrong while talking to Dropbox: ${error}`
+  );
 };
 
 dropboxChrome = new Dropbox.Chrome({
-  key: config.dropbox.key
+  key: config.dropbox.key,
 });
 
 window.controller = new EventPageController(dropboxChrome);

@@ -1,5 +1,5 @@
-import Dropbox from 'dropbox_chrome.js';
+import Dropbox from './dropbox_chrome.js';
 
-(function () {
+(function incept() {
   Dropbox.AuthDriver.ChromeExtension.oauthReceiver();
 }).call(this);

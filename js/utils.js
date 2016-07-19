@@ -1,34 +1,32 @@
 import _ from 'lodash';
-import $ from 'vendor/jquery.hotkeys.js';
-import Dropbox from 'dropbox_chrome.js';
-import DropboxFile from 'dropboxUtils.js';
+import $ from './vendor/jquery.hotkeys.js';
+import Dropbox from './dropbox_chrome.js';
+import DropboxFile from './dropboxUtils.js';
 import config from './config';
 
-var Utils = {};
+const Utils = {};
 
-Utils.minuteSeconds = function (time) {
+Utils.minuteSeconds = function minuteSeconds(time) {
+  let newTime = '';
   if (time !== null) {
-    var minutes = Math.floor(time / 60);
-    var seconds = Math.floor(time - (minutes * 60));
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time - (minutes * 60));
     if (minutes) {
-      time = minutes + 'm ' + seconds + 's';
+      newTime = `${minutes}m ${seconds}s`;
     } else {
-      time = seconds + 's';
+      newTime = `${seconds}s`;
     }
   }
-
-  return time;
+  return newTime;
 };
 
-Utils.hosts = (function () {
-  return {
-    'www.youtube.com': 'youtube',
-    'www.coursera.com': 'coursera',
-  };
-})();
+Utils.hosts = {
+  'www.youtube.com': 'youtube',
+  'www.coursera.com': 'coursera',
+};
 
-Utils.dropbox = function (videoKey) {
-  var dropboxChrome = new Dropbox.Chrome({
+Utils.dropbox = function dropbox(videoKey) {
+  const dropboxChrome = new Dropbox.Chrome({
     key: config.dropbox.key,
   });
   return new DropboxFile({
@@ -37,21 +35,24 @@ Utils.dropbox = function (videoKey) {
   });
 };
 
-Utils.splitAnnotation = function (annotation) {
-  var list = annotation.split('\n');
-  var title = list.shift();
-  var description = _.compact(list).join('\n');
-  return { title: title, description: description, annotation: annotation };
+Utils.splitAnnotation = function splitAnnotation(annotation) {
+  const list = annotation.split('\n');
+  const title = list.shift();
+  const description = _.compact(list).join('\n');
+  return { title, description, annotation };
 };
 
-Utils.base64Url = function (currentUrl) {
-  currentUrl = currentUrl.href.split('#')[0];
-  return btoa(encodeURIComponent(currentUrl).replace(/%([0-9A-F]{2})/g, function (match, p1) {
-    return String.fromCharCode('0x' + p1);
-  }));
+Utils.base64Url = function base64Url(rCurrentUrl) {
+  const currentUrl = rCurrentUrl.href.split('#')[0];
+  return btoa(
+    encodeURIComponent(currentUrl)
+      .replace(/%([0-9A-F]{2})/g, (match, p1) =>
+        String.fromCharCode(`0x${p1}`)
+      )
+  );
 };
 
-Utils.getVideoKey = function () {
+Utils.getVideoKey = function getVideoKey() {
   const currentUrl = window.location;
   return this.base64Url(currentUrl);
 };
@@ -66,85 +67,78 @@ const PROVIDER_INFO = {
   },
   default: {
     controlsHeight: 39,
-    paddingForSeeker: 0
-  }
+    paddingForSeeker: 0,
+  },
 };
 
-Utils.getVideoInfo = function (host) {
+Utils.getVideoInfo = function getVideoInfo(host) {
   switch (host) {
-  case 'youtube':
-    return {
-      videoTitle: $('title').text(),
-      provider: 'youtube'
-    };
-  case 'coursera':
-    return {
-      videoTitle: $('title').text(),
-      provider: 'coursera'
-    };
+    case 'youtube':
+      return {
+        videoTitle: $('title').text(),
+        provider: 'youtube',
+      };
+    case 'coursera':
+      return {
+        videoTitle: $('title').text(),
+        provider: 'coursera',
+      };
+    default:
+      return {
+        videoTitle: $('title').text(),
+        provider: 'Unknown',
+      };
   }
 };
 
-Utils.daysPassed = function (since) {
+Utils.daysPassed = function daysPassed(since) {
   return Math.round(
     (new Date() - new Date(since)) / (1000 * 60 * 60 * 24)
   );
 };
 
-Utils.getVideoInterface = function () {
+Utils.getVideoInterface = function getVideoInterface() {
   function getProvider() {
-    var host = window.location.host;
-    return PROVIDER_INFO[host] || PROVIDER_INFO['default'];
+    const host = window.location.host;
+    return PROVIDER_INFO[host] || PROVIDER_INFO.default;
   }
 
   function getVideoContainer() {
-    var defaultContainer = $('video').parent();
-    var provider = getProvider();
+    const defaultContainer = $('video').parent();
+    const provider = getProvider();
     return provider.parentContainer ?
-      $('video').parents(provider.parentContainer) : defaultContainer;
+           $('video').parents(provider.parentContainer) : defaultContainer;
   }
 
   function buildProxy(container, player, provider) {
-    var videoMethodsObject = {
+    const videoMethodsObject = {
       // cant use a getter method for currentTime as getters are memoized
       // js
-      getCurrentTime: function () {
-        return player.currentTime;
-      },
-
-      setCurrentTime: function (time) {
+      getCurrentTime: () => player.currentTime,
+      setCurrentTime: (time) => {
         player.currentTime = time;
       },
 
-      get duration () {
+      get duration() {
         return player.duration;
       },
 
-      isPaused: function () {
-        return player.paused;
+      isPaused: () => player.paused,
+      play: () => player.play(),
+      pause: () => player.pause(),
+
+      togglePlayback() {
+        if (this.isPaused()) {
+          this.play();
+        } else {
+          this.pause();
+        }
+        return undefined;
       },
 
-      play: function () {
-        return player.play();
-      },
-
-      pause: function () {
-        return player.pause();
-      },
-
-      togglePlayback: function () {
-        return this.isPaused() ? this.play() : this.pause();
-      },
-
-      seekForth: function () {
-        this.setCurrentTime(this.getCurrentTime() + 5);
-      },
-
-      seekBack: function () {
-        this.setCurrentTime(this.getCurrentTime() - 5);
-      },
-
-      seek: function (direction) {
+      seekForth() { return this.setCurrentTime(this.getCurrentTime() + 5); },
+      seekBack() { return this.setCurrentTime(this.getCurrentTime() - 5); },
+      seek(direction) {
         if (direction === 'forward') {
           this.seekForth();
         } else if (direction === 'backward') {
@@ -152,72 +146,71 @@ Utils.getVideoInterface = function () {
         }
       },
 
-      getControlsHeight: function () {
-        return provider.controlsHeight;
-      },
+      getControlsHeight: () => provider.controlsHeight,
+      getPixelsPerSecond: () =>
+        (container.width() - provider.paddingForSeeker * 2) / player.duration,
 
-      getPixelsPerSecond: function () {
-        return (container.width() - provider.paddingForSeeker * 2) / player.duration;
-      },
-
-      getSeekerPosition: function (time) {
+      getSeekerPosition(time) {
         if (typeof time === 'undefined') {
           return provider.paddingForSeeker +
-            parseInt(player.currentTime) * this.getPixelsPerSecond();
+                 parseInt(player.currentTime, 10) * this.getPixelsPerSecond();
         }
 
         return provider.paddingForSeeker + time * this.getPixelsPerSecond();
       },
 
-      player: player,
+      player,
     };
-    _.extend(container, videoMethodsObject);
+    
+    Object.assign(container, videoMethodsObject);
     return container;
   }
 
   return buildProxy(getVideoContainer(), $('video')[0], getProvider());
 };
 
-Utils.getNewAnnotationPosition =  function ($targetEl) {
-  var videoTag = Utils.getVideoInterface();
-  var heightOfChevron = 8;
+Utils.getNewAnnotationPosition = function newPosition($targetEl) {
+  const videoTag = Utils.getVideoInterface();
+  const heightOfChevron = 8;
 
   // get height and width from video container instead of video tag as certain
   // videos have video tags smaller than the video container and thus the progress
   // bar is wider than the video element itself.
   // eg. https://www.youtube.com/watch?v=0ax_PBfrCG8
-  var videoTagWidth = videoTag.width();
+  const videoTagWidth = videoTag.width();
 
-  var inputWidth = $targetEl.outerWidth();
-  var inputCentrePos = inputWidth / 2;
+  const inputWidth = $targetEl.outerWidth();
+  const inputCentrePos = inputWidth / 2;
 
-  var seekerPosition = videoTag.getSeekerPosition();
+  const seekerPosition = videoTag.getSeekerPosition();
 
-  var isSeekerLeft = seekerPosition <= inputCentrePos;
-  var isSeekerRight = (seekerPosition + inputCentrePos) >= videoTagWidth;
+  const isSeekerLeft = seekerPosition <= inputCentrePos;
+  const isSeekerRight = (seekerPosition + inputCentrePos) >= videoTagWidth;
 
   function getRight() {
     if (isSeekerLeft) {
       return videoTagWidth - inputWidth;
     } else if (isSeekerRight) {
       return 0;
-    } else {
-      return videoTagWidth - seekerPosition - inputCentrePos;
     }
+    return videoTagWidth - seekerPosition - inputCentrePos;
   }
 
   function getChevronLeft() {
     if (isSeekerLeft) {
-      return { left: seekerPosition + 'px' };
+      return { left: `${seekerPosition}px` };
     } else if (isSeekerRight) {
-      return { left: inputWidth - (videoTagWidth - seekerPosition) + 'px' };
-    } else {
-      return { left:  '50%' };
+      const left = inputWidth - (videoTagWidth - seekerPosition);
+      return { left: `${left}px` };
     }
+    return { left: '50%' };
   }
 
-  return { bottom: videoTag.getControlsHeight() + heightOfChevron,
-    right: getRight(), chevronLeft: getChevronLeft() };
+  return {
+    bottom: videoTag.getControlsHeight() + heightOfChevron,
+    right: getRight(),
+    chevronLeft: getChevronLeft(),
+  };
 };
 
 export default Utils;

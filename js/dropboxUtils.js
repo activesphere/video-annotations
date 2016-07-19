@@ -1,15 +1,14 @@
-var DropboxFile = function (options) {
+function DropboxFile(options) {
   this.dropboxObj = options.dropboxObj;
   this.name = options.name;
-};
+}
 
-DropboxFile.prototype.write = function (jsonData, callback) {
-  var _this = this;
-  var jsonString = JSON.stringify(jsonData);
-  this.dropboxObj.client(function (client) {
+DropboxFile.prototype.write = function dbWrite(jsonData, callback) {
+  const jsonString = JSON.stringify(jsonData);
+  this.dropboxObj.client((client) => {
     if (client.isAuthenticated()) {
-      _this.dropboxObj.userInfo();
-      client.writeFile(_this.name + '.json', jsonString, function () {
+      this.dropboxObj.userInfo();
+      client.writeFile(`${this.name}.json`, jsonString, () => {
         if (callback) {
           callback();
         }
@@ -22,12 +21,11 @@ DropboxFile.prototype.write = function (jsonData, callback) {
   });
 };
 
-DropboxFile.prototype.read = function (callback) {
-  var _this = this;
-  this.dropboxObj.client(function (client) {
+DropboxFile.prototype.read = function dbRead(callback) {
+  this.dropboxObj.client((client) => {
     if (client.isAuthenticated()) {
-      _this.dropboxObj.userInfo();
-      client.readFile(_this.name + '.json', function (error, data) {
+      this.dropboxObj.userInfo();
+      client.readFile(`${this.name}.json`, (error, data) => {
         if (error) {
           if (error.status === 404) {
             callback(error, []);
@@ -42,12 +40,12 @@ DropboxFile.prototype.read = function (callback) {
   });
 };
 
-DropboxFile.prototype.makeUrl = function (callback) {
+DropboxFile.prototype.makeUrl = function dbMakeUrl(callback) {
   this.dropboxObj.client((client) => {
     if (client.isAuthenticated()) {
       this.dropboxObj.userInfo();
       const options = { downloadHack: true };
-      client.makeUrl(this.name + '.json', options, function (error, data) {
+      client.makeUrl(`${this.name}.json`, options, (error, data) => {
         if (error) {
           if (error.status === 404) {
             callback(error, []);

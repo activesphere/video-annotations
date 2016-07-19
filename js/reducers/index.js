@@ -10,44 +10,47 @@ import { combineReducers } from 'redux';
 
 
 const initialMetadata = {
-    videoTitle: '',
-    provider: '',
-    creationTime: null,
-    lastUpdate: null,
+  videoTitle: '',
+  provider: '',
+  creationTime: null,
+  lastUpdate: null,
 };
 
 const notes = (state = [], action) => {
   switch (action.type) {
-    case RECEIVE_INITIAL_STATE:
-      return [ ...action.state.notes ];
+    case RECEIVE_INITIAL_STATE: {
+      return [...action.state.notes];
+    }
       
-    case ADD_ANNOTATION:
+    case ADD_ANNOTATION: {
       const id = action.id;
       const start_seconds = action.start_seconds;
       const end_seconds = action.currentVideoTime;
       const start_minutes = Utils.minuteSeconds(start_seconds);
       const end_minutes = Utils.minuteSeconds(end_seconds);
-
+      const splitAnnotationText = Utils.splitAnnotation(action.text);
+      
       const annotationObj = {
         id,
         start_seconds,
         end_seconds,
         start_minutes,
         end_minutes,
-        ...Utils.splitAnnotation(action.text),
-      }
+        ...splitAnnotationText,
+      };
       
-      const currentNotes = [ ...state ];
+      const currentNotes = [...state];
       const newNotes = currentNotes
         .filter((each) =>
           each.start_seconds <= start_seconds
         )
-        .concat([ annotationObj ])
+        .concat([annotationObj])
         .concat(currentNotes.filter((each) =>
           each.start_seconds > start_seconds
         ));
       
       return newNotes;
+    }
 
     case DELETE_ANNOTATION:
       return state.filter((each) => each.id !== action.id);
@@ -55,24 +58,24 @@ const notes = (state = [], action) => {
     case EDIT_ANNOTATION:
       return state
         .map((each) => {
-          if(each.id !== action.id) return each;
+          if (each.id !== action.id) return each;
           return {
             ...each,
-            ...Utils.splitAnnotation(action.text)
-          }
+            ...Utils.splitAnnotation(action.text),
+          };
         });
 
     default:
       return state;
   }
-}
+};
 
 const metadata = (state = initialMetadata, action) => {
   switch (action.type) {
     case RECEIVE_INITIAL_STATE:
       return { ...action.state.metadata };
       
-    case ADD_ANNOTATION:
+    case ADD_ANNOTATION: {
       const creationTime = state.creationTime ?
                            state.creationTime :
                            action.timeNow;
@@ -82,7 +85,8 @@ const metadata = (state = initialMetadata, action) => {
         creationTime,
         lastUpdate,
       };
-
+    }
+      
     case EDIT_ANNOTATION:
       return {
         ...state,
@@ -92,7 +96,7 @@ const metadata = (state = initialMetadata, action) => {
     default:
       return state;
   }
-}
+};
 
 const searchQuery = (state = '', action) => {
   switch (action.type) {
@@ -101,7 +105,7 @@ const searchQuery = (state = '', action) => {
     default:
       return state;
   }
-}
+};
 
 const helpMessageShown = (state = false, action) => {
   switch (action.type) {
@@ -110,7 +114,7 @@ const helpMessageShown = (state = false, action) => {
     default:
       return state;
   }
-}
+};
 
 const autoHighlight = (state = true, action) => {
   switch (action.type) {
@@ -119,7 +123,7 @@ const autoHighlight = (state = true, action) => {
     default:
       return state;
   }
-}
+};
 
 const rootReducer = combineReducers({
   notes,

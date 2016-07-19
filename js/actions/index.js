@@ -7,60 +7,46 @@ export const TOGGLE_HELP_MESSAGE = 'TOGGLE_HELP_MESSAGE';
 export const TOGGLE_AUTOHIGHLIGHT = 'TOGGLE_AUTOHIGHLIGHT';
 
 
-export const receiveInitialState = (state) => {
-  return {
-    type: RECEIVE_INITIAL_STATE,
-    state: {
-      ...state,
-      notes: state.annotations,
-    },
-  };
-}
+export const receiveInitialState = state => ({
+  type: RECEIVE_INITIAL_STATE,
+  state: {
+    ...state,
+    notes: state.annotations,
+  },
+});
 
 export const addAnnotation =
-(text, start_seconds, currentVideoTime) => {
-  return {
-    type: ADD_ANNOTATION,
-    timeNow: new Date().toString(),
-    id: Date.now(),
-    text,
-    start_seconds,
-    currentVideoTime,
-  }
-}
+(text, start_seconds, currentVideoTime) => ({
+  type: ADD_ANNOTATION,
+  timeNow: new Date().toString(),
+  id: Date.now(),
+  text,
+  start_seconds,
+  currentVideoTime,
+});
 
-export const deleteAnnotation = (id) => {
-  return {
-    type: DELETE_ANNOTATION,
-    id,
-  }
-}
+export const deleteAnnotation = id => ({
+  type: DELETE_ANNOTATION,
+  id,
+});
 
-export const editAnnotation =
-(id, text) => {
-  return {
-    type: EDIT_ANNOTATION,
-    timeNow: new Date().toString(),
-    id,
-    text,
-  }
-}
+export const editAnnotation = (id, text) => ({
+  type: EDIT_ANNOTATION,
+  timeNow: new Date().toString(),
+  id,
+  text,
+});
 
-export const changeSearchQuery = (text) => {
-  return {
-    type: CHANGE_SEARCH_QUERY,
-    query: text,
-  }
-}
+export const changeSearchQuery = (text) => ({
+  type: CHANGE_SEARCH_QUERY,
+  query: text,
+});
 
-export const toggleHelpMessage = () => {
-  return {
-    type: TOGGLE_HELP_MESSAGE,
-  }
-}
+export const toggleHelpMessage = () => ({
+  type: TOGGLE_HELP_MESSAGE,
+});
 
-export const toggleAutoHighlight = () => {
-  return {
-    type: TOGGLE_AUTOHIGHLIGHT,
-  }
-}
+export const toggleAutoHighlight = () => ({
+  type: TOGGLE_AUTOHIGHLIGHT,
+});
+
