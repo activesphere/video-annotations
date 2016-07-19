@@ -26,15 +26,7 @@ configObj = {
   },
   module: {
     preLoaders: [{
-      test: /\.js$/,
-      exclude: /node_modules|bower_components|vendor/,
-      loader: 'jscs-loader'
-    }, {
-      test: /\.js$/,
-      exclude: /node_modules|bower_components|vendor/,
-      loader: 'jshint-loader'
-    }, {
-      test: /\.jsx$/,
+      test: /\.js$|\.jsx$/,
       exclude: /node_modules|bower_components|vendor/,
       loader: 'eslint-loader'
     }],
@@ -62,29 +54,6 @@ configObj = {
     new BowerWebpackPlugin(),
     new CommonsChunkPlugin('commons.chunk.js')
   ],
-  jscs: {
-    preset: 'airbnb',
-    emitErrors: false,
-    requireTrailingComma: false,
-    disallowTrailingWhitespace: false,
-    safeContextKeyword: ["_this", "self", "that"],
-  },
-  jshint: {
-    globals: {
-      chrome: false,
-      window: false,
-      document: false,
-      btoa: false,
-      setInterval: false,
-      MutationObserver: false,
-      console: false
-    },
-    esnext: true,
-    strict: false,
-    undef: true,
-    eqeqeq: true,
-    unused : true,
-  }
 };
 
 if (!production) {
