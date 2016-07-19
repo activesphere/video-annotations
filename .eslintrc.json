@@ -1,0 +1,23 @@
+{
+  "extends": "airbnb",
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "ecmaFeatures": {
+      "experimentalObjectRestSpread": true
+    }
+  },
+  "rules": {
+    "no-trailing-spaces": ["error", {
+      "skipBlankLines": true
+    }],
+    "no-param-reassign": ["error", {
+      "props": false
+    }],
+    "camelcase": ["error", {
+      "properties": "never"
+    }],
+    "no-underscore-dangle": ["error", {
+      "allowAfterThis": true
+    }]
+  }
+}
