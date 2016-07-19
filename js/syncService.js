@@ -122,7 +122,8 @@ var syncingData = function (localStorage, dropboxFile, state, initialSync) {
 export const syncOnChange =
 (prevState, currState, storage, dropboxFile) => {
   // Don't need to sync up on UI state changes
-  if (prevState.searchQuery === currState.searchQuery &&
+  if (prevState &&
+      prevState.searchQuery === currState.searchQuery &&
       prevState.helpMessageShown === currState.helpMessageShown) {
         const localState = {
           annotations: currState.notes,
