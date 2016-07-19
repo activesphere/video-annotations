@@ -30,7 +30,7 @@ class NotesTopBar extends React.Component {
       document.getElementById('link-share-prompt')
     );
   }
-  
+
   render() {
     const activeNotesKey = this.props.activeNotesKey;
     const showShareOption = this.props.showShareOption;
@@ -40,14 +40,14 @@ class NotesTopBar extends React.Component {
         active
         handleButtonClick={this.onShareButtonClick}
       /> : '';
-    
+
     const searchBox = this.props.showSearchBox ?
       <SearchBox
         handleSearchBoxChange={this.props.handleSearchBoxChange}
         searchString={this.props.searchQuery}
         placeholder="Notes are shown below, type to search through them"
       /> : '';
-                      
+
     return (
       <div className="notes-top-bar">
         {button}

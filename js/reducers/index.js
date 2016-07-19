@@ -21,7 +21,7 @@ const notes = (state = [], action) => {
     case RECEIVE_INITIAL_STATE: {
       return [...action.state.notes];
     }
-      
+
     case ADD_ANNOTATION: {
       const id = action.id;
       const start_seconds = action.start_seconds;
@@ -29,7 +29,7 @@ const notes = (state = [], action) => {
       const start_minutes = Utils.minuteSeconds(start_seconds);
       const end_minutes = Utils.minuteSeconds(end_seconds);
       const splitAnnotationText = Utils.splitAnnotation(action.text);
-      
+
       const annotationObj = {
         id,
         start_seconds,
@@ -38,7 +38,7 @@ const notes = (state = [], action) => {
         end_minutes,
         ...splitAnnotationText,
       };
-      
+
       const currentNotes = [...state];
       const newNotes = currentNotes
         .filter((each) =>
@@ -48,7 +48,7 @@ const notes = (state = [], action) => {
         .concat(currentNotes.filter((each) =>
           each.start_seconds > start_seconds
         ));
-      
+
       return newNotes;
     }
 
@@ -74,7 +74,7 @@ const metadata = (state = initialMetadata, action) => {
   switch (action.type) {
     case RECEIVE_INITIAL_STATE:
       return { ...action.state.metadata };
-      
+
     case ADD_ANNOTATION: {
       const creationTime = state.creationTime ?
                            state.creationTime :
@@ -86,7 +86,7 @@ const metadata = (state = initialMetadata, action) => {
         lastUpdate,
       };
     }
-      
+
     case EDIT_ANNOTATION:
       return {
         ...state,

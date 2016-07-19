@@ -46,11 +46,11 @@ class SummaryTable extends React.Component {
       searchQuery: e.target.value.toLowerCase(),
     });
   }
-  
+
   render() {
     const hasSearchQuery = (videoTitle, query) =>
       videoTitle.toLowerCase().indexOf(query) > -1;
-    
+
     const rows = this.props.videos.filter((video) =>
       hasSearchQuery(
         video.metadata.videoTitle,

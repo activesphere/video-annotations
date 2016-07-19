@@ -63,7 +63,7 @@ class Annotations extends React.Component {
         handleItemEdit={this.onItemEdit(note)}
         handleSeek={this.onSeek(note.start_seconds)}
       />;
-    
+
     const filteredAnnotations = props
       .notes.filter((note) =>
         hasSearchQuery(
@@ -73,7 +73,7 @@ class Annotations extends React.Component {
       )
       .map(setTimes)
       .map(stateToComponent);
-    
+
     return (
       <ul className="annotations">
         {filteredAnnotations}
@@ -86,7 +86,7 @@ Annotations.propTypes = {
   notes: React.PropTypes.array,
   searchQuery: React.PropTypes.string,
   autoHighlight: React.PropTypes.bool,
-  
+
   insertEditor: React.PropTypes.func,
   deleteItem: React.PropTypes.func,
 };

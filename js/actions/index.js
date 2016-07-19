@@ -49,4 +49,3 @@ export const toggleHelpMessage = () => ({
 export const toggleAutoHighlight = () => ({
   type: TOGGLE_AUTOHIGHLIGHT,
 });
-

@@ -161,7 +161,7 @@ Utils.getVideoInterface = function getVideoInterface() {
 
       player,
     };
-    
+
     Object.assign(container, videoMethodsObject);
     return container;
   }

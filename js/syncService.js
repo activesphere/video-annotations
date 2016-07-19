@@ -47,11 +47,11 @@ function migrateToStorageV2(oldStructure) {
     creationTime: now,
     lastUpdate: now,
   };
-  
+
   const host = Utils.hosts[window.location.hostname];
   const pagedata = Utils.getVideoInfo(host);
   metadata = _.merge(metadata, pagedata);
-  
+
   const newStructure = {
     annotations: oldStructure,
     metadata,
@@ -78,7 +78,7 @@ export function merge(sources, local, initialSync) {
   if (storageData && storageData instanceof Array) {
     storageData = migrateToStorageV2(storageData);
   }
-  
+
   if (dropboxData && dropboxData instanceof Array) {
     dropboxData = migrateToStorageV2(dropboxData);
   }
@@ -94,7 +94,7 @@ export function merge(sources, local, initialSync) {
     if (storageIdx > -1) {
       return storageData.annotations.splice(storageIdx, 1)[0];
     }
-    
+
     return record;
   });
 
@@ -111,10 +111,10 @@ function syncingData(localStorage, dropboxFile, state, initialSync) {
     .then((jsonData) => {
       if (!initialSync) jsonData.metadata = state.metadata;
       jsonData.storageVersion = CONSTANTS.storageStructureVersion;
-      
+
       localStorage.save(jsonData);
       dropboxFile.write(jsonData);
-      
+
       return jsonData;
     })
     .catch((err) => err);

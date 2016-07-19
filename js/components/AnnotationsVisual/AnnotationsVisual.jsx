@@ -47,7 +47,7 @@ class AnnotationsVisual extends React.Component {
         }
         return this.prevAnnotationTooClose(annotation, prevAnnotation);
       };
-      
+
       for (let i = 0; i < rIndex; i++) {
         const prevAnnotation = rAllNotes[i];
         if (prevAnnotationTooClose(note, prevAnnotation)) {
@@ -91,7 +91,7 @@ class AnnotationsVisual extends React.Component {
     const bottom = this.getBottom(
       note, index, allNotes
     );
-    
+
     let visualPosition = this.videoTag.getSeekerPosition(
       note.start_seconds
     );
@@ -122,7 +122,7 @@ class AnnotationsVisual extends React.Component {
     const prevAnnotationStartPos = this.videoTag.getSeekerPosition(
       prevAnnotation.start_seconds
     );
-    
+
     return annotationStartPos - prevAnnotationStartPos < quickAnnotationWidth;
   }
 

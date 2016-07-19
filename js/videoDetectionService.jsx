@@ -33,7 +33,7 @@ $.get(chrome.extension.getURL('/html/templates.html'),
         } else if (window.location.hostname.match(/youtube/i)) {
           // new UI - annotations box becomes a part of the page
           $('.watch-sidebar').prepend($('#video-main-template').html());
-                    
+
           $('head').append(
             `<style>
             #video-annotation {
@@ -63,16 +63,16 @@ $.get(chrome.extension.getURL('/html/templates.html'),
         storage.name = videoKey;
         dropboxFile.name = videoKey;
         const store = createStore(rootReducer);
-        
+
         $('.watch-sidebar').prepend('<div id="react-video-annotation" />');
-        
+
         ReactDOM.render(
           <Provider store={store}>
             <VideoAnnotationWrapper />
           </Provider>,
           document.querySelector('#react-video-annotation')
         );
-        
+
         // sync up all three sources (localStorage, dropbox, memory)
         // initial sync
         syncingData(
@@ -99,7 +99,7 @@ $.get(chrome.extension.getURL('/html/templates.html'),
           currState = store.getState();
           syncOnChange(prevState, currState, storage, dropboxFile);
         };
-        
+
         store.subscribe(stateChangeTracker);
       }
     } else {

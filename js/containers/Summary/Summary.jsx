@@ -20,14 +20,14 @@ class Summary extends React.Component {
     };
     this.updateNotes = this.updateNotes.bind(this);
   }
-  
+
   componentDidMount() {
     /* global chrome */
     chrome.storage.local.get((data) => {
       const storage = Object.assign({}, data);
       let activeVideoKey = '';
       let activeNotes = [];
-      
+
       const storedAnnotations = Object
         .keys(storage)
         .filter((key) => !CONSTANTS.localStorageNonVideoKeys.has(key))
@@ -44,7 +44,7 @@ class Summary extends React.Component {
           }
           return value;
         });
-      
+
       this.setState({
         videos: storedAnnotations,
         activeVideoKey,
@@ -52,7 +52,7 @@ class Summary extends React.Component {
       });
     });
   }
-  
+
   updateNotes(e) {
     e.stopPropagation();
     const activeVideoKey = e.currentTarget.getAttribute('data-video-key');
@@ -63,7 +63,7 @@ class Summary extends React.Component {
         activeNotes = video.annotations;
         video.active = true;
       }
-      
+
       return video;
     });
     this.setState({

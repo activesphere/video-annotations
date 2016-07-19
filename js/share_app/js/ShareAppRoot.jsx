@@ -25,7 +25,7 @@ class ShareAppRoot extends React.Component {
       // TODO show warning about invalid URL
       return;
     }
-    
+
     // everything seems OK.
     fetch(targetUrl).then(
       (response) => {
@@ -33,19 +33,19 @@ class ShareAppRoot extends React.Component {
           // TODO show fetch error
           return;
         }
-        
+
         response.json().then(this.processNotes);
       }
     );
   }
-  
+
   processNotes(notes) {
     this.setState({
       notes: notes.annotations,
       metadata: notes.metadata,
     });
   }
-  
+
   render() {
     return (
       <Notes

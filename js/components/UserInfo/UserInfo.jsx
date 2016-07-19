@@ -15,7 +15,7 @@ class UserInfo extends React.Component {
     this.userStorage = new AppStorage({
       name: Utils.userInfo,
     });
-    
+
     this.fetchUser = this.fetchUser.bind(this);
     this.onSignOut = this.onSignOut.bind(this);
     this.registerStorageChange = this.registerStorageChange.bind(this);
@@ -25,7 +25,7 @@ class UserInfo extends React.Component {
     this.fetchUser();
     this.registerStorageChange();
   }
-  
+
   onSignIn(e) {
     e.preventDefault();
     chrome.runtime.sendMessage({ type: 'signIn' });

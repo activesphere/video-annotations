@@ -26,7 +26,7 @@ class LinkSharePrompt extends React.Component {
     const inp = document.querySelector('.url-selector');
     inp.select();
     document.execCommand('copy');
-    
+
     this.changeButtonState(
       'Close',
       true,
@@ -39,7 +39,7 @@ class LinkSharePrompt extends React.Component {
     this.changeButtonState('Loading...', false);
     // fetch the public URL from DropBox
     this.dropboxFile = Utils.dropbox(this.props.activeNotesKey);
-    
+
     creatingURL(this.dropboxFile).then((url) => {
       const base64url = btoa(url);
       this.setState({

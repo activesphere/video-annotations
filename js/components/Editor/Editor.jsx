@@ -96,7 +96,7 @@ class Editor extends React.Component {
 Editor.propTypes = {
   handleAnnotationCreate: React.PropTypes.func.isRequired,
   handleAnnotationCancel: React.PropTypes.func.isRequired,
-  
+
   annotation: React.PropTypes.object,
   start_seconds: React.PropTypes.number,
   videoTag: React.PropTypes.object,

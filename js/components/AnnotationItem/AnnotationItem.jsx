@@ -38,7 +38,7 @@ class AnnotationItem extends React.Component {
       arrowDirection = 'icon-title fa fa-caret-down';
       display = 'block';
     }
-    
+
     return (
       <li className="video-annotation">
         <div className="annotation-detail">
@@ -77,7 +77,7 @@ class AnnotationItem extends React.Component {
 AnnotationItem.propTypes = {
   data: React.PropTypes.object,
   currentTime: React.PropTypes.number,
-  
+
   handleItemDelete: React.PropTypes.func,
   handleItemEdit: React.PropTypes.func,
   handleSeek: React.PropTypes.func,

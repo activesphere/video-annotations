@@ -18,7 +18,7 @@ class SimpleMDEWrapper extends React.Component {
     const initialOptions = {
       simplemdeement: document.getElementById('simplepostmd-editor'),
     };
-    
+
     const allOptions = Object.assign({}, initialOptions, this.props.options);
     this.simplemde = new SimpleMDE(allOptions);
     if (this.props.options.extraKeys) {
@@ -36,7 +36,7 @@ class SimpleMDEWrapper extends React.Component {
       this.simplemde.value();
       this.props.onChange(this.simplemde.value());
     });
-    
+
     $('.editor-toolbar').on('click', '*', () => {
       this.props.onChange(this.simplemde.value());
     });

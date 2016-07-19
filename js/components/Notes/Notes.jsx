@@ -41,7 +41,7 @@ class Notes extends React.Component {
   render() {
     const hasSearchQuery = (note, query) =>
       note.toLowerCase().indexOf(query) > -1;
-    
+
     const notes = this.props.activeNotes.filter((note) =>
       hasSearchQuery(
         note.description,
@@ -64,7 +64,7 @@ class Notes extends React.Component {
           handleSearchBoxChange={this.onSearchBoxChange}
           searchString={this.state.searchQuery}
           activeNotesKey={this.props.activeNotesKey}
-            
+
           showShareOption={this.props.showShareOption}
           showSearchBox={this.props.activeNotes.length > 0}
         />

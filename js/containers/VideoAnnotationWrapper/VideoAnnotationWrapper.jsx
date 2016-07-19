@@ -19,7 +19,7 @@ const mapDispatchToProps = dispatch => ({
   handleSearchBoxChange: (e) => {
     dispatch(changeSearchQuery(e.target.value.toLowerCase()));
   },
-  
+
   toggleHelpShown: () => {
     dispatch(toggleHelpMessage());
   },
@@ -27,7 +27,7 @@ const mapDispatchToProps = dispatch => ({
   toggleAutoHighlight: () => {
     dispatch(toggleAutoHighlight());
   },
-  
+
   createAnnotation: (
     start_seconds,
     text,

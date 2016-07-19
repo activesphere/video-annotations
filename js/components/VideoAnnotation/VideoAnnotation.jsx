@@ -20,21 +20,21 @@ import './VideoAnnotation.less';
 class VideoAnnotation extends React.Component {
   constructor() {
     super();
-    
+
     this.videoTag = Utils.getVideoInterface();
-    
+
     this.onKeyDown = this.onKeyDown.bind(this);
     this.onAnnotationCreate = this.onAnnotationCreate.bind(this);
     this.insertEditor = this.insertEditor.bind(this);
     this.removeEditor = this.removeEditor.bind(this);
-    
+
     this.toggleVisualization = this.toggleVisualization.bind(this);
     this.removeVisualization = this.removeVisualization.bind(this);
   }
-  
+
   componentDidMount() {
     document.onkeydown = this.onKeyDown;
-    
+
     const $video = Utils.getVideoInterface();
     $video.append('<div id="visualizations" />');
   }
@@ -125,7 +125,7 @@ class VideoAnnotation extends React.Component {
       document.getElementById('visualizations')
     );
   }
-  
+
   render() {
     const props = this.props;
     let autoHighlightClass = props.autoHighlight ?
