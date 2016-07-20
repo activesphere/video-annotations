@@ -16,6 +16,49 @@ import { createStore } from 'redux';
 import { Provider } from 'react-redux';
 
 
+const setCommonGround = () => {
+  // inject this div for the summary/share thing in DOM
+  const summaryHolder = document.createElement('div');
+  summaryHolder.className = 'summary-page';
+  document.getElementsByTagName('body')[0]
+          .appendChild(summaryHolder);
+
+  // set up other variables, storage sources, etc
+  const videoKey = Utils.getVideoKey();
+  const storage = new AppStorage({ name: videoKey });
+  const dropboxFile = Utils.dropbox(videoKey);
+  storage.name = videoKey;
+  dropboxFile.name = videoKey;
+  const reduxStore = createStore(rootReducer);
+
+  return { storage, dropboxFile, reduxStore };
+};
+
+const handleCourera = () => {
+  // coursera - stick with the old UI (a layer above the page)
+  const $video = Utils.getVideoInterface();
+  $video.append($('#video-main-template').html());
+};
+
+const handleYouTube = () => {
+  // new UI - annotations box becomes a part of the page
+  $('.watch-sidebar').prepend('<div id="react-video-annotation" />');
+  $('head').append(
+    `<style>
+    #video-annotation {
+      position: static !important;
+    }
+    #video-annotation .sidebar {
+      position: static !important;
+      width: 439px;
+    }
+    span.caret {
+      display: none;
+    }
+    </style>`
+  );
+};
+
 /* global chrome */
 $.get(chrome.extension.getURL('/html/templates.html'),
 (data) => {
@@ -25,49 +68,16 @@ $.get(chrome.extension.getURL('/html/templates.html'),
     // application works on assumption that there is only one video in page
     if ($('video').length > 0 && $('video')[0].getAttribute('src')) {
       if (!$('#video-annotation')[0]) {
-        const $video = Utils.getVideoInterface();
+        const { storage, dropboxFile, reduxStore } = setCommonGround();
 
         if (window.location.hostname.match(/coursera/i)) {
-          // coursera - stick with the old UI (a layer above the page)
-          $video.append($('#video-main-template').html());
+          handleCourera();
         } else if (window.location.hostname.match(/youtube/i)) {
-          // new UI - annotations box becomes a part of the page
-          $('.watch-sidebar').prepend($('#video-main-template').html());
-
-          $('head').append(
-            `<style>
-            #video-annotation {
-              position: static !important;
-            }
-            #video-annotation .sidebar {
-              position: static !important;
-              width: 439px;
-            }
-            span.caret {
-              display: none;
-            }
-            </style>`
-          );
+          handleYouTube();
         }
 
-        // inject this div for the summary/share thing in DOM
-        const summaryHolder = document.createElement('div');
-        summaryHolder.className = 'summary-page';
-        document.getElementsByTagName('body')[0]
-                .appendChild(summaryHolder);
-
-        // add react static box
-        const videoKey = Utils.getVideoKey();
-        const storage = new AppStorage({ name: videoKey });
-        const dropboxFile = Utils.dropbox(videoKey);
-        storage.name = videoKey;
-        dropboxFile.name = videoKey;
-        const store = createStore(rootReducer);
-
-        $('.watch-sidebar').prepend('<div id="react-video-annotation" />');
-
         ReactDOM.render(
-          <Provider store={store}>
+          <Provider store={reduxStore}>
             <VideoAnnotationWrapper />
           </Provider>,
           document.querySelector('#react-video-annotation')
@@ -90,17 +100,17 @@ $.get(chrome.extension.getURL('/html/templates.html'),
                            metadata: {},
                          } : notes;
           $notes.metadata = Object.assign({}, $notes.metadata, pagedata);
-          store.dispatch(receiveInitialState($notes));
+          reduxStore.dispatch(receiveInitialState($notes));
         });
 
         let currState;
         const stateChangeTracker = () => {
           const prevState = currState;
-          currState = store.getState();
+          currState = reduxStore.getState();
           syncOnChange(prevState, currState, storage, dropboxFile);
         };
 
-        store.subscribe(stateChangeTracker);
+        reduxStore.subscribe(stateChangeTracker);
       }
     } else {
       if ($('#video-annotation')[0]) {
