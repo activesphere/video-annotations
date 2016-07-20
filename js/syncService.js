@@ -117,7 +117,9 @@ function syncingData(localStorage, dropboxFile, state, initialSync) {
 
       return jsonData;
     })
-    .catch((err) => err);
+    .catch((err) => {
+      console.log(err);
+    });
 }
 
 export const syncOnChange =
