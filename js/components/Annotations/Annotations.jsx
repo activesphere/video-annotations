@@ -74,9 +74,30 @@ class Annotations extends React.Component {
       .map(setTimes)
       .map(stateToComponent);
 
+    const noAnnotationTemplate = (
+      <div>
+        <br />
+        <p className="center mt5">
+          No Annotations to show.
+        </p>
+        <br />
+        <p className="center mt5">
+          Use <strong>alt+d</strong> to create new.
+        </p>
+        <p className="center mt5">
+          Use <strong>alt+h</strong> to see the help.
+          Or click on the (?) above.
+        </p>
+      </div>
+    );
+
+    const finalPlaceHolder = filteredAnnotations.length ?
+                             filteredAnnotations :
+                             noAnnotationTemplate;
+
     return (
       <ul className="annotations">
-        {filteredAnnotations}
+        {finalPlaceHolder}
       </ul>
     );
   }
