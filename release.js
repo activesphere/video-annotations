@@ -47,7 +47,7 @@ function buildZipFile() {
 
   function npmBuild(env) {
     process.env.NODE_ENV = env;
-    execSync('npm run build');
+    execSync(`NODE_ENV=${env} npm run build`);
   }
 
   function createDistDir() {
