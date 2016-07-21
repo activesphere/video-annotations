@@ -40,16 +40,17 @@ class VideoAnnotation extends React.Component {
   }
 
   onKeyDown(e) {
-    if (e.altKey && e.key === 'd') {
+    const altKey = e.altKey || e.metaKey;
+    if (altKey && e.key === 'd') {
       // bring up the editor to create a new annotation.
       e.preventDefault();
       this.insertEditor();
     } else if (e.shiftKey && e.key === 'S') {
       // wants to share!
       this.toggleSummary();
-    } else if (e.altKey && e.key === 'v') {
+    } else if (altKey && e.key === 'v') {
       this.toggleVisualization();
-    } else if (e.altKey && e.key === 'h') {
+    } else if (altKey && e.key === 'h') {
       this.props.toggleHelpShown();
     }
   }
