@@ -49,6 +49,8 @@ class VideoAnnotation extends React.Component {
       this.toggleSummary();
     } else if (e.altKey && e.key === 'v') {
       this.toggleVisualization();
+    } else if (e.altKey && e.key === 'h') {
+      this.props.toggleHelpShown();
     }
   }
 

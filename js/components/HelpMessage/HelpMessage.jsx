@@ -15,6 +15,7 @@ const HelpMessage = (props) => {
       <ul>
 
         <li><strong>atl+d</strong> Create Quick Annotation</li>
+        <li><strong>atl+h</strong> See the help message</li>
         <li><strong>esc</strong> Close editor without creating Annotation</li>
         <br />
 
