@@ -74,6 +74,8 @@ class Annotations extends React.Component {
       .map(setTimes)
       .map(stateToComponent);
 
+    const alt = navigator.userAgent.indexOf('Mac OS X') === -1 ?
+                'alt' : 'command';
     const noAnnotationTemplate = (
       <div>
         <br />
@@ -82,10 +84,10 @@ class Annotations extends React.Component {
         </p>
         <br />
         <p className="center mt5">
-          Use <strong>alt+d</strong> to create new.
+          Use <strong>{alt}+d</strong> to create new.
         </p>
         <p className="center mt5">
-          Use <strong>alt+h</strong> to see the help.
+          Use <strong>{alt}+h</strong> to see the help.
           Or click on the (?) above.
         </p>
       </div>
