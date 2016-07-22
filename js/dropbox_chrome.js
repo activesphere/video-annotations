@@ -24,7 +24,7 @@ Chrome.prototype.client = function chromeClient(callback) {
 };
 
 Chrome.prototype.userInfo = function userInfoFn() {
-  chrome.storage.local.get(Utils.userInfo, () => (items) => {
+  chrome.storage.local.get(Utils.userInfo, (items) => {
     const opt = {};
     if (items && items[Utils.userInfo]) {
       try {
@@ -61,7 +61,7 @@ Chrome.prototype.userInfo = function userInfoFn() {
 };
 
 Chrome.prototype.signOut = function signOutFn(callback) {
-  return this.client(() => (client) => {
+  return this.client((client) => {
     if (!client.isAuthenticated()) {
       return callback();
     }
