@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Annotate videos",
   "description": "Take detailed notes on Youtube & Coursera videos in the form of annotations",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "browser_action": {
     "default_icon": "images/icon.png"
   },
