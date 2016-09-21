@@ -3,8 +3,6 @@ import './HelpMessage.less';
 
 const HelpMessage = (props) => {
   const visibility = props.visibility ? 'block' : 'none';
-  const alt = navigator.userAgent.indexOf('Mac OS X') === -1 ?
-              'alt' : 'command';
   return (
     <div className="info" style={{ display: visibility }}>
       <h3>
@@ -16,12 +14,12 @@ const HelpMessage = (props) => {
       </p><h4>Shortcuts supported</h4>
       <ul>
 
-        <li><strong>{alt}+d</strong> Create Quick Annotation</li>
-        <li><strong>{alt}+h</strong> See the help message</li>
+        <li><strong>alt+d</strong> Create Quick Annotation</li>
+        <li><strong>alt+h</strong> See the help message</li>
         <li><strong>esc</strong> Close editor without creating Annotation</li>
         <br />
 
-        <li><strong>{alt}+v</strong> Toggle a visual representation of all Annotations</li>
+        <li><strong>alt+v</strong> Toggle a visual representation of all Annotations</li>
         <li><strong>shift+s</strong>
           Show (and hide) a summary of all annotations stored
         </li>
@@ -29,13 +27,13 @@ const HelpMessage = (props) => {
       <h4>Short cuts supported in annotation editor:</h4>
       <ul>
 
-        <li><strong>{alt}+p</strong> Toggle video playback</li>
+        <li><strong>alt+p</strong> Toggle video playback</li>
 
-        <li><strong>{alt}+]</strong> Seek forward</li>
+        <li><strong>alt+]</strong> Seek forward</li>
 
-        <li><strong>{alt}+[</strong> Seek backward</li>
+        <li><strong>alt+[</strong> Seek backward</li>
 
-        <li><strong>{alt}+return</strong> Create/Update Annotation</li>
+        <li><strong>alt+return</strong> Create/Update Annotation</li>
 
         <li><strong>esc</strong> Close editor without creating Annotation</li>
       </ul>
