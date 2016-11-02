@@ -29,7 +29,7 @@ const mapDispatchToProps = dispatch => ({
   },
 
   createAnnotation: (
-    start_seconds,
+    startSeconds,
     text,
     editId,
     currentVideoTime) => {
@@ -43,7 +43,7 @@ const mapDispatchToProps = dispatch => ({
       // creating a new note
       dispatch(addAnnotation(
         text,
-        start_seconds,
+        startSeconds,
         currentVideoTime
       ));
     }

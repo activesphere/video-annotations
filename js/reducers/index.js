@@ -24,29 +24,29 @@ const notes = (state = [], action) => {
 
     case ADD_ANNOTATION: {
       const id = action.id;
-      const start_seconds = action.start_seconds;
-      const end_seconds = action.currentVideoTime;
-      const start_minutes = Utils.minuteSeconds(start_seconds);
-      const end_minutes = Utils.minuteSeconds(end_seconds);
+      const startSeconds = action.startSeconds;
+      const endSeconds = action.currentVideoTime;
+      const startMinutes = Utils.minuteSeconds(startSeconds);
+      const endMinutes = Utils.minuteSeconds(endSeconds);
       const splitAnnotationText = Utils.splitAnnotation(action.text);
 
       const annotationObj = {
         id,
-        start_seconds,
-        end_seconds,
-        start_minutes,
-        end_minutes,
+        startSeconds,
+        endSeconds,
+        startMinutes,
+        endMinutes,
         ...splitAnnotationText,
       };
 
       const currentNotes = [...state];
       const newNotes = currentNotes
         .filter((each) =>
-          each.start_seconds <= start_seconds
+          each.startSeconds <= startSeconds
         )
         .concat([annotationObj])
         .concat(currentNotes.filter((each) =>
-          each.start_seconds > start_seconds
+          each.startSeconds > startSeconds
         ));
 
       return newNotes;

@@ -16,12 +16,12 @@ export const receiveInitialState = state => ({
 });
 
 export const addAnnotation =
-(text, start_seconds, currentVideoTime) => ({
+(text, startSeconds, currentVideoTime) => ({
   type: ADD_ANNOTATION,
   timeNow: new Date().toString(),
   id: Date.now(),
   text,
-  start_seconds,
+  startSeconds,
   currentVideoTime,
 });
 

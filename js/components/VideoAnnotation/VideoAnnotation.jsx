@@ -54,10 +54,10 @@ class VideoAnnotation extends React.Component {
     }
   }
 
-  onAnnotationCreate(start_seconds, text, editId) {
+  onAnnotationCreate(startSeconds, text, editId) {
     const currentVideoTime = this.videoTag.currentTime;
     this.props.createAnnotation(
-      start_seconds,
+      startSeconds,
       text,
       editId,
       currentVideoTime
@@ -67,8 +67,8 @@ class VideoAnnotation extends React.Component {
   }
 
   insertEditor(annotation = null) {
-    const start_seconds = annotation ?
-                          annotation.start_seconds :
+    const startSeconds = annotation ?
+                          annotation.startSeconds :
                           Number(this.videoTag.getCurrentTime());
     this.videoTag.pause();
     ReactDOM.render(
@@ -76,7 +76,7 @@ class VideoAnnotation extends React.Component {
         handleAnnotationCreate={this.onAnnotationCreate}
         handleAnnotationCancel={this.removeEditor}
         annotation={annotation}
-        start_seconds={start_seconds}
+        startSeconds={startSeconds}
         videoTag={this.videoTag}
       />,
       document.querySelector('.create-annotation')
