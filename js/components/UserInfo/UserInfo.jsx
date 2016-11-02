@@ -74,7 +74,7 @@ class UserInfo extends React.Component {
                 href="#"
                 className="sign_in"
                 onClick={this.onSignIn}
-              >Sign in</a> to sync with dropbox</p>
+              > Sign in</a> to sync with dropbox</p>
           </div> :
           <div>
             <p className="user-name">{this.state.username}</p>
