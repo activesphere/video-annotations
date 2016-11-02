@@ -1,7 +1,7 @@
 const config = {
   dropbox: {
-    key: 'changeme'
-  }
+    key: 'changeme',
+  },
 };
 
 export default config;
