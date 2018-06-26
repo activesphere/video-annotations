@@ -19,11 +19,16 @@ export default class extends Controller {
 		this.initializePlayer = this.initializePlayer.bind(this);
 		this.togglePlay = this.togglePlay.bind(this);
 		this.appendTimeStamp = this.appendTimeStamp.bind(this);
+		this.seekTo = this.seekTo.bind(this);
+		this.jump10sForward = this.jump10sForward.bind(this);
+		this.jump10sBackward = this.jump10sBackward.bind(this);
 	}
 
 	initializeKeyboardShortcuts() {
 		hotkeys('shift+ctrl+i', this.appendTimeStamp);
 		hotkeys('shift+ctrl+space', this.togglePlay);
+		hotkeys('shift+ctrl+h', this.jump10sBackward);
+		hotkeys('shift+ctrl+l', this.jump10sForward);
 	}
 
 	initializePlayer(id) {
@@ -86,6 +91,22 @@ export default class extends Controller {
 			this.player.pauseVideo();
 		} else {
 			this.player.playVideo();
+		}
+	}
+
+	seekTo(seconds) {
+		this.player.seekTo(seconds);
+	}
+
+	jump10sBackward() {
+		if (this.playerState === YT.PlayerState.PLAYING) {
+			this.seekTo(this.player.getCurrentTime() - 10);
+		}
+	}
+
+	jump10sForward() {
+		if (this.playerState === YT.PlayerState.PLAYING) {
+			this.seekTo(this.player.getCurrentTime() + 10);
 		}
 	}
 }
