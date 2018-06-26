@@ -2,6 +2,8 @@ import {Controller} from 'stimulus';
 import youtubeRegex from 'youtube-regex';
 import hotkeys from 'hotkeys-js';
 import formatTime from '../lib/format-time.js';
+import storage from '../lib/storage.js';
+import throttle from '../lib/throttle.js';
 
 hotkeys.filter = function (event) {
 	const {tagName} = (event.target || event.srcElement);
@@ -17,6 +19,7 @@ export default class extends Controller {
 		this.initializePlayer = this.initializePlayer.bind(this);
 		this.togglePlay = this.togglePlay.bind(this);
 		this.appendTimeStamp = this.appendTimeStamp.bind(this);
+		this.save = throttle(this.save.bind(this), 3000);
 		this.seekTo = this.seekTo.bind(this);
 		this.jump10sForward = this.jump10sForward.bind(this);
 		this.jump10sBackward = this.jump10sBackward.bind(this);
@@ -78,8 +81,13 @@ export default class extends Controller {
 		const videoUrl = new URL(document.location.href).searchParams.get('url');
 		if (videoUrl && videoUrl !== '') {
 			const id = youtubeRegex().exec(videoUrl).reverse()[0];
+			this.id = id;
 			this.initializePlayer(id);
 			this.initializeKeyboardShortcuts();
+			const value = storage.get(id);
+			if (value) {
+				this.editorTarget.value = value;
+			}
 		}
 	}
 
@@ -95,6 +103,13 @@ export default class extends Controller {
 			this.player.pauseVideo();
 		} else {
 			this.player.playVideo();
+		}
+	}
+
+	save() {
+		const {value} = this.editorTarget;
+		if (value !== '') {
+			storage.set(this.id, value);
 		}
 	}
 
