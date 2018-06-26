@@ -44,6 +44,10 @@ export default class extends Controller {
 				width: '640',
 				videoId: id,
 				playerVars: {
+					'autoplay': 1,
+					'modestbranding': 1,
+					'rel': 0,
+					'showinfo': 0
 					// 'controls': 0
 				},
 				events: {
