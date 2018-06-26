@@ -3,6 +3,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const postcssPresetEnv = require('postcss-preset-env');
 
 module.exports = {
+	entry: './src/js/index.js',
 	module: {
 		rules: [
 			{

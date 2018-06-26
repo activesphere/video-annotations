@@ -1,15 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<title>Webpack 4 quickstart</title>
+	<title>vriter</title>
+
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tachyons/4.9.1/tachyons.min.css">
 </head>
-
 <body>
-	<h1>Hello!</h1>
-	<p>Thanks <a href="https://www.valentinog.com/blog/webpack-tutorial/">Valentino Gagliardi</a> showing how to configure Webpack 4.</p>
+	<div class="cf" data-controller="video-scribe">
+		<div class="fl w-100 w-50-ns pa2">
+			<div class="aspect-ratio aspect-ratio--16x9">
+				<div id="video-placeholder">
+					<a href="/?url=https://www.youtube.com/embed/ANX_PxqZayU">Try with this video</a>
+				</div>
+			</div>
+		</div>
+		<div class="fl w-100 w-50-ns pa2">
+			<div class="aspect-ratio aspect-ratio--16x9">
+				<textarea class="absolute top-0 left-0 w-100 h-100 input-reset ba b--silver pa2 sans-serif" data-target="video-scribe.editor"></textarea>
+			</div>
+		</div>
+	</div>
 </body>
-
 </html>

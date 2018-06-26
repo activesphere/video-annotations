@@ -15,6 +15,7 @@
     "babel-core": "^6.26.3",
     "babel-loader": "^7.1.4",
     "babel-preset-env": "^1.7.0",
+    "babel-preset-stage-2": "^6.24.1",
     "css-loader": "^0.28.11",
     "html-loader": "^0.5.5",
     "html-webpack-plugin": "^3.2.0",
@@ -41,5 +42,10 @@
       "stylelint --fix",
       "git add"
     ]
+  },
+  "dependencies": {
+    "hotkeys-js": "^3.3.5",
+    "stimulus": "^1.0.1",
+    "youtube-regex": "^1.0.5"
   }
 }
