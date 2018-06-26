@@ -84,9 +84,9 @@ export default class extends Controller {
 	}
 
 	appendTimeStamp() {
-		const timestamp = formatTime(this.player.getCurrentTime());
+		const ts = formatTime(this.player.getCurrentTime());
 		const newline = this.editorTarget.value.length ? '\n\n' : '';
-		this.editorTarget.value += `${newline}## /{${timestamp}}/: `;
+		this.editorTarget.value += `${newline}[${ts}](${ts}) `;
 	}
 
 	togglePlay() {
