@@ -34,8 +34,7 @@
   },
   "lint-staged": {
     "*.{js,jsx}": [
-      "xo --fix",
-      "git add"
+      "xo --fix"
     ],
     "*.css": [
       "prettier --write",
