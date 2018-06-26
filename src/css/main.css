@@ -1,10 +1,5 @@
-:root {
-	--mainColor: #12345678;
-}
-
 html {
 	font-family: system-ui;
-	color: var(--mainColor);
 }
 
 #video-placeholder {

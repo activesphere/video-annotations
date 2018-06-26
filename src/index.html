@@ -7,7 +7,7 @@
 
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tachyons/4.9.1/tachyons.min.css">
 </head>
-<body>
+<body class="gray">
 	<div class="cf" data-controller="video-scribe">
 		<div class="fl w-100 w-50-ns pa2">
 			<div class="aspect-ratio aspect-ratio--16x9">
@@ -20,6 +20,17 @@
 			<div class="aspect-ratio aspect-ratio--16x9">
 				<textarea class="absolute top-0 left-0 w-100 h-100 input-reset ba b--silver pa2 sans-serif" data-target="video-scribe.editor"></textarea>
 			</div>
+		</div>
+		<div class="fl w-100 pa2">
+			<ul class="list ma0 pa0 flex justify-between">
+				<li><kdb class="dib ba pa1 br1 b--light-gray code f7">ctrl</kdb> + <kdb class="dib ba pa1 br1 b--light-gray code f7">shift</kdb> + <kdb class="dib ba pa1 br1 b--light-gray code f7">i</kdb>	Insert time stamp</li>
+
+				<li><kdb class="dib ba pa1 br1 b--light-gray code f7">ctrl</kdb> + <kdb class="dib ba pa1 br1 b--light-gray code f7">shift</kdb> + <kdb class="dib ba pa1 br1 b--light-gray code f7">space</kdb>	Play/Pause video</li>
+
+				<li><kdb class="dib ba pa1 br1 b--light-gray code f7">ctrl</kdb> + <kdb class="dib ba pa1 br1 b--light-gray code f7">shift</kdb> + <kdb class="dib ba pa1 br1 b--light-gray code f7">l</kdb>	Jump forward 10 seconds</li>
+
+				<li><kdb class="dib ba pa1 br1 b--light-gray code f7">ctrl</kdb> + <kdb class="dib ba pa1 br1 b--light-gray code f7">shift</kdb> + <kdb class="dib ba pa1 br1 b--light-gray code f7">h</kdb>	Jump backwards 10 seconds</li>
+			</ul>
 		</div>
 	</div>
 </body>
