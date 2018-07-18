@@ -4,10 +4,11 @@ import hotkeys from 'hotkeys-js';
 import formatTime from '../lib/format-time.js';
 import storage from '../lib/storage.js';
 import throttle from '../lib/throttle.js';
+import {MarkdownEditor} from './markdown-editor.js';
 
 hotkeys.filter = function (event) {
 	const {tagName} = (event.target || event.srcElement);
-	return tagName === 'TEXTAREA';
+	return tagName === 'DIV';
 };
 
 export default class extends Controller {
@@ -23,6 +24,7 @@ export default class extends Controller {
 		this.seekTo = this.seekTo.bind(this);
 		this.jump10sForward = this.jump10sForward.bind(this);
 		this.jump10sBackward = this.jump10sBackward.bind(this);
+		this.mkEditor = new MarkdownEditor('');
 	}
 
 	initializeKeyboardShortcuts() {
@@ -69,9 +71,9 @@ export default class extends Controller {
 	onPlayerStateChange(event) {
 		if (this.playerState === -1) {
 			const {title} = this.player.getVideoData();
-			if (this.editorTarget.value.length === 0) {
-				this.editorTarget.value = `# ${title}\n`;
-				this.editorTarget.focus();
+			if (this.mkEditor.content.length === 0) {
+				this.mkEditor.content = `# ${title}\n`;
+				this.mkEditor.focus();
 			}
 		}
 		this.playerState = event.data;
@@ -84,17 +86,22 @@ export default class extends Controller {
 			this.id = id;
 			this.initializePlayer(id);
 			this.initializeKeyboardShortcuts();
+			console.log(`id: ${id}`);
 			const value = storage.get(id);
 			if (value) {
-				this.editorTarget.value = value;
+				// This.editorTarget.value = value;
+				this.mkEditor.content = value;
+				console.log(value);
 			}
 		}
 	}
 
 	appendTimeStamp() {
 		const ts = formatTime(this.player.getCurrentTime());
-		const newline = this.editorTarget.value.length ? '\n\n' : '';
-		this.editorTarget.value += `${newline}[${ts}](${ts}) `;
+		// Const newline = this.mkEditor.content ? '' : '';
+		this.mkEditor.addText(`[${ts}](${ts}) `);
+		// This.mkEditor.content += `${newline}[${ts}](${ts}) `;
+		this.mkEditor.focus();
 	}
 
 	togglePlay() {
@@ -107,8 +114,10 @@ export default class extends Controller {
 	}
 
 	save() {
-		const {value} = this.editorTarget;
+		const value = this.mkEditor.content;
+		console.log(value);
 		if (value !== '') {
+			console.log(`Here`);
 			storage.set(this.id, value);
 		}
 	}
