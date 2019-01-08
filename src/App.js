@@ -155,22 +155,6 @@ class YoutubeIframeComponent extends Component {
 
                 console.log('apiScriptElement = ', apiScriptElement);
 
-                /*
-                const firstScriptTag = document
-                    .getElementsByTagName('script')
-                    .item(0);
-
-                console.log(
-                    'Num script tags = ',
-                    document.getElementsByTagName('script').length
-                );
-
-                firstScriptTag.parentNode.insertBefore(
-                    apiScriptElement,
-                    firstScriptTag
-                );
-                */
-
                 document.body.appendChild(apiScriptElement);
 
                 // Pass the YT object as the result of the promise
@@ -628,9 +612,7 @@ const InlineStyleControls = props => {
     );
 };
 
-// The commands from console are send via the App component. The player's response data, if relevant
-// is also send to the console via the App component.
-
+// The commands from console are send via the App component
 export default class App extends Component {
     constructor(props) {
         super(props);
