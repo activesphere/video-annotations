@@ -1,9 +1,12 @@
 import React, { Component } from 'react';
 import {
     Editor as VanillaEditor,
+    Entity,
+    convertToRaw,
     EditorState,
     RichUtils,
     SelectionState,
+    CompositeDecorator,
     Modifier,
 } from 'draft-js';
 
@@ -40,14 +43,12 @@ function appendTextToEditor(editorState, text) {
         return editorState;
     }
 
-    let currentContent = editorState.getCurrentContent();
+    let currentContentState = editorState.getCurrentContent();
     let cursorOffsetInBlock = selectionState.getStartOffset();
 
     const blockKey = selectionState.getAnchorKey();
 
-    // Create a selectionstate range to include exactly the previous character.
-
-    const selOneCharBack = SelectionState.createEmpty(blockKey).merge({
+    const selBlockEnd = SelectionState.createEmpty(blockKey).merge({
         anchorOffset: cursorOffsetInBlock,
         focusOffset: cursorOffsetInBlock,
         isBackward: false,
@@ -55,8 +56,8 @@ function appendTextToEditor(editorState, text) {
 
     // Remove the character, update editor state.
     const newContent = Modifier.insertText(
-        currentContent,
-        selOneCharBack,
+        currentContentState,
+        selBlockEnd,
         text
     );
 
@@ -65,6 +66,53 @@ function appendTextToEditor(editorState, text) {
     });
 
     newEditorState = EditorState.moveFocusToEnd(newEditorState);
+    return newEditorState;
+}
+
+function appendLinkInEditor(
+    editorState,
+    text,
+    url,
+    linkEntityType = 'NON_MARKDOWN_LINK'
+) {
+    let newEditorState = appendTextToEditor(editorState, text);
+
+    const selectionState = newEditorState.getSelection();
+
+    let currentContentState = newEditorState.getCurrentContent();
+    let cursorOffsetInBlock = selectionState.getStartOffset();
+
+    const blockKey = selectionState.getAnchorKey();
+
+    const selInsertedCharacters = SelectionState.createEmpty(blockKey).merge({
+        anchorOffset: cursorOffsetInBlock - text.length,
+        focusOffset: cursorOffsetInBlock,
+        isBackward: false,
+    });
+
+    console.log('selInsertedCharacters = ', selInsertedCharacters);
+
+    const contentStateWithLinkEntity = currentContentState.createEntity(
+        linkEntityType,
+        'MUTABLE',
+        {
+            url: url,
+        }
+    );
+
+    const linkEntityKey = contentStateWithLinkEntity.getLastCreatedEntityKey();
+    console.log('linkEntityKey = ', linkEntityKey);
+
+    newEditorState = EditorState.set(newEditorState, {
+        currentContent: contentStateWithLinkEntity,
+    });
+
+    newEditorState = RichUtils.toggleLink(
+        newEditorState,
+        selInsertedCharacters,
+        linkEntityKey
+    );
+
     return newEditorState;
 }
 
@@ -269,26 +317,46 @@ YoutubeIframeComponent.defaultProps = {
 
 // Just prints the current content blocks in the editor for debugging.
 function printContentState(editorState, message = '') {
-    const contentState = editorState.getCurrentContent();
-    const blockMap = contentState.getBlockMap();
-    console.log(blockMap);
-
-    console.log(
-        message,
-        `----------------- Current blocks (count = ${
-            blockMap.size
-        }) --------------------`
-    );
-
-    blockMap.forEach((blockData, blockId) => {
-        const object = {
-            id: blockId,
-            data: blockData,
-            style: blockData.getType(),
-        };
-        console.log(object);
-    });
+    console.log(message, convertToRaw(editorState.getCurrentContent()));
 }
+
+let g_linkCount = 0;
+
+// Used as the strategy paraemter of CompositeDecorator
+function findLinkEntities(contentBlock, callback) {
+    console.log('findEntityRanges');
+    contentBlock.findEntityRanges(characterMetadata => {
+        console.log('Running on character ', characterMetadata);
+        const entityKey = characterMetadata.getEntity();
+
+        const result =
+            entityKey !== null &&
+            Entity.get(entityKey).getType() == 'NON_MARKDOWN_LINK';
+
+        if (result) {
+            console.log('TRUE for this metadata', characterMetadata);
+        }
+
+        return result;
+    }, callback);
+}
+
+const LinkComponent = props => {
+    const { url } = Entity.get(props.entityKey).getData();
+
+    return (
+        <a href={url} className="console-editor-link">
+            {props.children}
+        </a>
+    );
+};
+
+const g_decorator = new CompositeDecorator([
+    {
+        strategy: findLinkEntities,
+        component: LinkComponent,
+    },
+]);
 
 // The editor component.
 class EditorComponent extends React.Component {
@@ -320,11 +388,13 @@ class EditorComponent extends React.Component {
                 return 'not-handled';
             }
 
+            /*
             console.log(
                 `handleBeforeInput... chars =  '${chars}', lastInputCharacter =  '${
                     this.lastInputCharacter
                 }'`
             );
+            */
 
             return this._handleBeforeInput(chars, editorState, eventTimeStamp);
         };
@@ -341,7 +411,7 @@ class EditorComponent extends React.Component {
 
         // Handle command based on the character after # and current mode
         if (
-            '/>'.indexOf(singleChar) !== -1 &&
+            '/>l'.indexOf(singleChar) !== -1 &&
             this.lastInputCharacter === '#'
         ) {
             return this._enterPoundKeyMode(singleChar, editorState);
@@ -363,11 +433,17 @@ class EditorComponent extends React.Component {
     _enterPoundKeyMode(argChar, editorState) {
         console.log('# command followed by', argChar);
 
+        let newEditorState = editorState;
+
         let selectionState = editorState.getSelection();
 
         if (!selectionState.isCollapsed()) {
             return 'not-handled';
         }
+
+        const blockKey = selectionState.getAnchorKey();
+        let currentContentState = editorState.getCurrentContent();
+        let cursorOffsetInBlock = selectionState.getStartOffset();
 
         let videoTime = 0;
 
@@ -379,19 +455,18 @@ class EditorComponent extends React.Component {
             videoTime = this.props.app.notifyConsoleCommand({
                 name: 'playVideo',
             });
+        } else {
+            console.warn('Should not reach here');
+            return 'not-handled';
         }
 
         console.log(`Video time = ${videoTime}, ${secondsToHhmmss(videoTime)}`);
-
-        const blockKey = selectionState.getAnchorKey();
-        let currentContent = editorState.getCurrentContent();
-        let cursorOffsetInBlock = selectionState.getStartOffset();
 
         console.log(`Removing prev char - cursorOffsetInBlock = ${cursorOffsetInBlock}, 
           anchorOffset = ${selectionState.getAnchorOffset()},
           focusOffset = ${selectionState.getFocusOffset()}`);
 
-        // Create a selectionstate range to include exactly the previous character '#' character.
+        // Create a selectionState range to include exactly the previous character '#' character.
         const selOneCharBack = SelectionState.createEmpty(blockKey).merge({
             anchorOffset: cursorOffsetInBlock - 1,
             focusOffset: cursorOffsetInBlock,
@@ -401,34 +476,39 @@ class EditorComponent extends React.Component {
 
         console.log('selOneCharBack = ', selOneCharBack);
 
-        // Remove the character, update editor state.
-
+        // Remove the preceding # character
         const newContent = Modifier.removeRange(
-            currentContent,
+            currentContentState,
             selOneCharBack,
             'forward'
         );
 
-        let newEditorState = EditorState.set(editorState, {
+        newEditorState = EditorState.set(editorState, {
             currentContent: newContent,
         });
 
-        // printContentState(newEditorState, 'Before moving to end');
-
+        // Go to end
         newEditorState = EditorState.moveFocusToEnd(newEditorState);
 
+        /*
         newEditorState = appendTextToEditor(
             newEditorState,
             secondsToHhmmss(videoTime)
         );
+        */
 
-        // Insert timestamp
+        // Append the timestamp link. TODO
+        newEditorState = appendLinkInEditor(
+            newEditorState,
+            secondsToHhmmss(videoTime),
+            'https://youtube.com'
+        );
 
-        // printContentState(newEditorState, 'After moving to end');
+        // Go to end.
+        newEditorState = EditorState.moveFocusToEnd(newEditorState);
 
         this.onChange(newEditorState);
         this.lastInputCharacter = '';
-
         return 'handled';
     }
 
@@ -503,6 +583,7 @@ class EditorComponent extends React.Component {
                         handleBeforeInput={this.handleBeforeInput}
                         handleReturn={this.handleReturn}
                         plugins={this.state.plugins}
+                        decorators={[g_decorator]}
                     />
                 </div>
             </div>

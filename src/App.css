@@ -85,3 +85,8 @@ body {
 .console-editor-activeButton {
     color: #5890ff;
 }
+
+.console-editor-link {
+    color: '#9ebdff';
+    text-decoration: 'underline';
+}
