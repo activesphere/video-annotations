@@ -2,7 +2,7 @@ Interaction scheme
 
 Key sequence and action list
 
-#! Start/Unpause video.
+#> Continue playing video.
 
 #+ Put current timestamp in editor.
 

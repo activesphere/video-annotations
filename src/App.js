@@ -1,6 +1,4 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import YoutubePlayer from 'youtube-player';
 import {
     Editor as VanillaEditor,
     EditorState,
@@ -100,67 +98,120 @@ const YT_PLAYBACK_STATE_NAMES = {
     5: 'cued',
 };
 
+let g_youtubeLoadedPromise = undefined;
+
 class YoutubeIframeComponent extends Component {
     constructor(props) {
         super(props);
 
-        console.log(this.props);
-
-        this.player = undefined;
-        this.refPlayer = undefined;
         this.storedPlaybackState = 'unstarted';
+        this.player = undefined; // The youtube iframe api is represented by this object
+        this.refPlayer = undefined; // Will refer to the div in which the iframe will be created
 
-        window['onYouTubeIframeAPIReady'] = e => {
-            this.YT = window['YT'];
-            this.player = new window['YT'].Player('player', {
-                videoId: TEST_VIDEO_ID,
-                height: '100%',
-                width: '100%',
-            });
+        this.onPlayerStateChange = ytEvent => {
+            this.storedPlaybackState = YT_PLAYBACK_STATE_NAMES[ytEvent.data];
+
+            console.log(
+                `YT playback state changed. New state = ${ytEvent.data} (${
+                    this.storedPlaybackState
+                })`
+            );
+
+            if (this.storedPlaybackState === 'ended') {
+                this.props.onEnd(ytEvent);
+            } else if (this.storedPlaybackState === 'playing') {
+                this.props.onPlay(ytEvent);
+            } else if (this.storedPlaybackState === 'paused') {
+                this.props.onPause(ytEvent);
+            } else if (this.storedPlaybackState === 'buffering') {
+                this.props.onBuffer(ytEvent);
+            } else if (this.storedPlaybackState === 'cued') {
+                this.props.onCued(ytEvent);
+            } else if (this.storedPlaybackState === 'unstarted') {
+                this.props.onUnstarted(ytEvent);
+            }
         };
     }
 
-    getCurrentTime() {
-        if (this.player) {
-            return this.player.getCurrentTime();
-        }
-        console.warn('getCurrentTime called but player is undefined');
-        return 0;
+    render() {
+        return (
+            <div className="youtube-player">
+                <div
+                    ref={r => {
+                        this.refPlayer = r;
+                    }}
+                />
+            </div>
+        );
     }
 
-    // Replace the DOM node with an iframe.
     componentDidMount() {
-        // Get the player object
-        this.player = YoutubePlayer(this.refPlayer, {
-            videoId: TEST_VIDEO_ID,
-            height: '100%',
-            width: '100%',
-        });
-        this.props.storeRefInParent(this.player);
-        this.registerYoutubeEventCallbacks();
+        if (!g_youtubeLoadedPromise) {
+            g_youtubeLoadedPromise = new Promise((resolve, reject) => {
+                // Create the element for Youtube API script and attach it to the HTML.
+                const apiScriptElement = document.createElement('script');
+                apiScriptElement.src = 'https://www.youtube.com/iframe_api';
+                apiScriptElement.id = '__iframe_api__';
+
+                console.log('apiScriptElement = ', apiScriptElement);
+
+                /*
+                const firstScriptTag = document
+                    .getElementsByTagName('script')
+                    .item(0);
+
+                console.log(
+                    'Num script tags = ',
+                    document.getElementsByTagName('script').length
+                );
+
+                firstScriptTag.parentNode.insertBefore(
+                    apiScriptElement,
+                    firstScriptTag
+                );
+                */
+
+                document.body.appendChild(apiScriptElement);
+
+                // Pass the YT object as the result of the promise
+                window.onYouTubeIframeAPIReady = () => resolve(window.YT);
+            });
+
+            g_youtubeLoadedPromise.then(YT => {
+                console.log('YoutubePlayer ready');
+                this.player = new YT.Player(this.refPlayer, {
+                    videoId: TEST_VIDEO_ID,
+                    height: '100%',
+                    width: '100%',
+                    events: {
+                        onStateChange: this.onPlayerStateChange,
+                    },
+                });
+                this.props.storeRefInParent(this.player);
+                console.log('player = ', this.player);
+            });
+        }
     }
 
     componentWillUnmount() {
-        this.player.destroy();
+        if (this.player) {
+            this.player.destroy();
+        }
     }
 
     componentWillReceiveProps(nextProps) {
         // Handle the video commands here.
-        console.log(
-            'YoutubeIframeComponent just received new props',
-            nextProps
-        );
-        this.diffstate(this.props, nextProps);
-    }
+        console.log('Youtube Component will receive new props', nextProps);
 
-    diffstate(curProps, nextProps) {
-        if (curProps.videoId !== nextProps.videoId && nextProps.videoId) {
+        if (this.props.videoId !== nextProps.videoId && nextProps.videoId) {
             this.cueVideoId(nextProps.videoId);
         }
 
         let newPlaybackState = undefined;
 
         const command = nextProps.latestCommand;
+
+        console.log('latestCommand = ', command);
 
         // Execute the command and put the current timestamp of the video.
         if (command) {
@@ -174,12 +225,20 @@ class YoutubeIframeComponent extends Component {
             command.time = this.player.getCurrentTime();
         }
 
+        console.log(
+            'storedPlaybackState = ',
+            this.storedPlaybackState,
+            'newPlaybackState = ',
+            newPlaybackState
+        );
+
         if (this.storedPlaybackState !== newPlaybackState && newPlaybackState) {
             this.updatePlaybackState(newPlaybackState);
         }
     }
 
     updatePlaybackState(newPlaybackState) {
+        console.log('Updating playback state to ', newPlaybackState);
         if (newPlaybackState === 'playing') {
             this.player.playVideo();
         } else if (newPlaybackState === 'paused') {
@@ -191,64 +250,28 @@ class YoutubeIframeComponent extends Component {
         }
     }
 
+    // Never re-render the youtube component. We just work with the playback once the component is
+    // mounted.
     shouldComponentUpdate(newProps, newState) {
         return false;
-    }
-
-    registerYoutubeEventCallbacks() {
-        this.player.on('stateChange', event => {
-            this.storedPlaybackState = YT_PLAYBACK_STATE_NAMES[event.data];
-
-            console.log(
-                `YT playback state changed. New state = ${event.data} (${
-                    this.storedPlaybackState
-                })`
-            );
-
-            if (this.storedPlaybackState === 'ended') {
-                this.props.onEnd(event);
-            } else if (this.storedPlaybackState === 'playing') {
-                this.props.onPlay(event);
-            } else if (this.storedPlaybackState === 'paused') {
-                this.props.onPause(event);
-            } else if (this.storedPlaybackState === 'buffering') {
-                this.props.onBuffer(event);
-            } else if (this.storedPlaybackState === 'cued') {
-                this.props.onCued(event);
-            } else if (this.storedPlaybackState === 'unstarted') {
-                this.props.onUnstarted(event);
-            }
-        });
-    }
-
-    render() {
-        const style = { display: 'flex', width: '100%', height: '100%' };
-        return (
-            <div
-                ref={domElement => {
-                    this.refViewport = domElement;
-                }}
-                className="youtube-player"
-            >
-                <div
-                    ref={domElement => {
-                        this.refPlayer = domElement;
-                    }}
-                />
-            </div>
-        );
     }
 }
 
 YoutubeIframeComponent.defaultProps = {
     onBuffer: ytEvent => {},
+
     onCued: ytEvent => {},
+
     onEnd: ytEvent => {},
+
     onError: ytEvent => {
         console.log('youtube iframe api error - ', ytEvent);
     },
+
     onPause: ytEvent => {},
+
     onPlay: ytEvent => {},
+
     onUnstarted: ytEvent => {},
 
     playbackState: 'unstarted',
@@ -362,82 +385,65 @@ class EditorComponent extends React.Component {
             return 'not-handled';
         }
 
-        let videoTimePromise = 0;
+        let videoTime = 0;
 
         if (argChar === '/') {
-            videoTimePromise = this.props.app.notifyConsoleCommand({
+            videoTime = this.props.app.notifyConsoleCommand({
                 name: 'pauseVideo',
             });
         } else if (argChar === '>') {
-            videoTimePromise = this.props.app.notifyConsoleCommand({
+            videoTime = this.props.app.notifyConsoleCommand({
                 name: 'playVideo',
             });
         }
 
-        // Resolve the time. @TODO: There should be a better way.
+        console.log(`Video time = ${videoTime}, ${secondsToHhmmss(videoTime)}`);
 
-        videoTimePromise
-            .then(videoTime => {
-                console.log(
-                    `Video time = ${videoTime}, ${secondsToHhmmss(videoTime)}`
-                );
+        const blockKey = selectionState.getAnchorKey();
+        let currentContent = editorState.getCurrentContent();
+        let cursorOffsetInBlock = selectionState.getStartOffset();
 
-                const blockKey = selectionState.getAnchorKey();
-                let currentContent = editorState.getCurrentContent();
-                let cursorOffsetInBlock = selectionState.getStartOffset();
-
-                console.log(`Removing prev char - cursorOffsetInBlock = ${cursorOffsetInBlock}, 
+        console.log(`Removing prev char - cursorOffsetInBlock = ${cursorOffsetInBlock}, 
           anchorOffset = ${selectionState.getAnchorOffset()},
           focusOffset = ${selectionState.getFocusOffset()}`);
 
-                // Create a selectionstate range to include exactly the previous character '#' character.
-                const selOneCharBack = SelectionState.createEmpty(
-                    blockKey
-                ).merge({
-                    anchorOffset: cursorOffsetInBlock - 1,
-                    focusOffset: cursorOffsetInBlock,
-                    isBackward: false,
-                    hasFocus: true,
-                });
+        // Create a selectionstate range to include exactly the previous character '#' character.
+        const selOneCharBack = SelectionState.createEmpty(blockKey).merge({
+            anchorOffset: cursorOffsetInBlock - 1,
+            focusOffset: cursorOffsetInBlock,
+            isBackward: false,
+            hasFocus: true,
+        });
 
-                console.log('selOneCharBack = ', selOneCharBack);
+        console.log('selOneCharBack = ', selOneCharBack);
 
-                // Remove the character, update editor state.
+        // Remove the character, update editor state.
 
-                const newContent = Modifier.removeRange(
-                    currentContent,
-                    selOneCharBack,
-                    'forward'
-                );
+        const newContent = Modifier.removeRange(
+            currentContent,
+            selOneCharBack,
+            'forward'
+        );
 
-                let newEditorState = EditorState.set(editorState, {
-                    currentContent: newContent,
-                });
+        let newEditorState = EditorState.set(editorState, {
+            currentContent: newContent,
+        });
 
-                // printContentState(newEditorState, 'Before moving to end');
+        // printContentState(newEditorState, 'Before moving to end');
 
-                newEditorState = EditorState.moveFocusToEnd(newEditorState);
+        newEditorState = EditorState.moveFocusToEnd(newEditorState);
 
-                newEditorState = appendTextToEditor(
-                    newEditorState,
-                    secondsToHhmmss(videoTime)
-                );
+        newEditorState = appendTextToEditor(
+            newEditorState,
+            secondsToHhmmss(videoTime)
+        );
 
-                // Insert timestamp
+        // Insert timestamp
 
-                // printContentState(newEditorState, 'After moving to end');
+        // printContentState(newEditorState, 'After moving to end');
 
-                this.onChange(newEditorState);
-                this.lastInputCharacter = '';
-                this.unblockEditor();
-            })
-            .catch(error => {
-                console.warn(
-                    'Error in resolving videoTimePromise',
-                    JSON.stringify(error),
-                    videoTimePromise
-                );
-            });
+        this.onChange(newEditorState);
+        this.lastInputCharacter = '';
 
         return 'handled';
     }
@@ -630,7 +636,6 @@ export default class App extends Component {
         super(props);
         this.state = {
             latestCommandToSend: undefined,
-            editorBlocked: false,
         };
 
         // We keep a handle to the youtube player (the player API, not the dom element itself).
@@ -638,13 +643,6 @@ export default class App extends Component {
 
         this.setPlayerRef = player => {
             this.player = player;
-        };
-
-        this.unblockEditor = () => {
-            this.setState({
-                latestCommandToSend: this.state.latestCommandToSend,
-                editorBlocked: false,
-            });
         };
     }
 
@@ -660,16 +658,7 @@ export default class App extends Component {
             console.log('Received unknown console command', consoleCommand);
         }
 
-        let timePromise = this.player.getCurrentTime();
-
-        console.log('timePromise = ', timePromise);
-
-        this.setState({
-            latestCommandToSend: this.state.latestCommandToSend,
-            editorBlocked: false,
-        });
-
-        return timePromise;
+        return this.player.getCurrentTime();
     }
 
     render() {
@@ -680,11 +669,7 @@ export default class App extends Component {
                     latestCommand={this.state.latestCommandToSend}
                     storeRefInParent={this.setPlayerRef}
                 />
-                <EditorComponent
-                    app={this}
-                    isBlocked={this.state.editorBlocked}
-                    unblockEditor={this.unblockEditor}
-                />
+                <EditorComponent app={this} />
             </div>
         );
     }
