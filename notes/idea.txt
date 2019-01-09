@@ -1,23 +1,34 @@
 Interaction scheme
+---------------------
 
 Key sequence and action list
 
-#> Continue playing video.
+#> - Continue playing video.
 
-#+ Put current timestamp in editor.
+#+ - Put current timestamp in editor.
 
 
-## Pause video and either begin taking notes or control video with these commands
+## - Pause video and either begin taking notes or control video with these
+commands
 
 	#/<number><''|s|m><ret>
 
 		Go back <number> seconds or minutes.
 
-		Pushes the current time and state of video (paused or playing) on undo stack.
+		Pushes the current time and state of video (paused or playing) on undo
+		stack.
 
 
-	#+ Put current timestamp in editor
+	#+ - Put current timestamp in editor
 
-	#<* Go back number of seconds equal to the number of times < appears
+	#<* - Go back number of seconds equal to the number of times < appears
 	
-	#(* Go back number of seconds equal to the number of times ( appears
+	#(* - Go back number of seconds equal to the number of times ( appears
+
+
+
+Hotkeys
+-----------------------
+
+Taking cursor inside a link and pressing Ctrl+g will take you to that
+timepoint of the video.

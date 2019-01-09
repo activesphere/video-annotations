@@ -89,4 +89,5 @@ body {
 .console-editor-link {
     color: '#9ebdff';
     text-decoration: 'underline';
+    font-style: 'italic';
 }
