@@ -15,7 +15,7 @@ import MarkdownEditor from 'draft-js-plugins-editor';
 import React, { Component } from 'react';
 import HotkeysComponent from 'react-hot-keys';
 
-const TEST_VIDEO_ID = 'ANX_PxqZayU';
+const TEST_VIDEO_ID = '6orsmFndx_o';
 
 const INVALID_VIDEO_TIME = -1;
 
@@ -86,25 +86,45 @@ function appendTextToEditor(editorState, text) {
     return newEditorState;
 }
 
-function appendVideoLink(editorState, text, videoId, videoTime) {
-    let newEditorState = appendTextToEditor(editorState, text);
+function insertVideoLinkAtCursor(editorState, text, videoId, videoTime) {
+    console.log('Inserting video link');
+    let newEditorState = editorState;
 
     const selectionState = newEditorState.getSelection();
 
-    let currentContentState = newEditorState.getCurrentContent();
-    let cursorOffsetInBlock = selectionState.getStartOffset();
+    if (!selectionState.isCollapsed()) {
+        return newEditorState;
+    }
+
+    // Insert the text
+    let newContentState = newEditorState.getCurrentContent();
+    const cursorOffsetInBlock = selectionState.getStartOffset();
+
+    console.log('cursorOffsetInBlock = ', cursorOffsetInBlock);
 
     const blockKey = selectionState.getAnchorKey();
 
-    const selInsertedCharacters = SelectionState.createEmpty(blockKey).merge({
-        anchorOffset: cursorOffsetInBlock - text.length,
+    const selAtCursor = SelectionState.createEmpty(blockKey).merge({
+        anchorOffset: cursorOffsetInBlock,
         focusOffset: cursorOffsetInBlock,
         isBackward: false,
     });
 
-    console.log('selInsertedCharacters = ', selInsertedCharacters);
+    newContentState = Modifier.insertText(newContentState, selAtCursor, text);
 
-    const contentStateWithLinkEntity = currentContentState.createEntity(
+    newEditorState = EditorState.set(newEditorState, {
+        currentContent: newContentState,
+    });
+
+    // Add entity link
+
+    const selInsertedCharacters = SelectionState.createEmpty(blockKey).merge({
+        anchorOffset: cursorOffsetInBlock,
+        focusOffset: cursorOffsetInBlock + text.length,
+        isBackward: false,
+    });
+
+    newContentState = newContentState.createEntity(
         'VIDEO_TIMESTAMP',
         'MUTABLE',
         {
@@ -114,10 +134,10 @@ function appendVideoLink(editorState, text, videoId, videoTime) {
         }
     );
 
-    const linkEntityKey = contentStateWithLinkEntity.getLastCreatedEntityKey();
+    const linkEntityKey = newContentState.getLastCreatedEntityKey();
 
     newEditorState = EditorState.set(newEditorState, {
-        currentContent: contentStateWithLinkEntity,
+        currentContent: newContentState,
     });
 
     newEditorState = RichUtils.toggleLink(
@@ -125,6 +145,16 @@ function appendVideoLink(editorState, text, videoId, videoTime) {
         selInsertedCharacters,
         linkEntityKey
     );
+
+    // Move cursor to end of the inserted text
+
+    const selEndOfInsertedChars = SelectionState.createEmpty(blockKey).merge({
+        anchorOffset: cursorOffsetInBlock + text.length,
+        focusOffset: cursorOffsetInBlock + text.length,
+        isBackward: false
+    });
+
+    newEditorState = EditorState.forceSelection(newEditorState, selEndOfInsertedChars);
 
     return newEditorState;
 }
@@ -222,7 +252,7 @@ class YoutubeIframeComponent extends Component {
                 apiScriptElement.src = 'https://www.youtube.com/iframe_api';
                 apiScriptElement.id = '__iframe_api__';
 
-                console.log('apiScriptElement = ', apiScriptElement);
+                // console.log('apiScriptElement = ', apiScriptElement);
 
                 document.body.appendChild(apiScriptElement);
 
@@ -254,7 +284,7 @@ class YoutubeIframeComponent extends Component {
 
     componentWillReceiveProps(nextProps) {
         // Handle the video commands here.
-        console.log('Youtube Component will receive new props', nextProps);
+        // console.log('Youtube Component will receive new props', nextProps);
 
         if (this.props.videoId !== nextProps.videoId && nextProps.videoId) {
             this.cueVideoId(nextProps.videoId);
@@ -310,9 +340,10 @@ class YoutubeIframeComponent extends Component {
         console.log('Updating playback state to ', newPlaybackState);
         if (newPlaybackState === 'playing') {
             if (seekToTime !== -1) {
-                this.player.seekTo(seekToTime, false);
+                this.player.seekTo(seekToTime, true);
+            } else {
+                this.player.playVideo();
             }
-            this.player.playVideo();
         } else if (newPlaybackState === 'paused') {
             this.player.pauseVideo();
         } else if (newPlaybackState === 'unstarted') {
@@ -414,6 +445,19 @@ class EditorComponent extends React.Component {
         this.focus = () => this.refs.editor.focus();
 
         this.onChange = editorState => {
+            const sel = editorState.getSelection();
+
+            if (sel.isCollapsed()) {
+                console.log(
+                    'Selection collapsed, cursor =',
+                    sel.getStartOffset()
+                );
+            } else {
+                console.log(
+                    `Selection start = ${sel.getStartOffset()} end = ${sel.getEndOffset()}, isBackward = ${sel.getIsBackward()}`
+                );
+            }
+
             this.setState({ editorState });
         };
 
@@ -526,11 +570,22 @@ class EditorComponent extends React.Component {
             currentContent: newContent,
         });
 
+        const selBeforeHash = SelectionState.createEmpty(blockKey).merge({
+            anchorOffset: cursorOffsetInBlock - 1,
+            focusOffset: cursorOffsetInBlock - 1,
+            isBackward: false,
+        });
+
+        newEditorState = EditorState.forceSelection(
+            newEditorState,
+            selBeforeHash
+        );
+
         // Go to end
-        newEditorState = EditorState.moveFocusToEnd(newEditorState);
+        // newEditorState = EditorState.moveFocusToEnd(newEditorState);
 
         // Append the timestamp link.
-        newEditorState = appendVideoLink(
+        newEditorState = insertVideoLinkAtCursor(
             newEditorState,
             secondsToHhmmss(videoTime),
             TEST_VIDEO_ID,
@@ -538,7 +593,7 @@ class EditorComponent extends React.Component {
         );
 
         // Go to end.
-        newEditorState = EditorState.moveFocusToEnd(newEditorState);
+        // newEditorState = EditorState.moveFocusToEnd(newEditorState);
 
         this.onChange(newEditorState);
         this.lastInputCharacter = '';
@@ -810,7 +865,6 @@ export default class App extends Component {
 
             // Callback will send the player the seekToTime command and unset current editor command.
             const callbackAfterEditorResponds = videoTime => {
-
                 // Check video time is valid
                 if (videoTime === INVALID_VIDEO_TIME) {
                     return;

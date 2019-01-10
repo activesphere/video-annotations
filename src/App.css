@@ -44,7 +44,7 @@ body {
     min-height: 300px;
     max-height: fit-content;
     font-family: 'SF Mono', sans-serif;
-    font-size: 24px;
+    font-size: 16px;
 }
 
 .console-editor-hidePlaceholder .public-DraftEditorPlaceholder-root {
