@@ -13,7 +13,7 @@ import {
 import createMarkdownPlugin from 'draft-js-markdown-plugin';
 import MarkdownEditor from 'draft-js-plugins-editor';
 import React, { Component } from 'react';
-import HotkeysComponent from 'react-hot-keys';
+import { HotKeys } from 'react-hotkeys';
 
 const TEST_VIDEO_ID = '6orsmFndx_o';
 
@@ -151,10 +151,13 @@ function insertVideoLinkAtCursor(editorState, text, videoId, videoTime) {
     const selEndOfInsertedChars = SelectionState.createEmpty(blockKey).merge({
         anchorOffset: cursorOffsetInBlock + text.length,
         focusOffset: cursorOffsetInBlock + text.length,
-        isBackward: false
+        isBackward: false,
     });
 
-    newEditorState = EditorState.forceSelection(newEditorState, selEndOfInsertedChars);
+    newEditorState = EditorState.forceSelection(
+        newEditorState,
+        selEndOfInsertedChars
+    );
 
     return newEditorState;
 }
@@ -293,8 +296,6 @@ class YoutubeIframeComponent extends Component {
         let newPlaybackState = undefined;
 
         const command = nextProps.playerCommand;
-
-        console.log('playerCommand = ', command);
 
         let seekToTime = -1;
 
@@ -843,6 +844,10 @@ const InlineStyleControls = props => {
     );
 };
 
+const g_HotkeysOfCommands = {
+    seekToTimeUnderCursor: 'alt+shift+a',
+};
+
 // The commands from console are send via the App component
 export default class App extends Component {
     constructor(props) {
@@ -859,7 +864,7 @@ export default class App extends Component {
             this.player = player;
         };
 
-        this.onHotkeySeekToTimeUnderCursor = (keyName, event, handle) => {
+        this.onHotkeySeekToTimeUnderCursor = (event) => {
             event.preventDefault();
             // console.log('Hotkey test + ', keyName, " + ", event, " + ", handle);
 
@@ -913,6 +918,11 @@ export default class App extends Component {
             );
             this.setState(newState);
         };
+
+        this.hotkeyHandlers = {};
+        this.hotkeyHandlers[
+            'seekToTimeUnderCursor'
+        ] = this.onHotkeySeekToTimeUnderCursor;
     }
 
     // Notify the command to the youtube player component. Returns the current time of the video.
@@ -933,19 +943,21 @@ export default class App extends Component {
     render() {
         return (
             <div className="app">
-                <YoutubeIframeComponent
-                    app={this}
-                    playerCommand={this.state.playerCommandToSend}
-                    storeRefInParent={this.setPlayerRef}
-                />
-                <EditorComponent
-                    app={this}
-                    editorCommand={this.state.editorCommandToSend}
-                />
-                <HotkeysComponent
-                    keyName="alt+shift+a"
-                    onKeyDown={this.onHotkeySeekToTimeUnderCursor}
-                />
+                <HotKeys
+                    keyMap={g_HotkeysOfCommands}
+                    handlers={this.hotkeyHandlers}
+                    className="hotkey-root"
+                >
+                    <YoutubeIframeComponent
+                        app={this}
+                        playerCommand={this.state.playerCommandToSend}
+                        storeRefInParent={this.setPlayerRef}
+                    />
+                    <EditorComponent
+                        app={this}
+                        editorCommand={this.state.editorCommandToSend}
+                    />
+                </HotKeys>
             </div>
         );
     }

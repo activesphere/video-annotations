@@ -5,6 +5,10 @@ body {
 
 .app {
     height: 100%;
+}
+
+.hotkey-root {
+    height: 100%;
     margin: 0;
     display: flex;
     flex-wrap: nowrap;

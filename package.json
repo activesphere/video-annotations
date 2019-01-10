@@ -10,7 +10,7 @@
     "hotkeys-js": "^3.4.1",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
-    "react-hot-keys": "^1.2.2",
+    "react-hotkeys": "^1.1.4",
     "react-scripts": "2.1.2",
     "youtube-api-search": "0.0.5",
     "youtube-player": "^5.5.2",
