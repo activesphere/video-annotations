@@ -164,17 +164,19 @@ function insertVideoLinkAtCursor(editorState, text, videoId, videoTime) {
 
 // --- Commands sent by the App to the YoutubeIframeComponent
 
-function makePlayVideoCommand() {
+function makePlayVideoCommand(appCallbackFn) {
     return {
         name: 'playVideo',
         time: 0,
+        appCallbackFn: appCallbackFn,
     };
 }
 
-function makePauseVideoCommand() {
+function makePauseVideoCommand(appCallbackFn) {
     return {
         name: 'pauseVideo',
         time: 0,
+        appCallbackFn: appCallbackFn,
     };
 }
 
@@ -190,6 +192,14 @@ function makeSeekToTimeCommand(time = 0, appCallbackFn) {
 
 function makeGetVideoTimeUnderCursorCommand(appCallbackFn) {
     return { name: 'getVideoTimeUnderCursor', appCallbackFn: appCallbackFn };
+}
+
+function makeGetRawContentCommand(appCallbackFn) {
+    return { name: 'getRawContentCommand', appCallbackFn: appCallbackFn };
+}
+
+function setRawContentCommand() {
+    return { name: 'setRawContentCommand' };
 }
 
 const YT_PLAYBACK_STATE_NAMES = {
@@ -326,8 +336,8 @@ class YoutubeIframeComponent extends Component {
         );
 
         /*
-        if ((this.storedPlaybackState !== newPlaybackState && newPlaybackState) || command.name === 'seekToTime') {
-            this.updatePlaybackState(newPlaybackState);
+        if ((this.storedPlaybackState !== newPlaybackState && newPlaybackState) || command.name ===
+        'seekToTime') { this.updatePlaybackState(newPlaybackState);
         }
         */
         this.updatePlaybackState(
@@ -358,8 +368,8 @@ class YoutubeIframeComponent extends Component {
         }
     }
 
-    // Never re-render the youtube component. We just work with the playback once the component is
-    // mounted.
+    // No need to ever re-render the iframe itself. The only state is the playback state which is
+    // controlled via the iframe api. The html element's attributes themselves never change.
     shouldComponentUpdate(newProps, newState) {
         return false;
     }
@@ -654,9 +664,14 @@ class EditorComponent extends React.Component {
             }
 
             return;
+        } else if (editorCommand.name === 'getRawContentCommand') {
+            editorCommand.appCallbackFn(
+                convertToRaw(this.state.editorState.getCurrentContent())
+            );
+            return;
         }
 
-        console.warn('Unknown command', editorCommand);
+        console.warn('Unknown command -', editorCommand);
     }
 
     _getVideoTimeUnderCursor() {
@@ -846,6 +861,8 @@ const InlineStyleControls = props => {
 
 const g_HotkeysOfCommands = {
     seekToTimeUnderCursor: 'alt+shift+a',
+    saveToLocalStorage: 'alt+shift+s',
+    loadFromLocalStorage: 'alt+shift+v',
 };
 
 // The commands from console are send via the App component
@@ -864,9 +881,8 @@ export default class App extends Component {
             this.player = player;
         };
 
-        this.onHotkeySeekToTimeUnderCursor = (event) => {
+        this.onHotkeySeekToTimeUnderCursor = event => {
             event.preventDefault();
-            // console.log('Hotkey test + ', keyName, " + ", event, " + ", handle);
 
             // Callback will send the player the seekToTime command and unset current editor command.
             const callbackAfterEditorResponds = videoTime => {
@@ -875,62 +891,106 @@ export default class App extends Component {
                     return;
                 }
 
-                // @TODO: This is looking a bit yuck. I should factor this callback out.
-                const callbackAfterPlayerResponds = () => {
-                    const newState = addPropertyToObject(
-                        this.state,
-                        'playerCommandToSend',
-                        undefined
-                    );
-
-                    this.setState(newState);
-                };
-
                 let newState = addPropertyToObject(
                     this.state,
                     'playerCommandToSend',
-                    makeSeekToTimeCommand(
-                        videoTime,
-                        callbackAfterPlayerResponds
-                    )
+                    makeSeekToTimeCommand(videoTime, this.unsetPlayerCommand)
                 );
 
-                newState = addPropertyToObject(
-                    newState,
-                    'editorCommandToSend',
-                    undefined
+                console.log(
+                    'callbackAfterEditorResponds',
+                    this.unsetEditorCommand
                 );
-                console.log('callbackAfterEditorResponds', newState);
                 this.setState(newState);
             };
 
-            const newState = addPropertyToObject(
-                this.state,
-                'editorCommandToSend',
-                makeGetVideoTimeUnderCursorCommand(callbackAfterEditorResponds)
+            this.setState(
+                addPropertyToObject(
+                    this.state,
+                    'editorCommandToSend',
+                    makeGetVideoTimeUnderCursorCommand(
+                        callbackAfterEditorResponds
+                    )
+                )
             );
-
-            console.log(
-                'Hotkey newState = ',
-                newState,
-                'current =',
-                this.state
-            );
-            this.setState(newState);
         };
 
+        this.onHotkeySaveToLocalStorage = event => {
+            event.preventDefault();
+
+            const callbackAfterEditorResponds = rawContent => {
+                this.unsetEditorCommand();
+                localStorage.setItem('lastSavedEditorState', rawContent);
+            };
+
+            this.setState(
+                addPropertyToObject(
+                    this.state,
+                    'editorCommandToSend',
+                    makeGetRawContentCommand(callbackAfterEditorResponds)
+                )
+            );
+        };
+
+        this.onHotkeyLoadFromLocalStorage = event => {
+            event.preventDefault();
+            const rawContent = localStorage.getItem('lastSavedEditorState');
+            this.unsetEditorCommand();
+        };
+
+        // Initializing the hotkey handler map
+
         this.hotkeyHandlers = {};
+
         this.hotkeyHandlers[
             'seekToTimeUnderCursor'
         ] = this.onHotkeySeekToTimeUnderCursor;
+
+        this.hotkeyHandlers[
+            'saveToLocalStorage'
+        ] = this.onHotkeySaveToLocalStorage;
+
+        this.hotkeyHandlers[
+            'loadFromLocalStorage'
+        ] = this.onHotkeyLoadFromLocalStorage;
+
+        // Helpers to set the current editor or the player command to undefined
+
+        this.unsetEditorCommand = () => {
+            this.setState(
+                addPropertyToObject(
+                    this.state,
+                    'editorCommandToSend',
+                    undefined
+                )
+            );
+        };
+
+        this.unsetPlayerCommand = () => {
+            this.setState(
+                addPropertyToObject(
+                    this.state,
+                    'playerCommandToSend',
+                    undefined
+                )
+            );
+        };
     }
 
     // Notify the command to the youtube player component. Returns the current time of the video.
     notifyConsoleCommand(consoleCommand) {
         if (consoleCommand.name === 'pauseVideo') {
-            this.setState({ playerCommandToSend: makePauseVideoCommand() });
+            this.setState({
+                playerCommandToSend: makePauseVideoCommand(
+                    this.unsetPlayerCommand
+                ),
+            });
         } else if (consoleCommand.name === 'playVideo') {
-            this.setState({ playerCommandToSend: makePlayVideoCommand() });
+            this.setState({
+                playerCommandToSend: makePlayVideoCommand(
+                    this.unsetPlayerCommand
+                ),
+            });
         } else if (consoleCommand.name === 'restartVideo') {
             this.setState({ playerCommandToSend: makeSeekToTimeCommand(0) });
         } else {
