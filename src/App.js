@@ -3,6 +3,7 @@ import './App.css';
 import {
     CompositeDecorator,
     convertToRaw,
+    convertFromRaw,
     Editor as VanillaEditor,
     EditorState,
     Entity,
@@ -10,6 +11,7 @@ import {
     RichUtils,
     SelectionState,
 } from 'draft-js';
+
 import createMarkdownPlugin from 'draft-js-markdown-plugin';
 import MarkdownEditor from 'draft-js-plugins-editor';
 import React, {Component} from 'react';
@@ -193,7 +195,10 @@ function makeGetRawContentCommand(appCallbackFn)
     return {name : 'getRawContentCommand', appCallbackFn : appCallbackFn};
 }
 
-function setRawContentCommand() { return {name : 'setRawContentCommand'}; }
+function makeSetRawContentCommand(rawContent, appCallbackFn)
+{
+    return {name : 'setRawContentCommand', rawContent : rawContent, appCallbackFn : appCallbackFn};
+}
 
 const YT_PLAYBACK_STATE_NAMES = {
     '-1' : 'unstarted',
@@ -429,7 +434,7 @@ class EditorComponent extends React.Component {
         super(props);
 
         this.state = {
-            editorState: EditorState.createEmpty(),
+            editorState: EditorState.createEmpty(g_decorator),
             plugins: [createMarkdownPlugin()],
         };
 
@@ -487,7 +492,7 @@ class EditorComponent extends React.Component {
     _handleBeforeInput(singleChar, editorState, eventTimeStamp) {
         // Handle command based on the character after # and current mode
         if (
-            '/>l'.indexOf(singleChar) !== -1 &&
+            '/>'.indexOf(singleChar) !== -1 &&
             this.lastInputCharacter === '#'
         ) {
             return this._enterPoundKeyMode(singleChar, editorState);
@@ -643,6 +648,14 @@ class EditorComponent extends React.Component {
                 convertToRaw(this.state.editorState.getCurrentContent())
             );
             return;
+        } else if (editorCommand.name === 'setRawContentCommand') {
+            console.log('Creating new content from raw content', JSON.stringify(editorCommand.rawContent));
+            const newContentState = convertFromRaw(editorCommand.rawContent);
+
+            const newEditorState = EditorState.set(this.state.editorState, {
+                currentContent: newContentState
+            });
+            this.onChange(newEditorState);
         }
 
         console.warn('Unknown command -', editorCommand);
@@ -711,7 +724,7 @@ class EditorComponent extends React.Component {
                     onToggle={this.toggleInlineStyle}
                 />
                 <div className={className} onClick={this.focus}>
-                    <MarkdownEditor
+                    <VanillaEditor
                         blockStyleFn={getBlockStyle}
                         customStyleMap={styleMap}
                         editorState={editorState}
@@ -723,11 +736,11 @@ class EditorComponent extends React.Component {
                         handleBeforeInput={this.handleBeforeInput}
                         handleReturn={this.handleReturn}
                         plugins={this.state.plugins}
-                        decorators={[g_decorator]}
                     />
                 </div>
             </div>
         );
+        /* decorators={[g_decorator]} */
     }
 }
 
@@ -910,9 +923,12 @@ export default class App extends Component {
         this.onHotkeySaveToLocalStorage = event => {
             event.preventDefault();
 
+            console.log('Saving to local storage');
+
             const callbackAfterEditorResponds = rawContent => {
+                console.log('Raw content = ', rawContent);
+                localStorage.setItem('lastSavedEditorState', JSON.stringify(rawContent));
                 this.unsetEditorCommand();
-                localStorage.setItem('lastSavedEditorState', rawContent);
             };
 
             this.setState(
@@ -926,8 +942,15 @@ export default class App extends Component {
 
         this.onHotkeyLoadFromLocalStorage = event => {
             event.preventDefault();
-            const rawContent = localStorage.getItem('lastSavedEditorState');
-            this.unsetEditorCommand();
+            const rawContent = JSON.parse(localStorage.getItem('lastSavedEditorState'));
+            console.log('Loaded editor contents from local storage', rawContent);
+
+            this.setState(
+                addPropertyToObject(this.state, 'editorCommandToSend',
+                    makeSetRawContentCommand(
+                        rawContent, () => { this.unsetEditorCommand(); }
+                    ))
+            );
         };
 
         // Initializing the hotkey handler map
