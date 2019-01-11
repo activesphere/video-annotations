@@ -220,6 +220,11 @@ class YoutubeIframeComponent extends Component {
         this.player = undefined; // The youtube iframe api is represented by this object
         this.refPlayer = undefined; // Will refer to the div in which the iframe will be created
 
+        this.state = {
+            appCallbackFn: undefined,
+            appCallbackArgs: undefined,
+        };
+
         this.onPlayerStateChange = ytEvent => {
             this.storedPlaybackState = YT_PLAYBACK_STATE_NAMES[ytEvent.data];
 
@@ -335,16 +340,25 @@ class YoutubeIframeComponent extends Component {
             newPlaybackState
         );
 
-        /*
-        if ((this.storedPlaybackState !== newPlaybackState && newPlaybackState) || command.name ===
-        'seekToTime') { this.updatePlaybackState(newPlaybackState);
+        if (
+            (this.storedPlaybackState !== newPlaybackState &&
+                newPlaybackState) ||
+            command.name === 'seekToTime'
+        ) {
+            this.updatePlaybackState(
+                newPlaybackState,
+                seekToTime,
+                command.appCallbackFn
+            );
         }
-        */
+
+        /*
         this.updatePlaybackState(
             newPlaybackState,
             seekToTime,
             command.appCallbackFn
         );
+        */
     }
 
     updatePlaybackState(newPlaybackState, seekToTime, appCallbackFn) {
@@ -363,15 +377,24 @@ class YoutubeIframeComponent extends Component {
             throw new Error(`Invalid new playback state "${newPlaybackState}"`);
         }
 
-        if (appCallbackFn) {
-            appCallbackFn();
-        }
+        // Store the acknowledgement callback in state.
+        let newState = addPropertyToObject(
+            this.state,
+            'appCallbackFn',
+            appCallbackFn
+        );
+        newState.appCallbackArgs = [];
+        this.setState(newState);
     }
 
-    // No need to ever re-render the iframe itself. The only state is the playback state which is
-    // controlled via the iframe api. The html element's attributes themselves never change.
     shouldComponentUpdate(newProps, newState) {
-        return false;
+        // See cDidUpdt
+        return newState.appCallbackFn !== undefined;
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        this.state.appCallbackFn.apply(this.state.appCallbackArgs);
+        this.setState({ appCallbackFn: undefined, appCallbackArgs: undefined });
     }
 }
 
@@ -456,6 +479,7 @@ class EditorComponent extends React.Component {
         this.focus = () => this.refs.editor.focus();
 
         this.onChange = editorState => {
+            /*
             const sel = editorState.getSelection();
 
             if (sel.isCollapsed()) {
@@ -468,6 +492,7 @@ class EditorComponent extends React.Component {
                     `Selection start = ${sel.getStartOffset()} end = ${sel.getEndOffset()}, isBackward = ${sel.getIsBackward()}`
                 );
             }
+            */
 
             this.setState({ editorState });
         };
@@ -503,10 +528,6 @@ class EditorComponent extends React.Component {
     }
 
     _handleBeforeInput(singleChar, editorState, eventTimeStamp) {
-        if (this._editorIsBlocked()) {
-            return 'handled';
-        }
-
         // Handle command based on the character after # and current mode
         if (
             '/>l'.indexOf(singleChar) !== -1 &&
@@ -524,12 +545,8 @@ class EditorComponent extends React.Component {
         return 'not-handled';
     }
 
-    _editorIsBlocked() {
-        return this.props.isBlocked;
-    }
-
     _enterPoundKeyMode(argChar, editorState) {
-        console.log('# command followed by', argChar);
+        console.log('_enterPoundKeyMode # command followed by', argChar);
 
         let newEditorState = editorState;
 
@@ -881,12 +898,33 @@ export default class App extends Component {
             this.player = player;
         };
 
+        // Helpers to set the current editor or the player command to undefined
+        this.unsetEditorCommand = () => {
+            this.setState(
+                addPropertyToObject(
+                    this.state,
+                    'editorCommandToSend',
+                    undefined
+                )
+            );
+        };
+
+        this.unsetPlayerCommand = () => {
+            this.setState(
+                addPropertyToObject(
+                    this.state,
+                    'playerCommandToSend',
+                    undefined
+                )
+            );
+        };
+
         this.onHotkeySeekToTimeUnderCursor = event => {
             event.preventDefault();
 
-            // Callback will send the player the seekToTime command and unset current editor command.
+            // Callback will send the player the seekToTime command and unset current editor
+            // command.
             const callbackAfterEditorResponds = videoTime => {
-                // Check video time is valid
                 if (videoTime === INVALID_VIDEO_TIME) {
                     return;
                 }
@@ -897,10 +935,7 @@ export default class App extends Component {
                     makeSeekToTimeCommand(videoTime, this.unsetPlayerCommand)
                 );
 
-                console.log(
-                    'callbackAfterEditorResponds',
-                    this.unsetEditorCommand
-                );
+                newState.editorCommandToSend = undefined;
                 this.setState(newState);
             };
 
@@ -953,28 +988,18 @@ export default class App extends Component {
         this.hotkeyHandlers[
             'loadFromLocalStorage'
         ] = this.onHotkeyLoadFromLocalStorage;
+    }
 
-        // Helpers to set the current editor or the player command to undefined
-
-        this.unsetEditorCommand = () => {
-            this.setState(
-                addPropertyToObject(
-                    this.state,
-                    'editorCommandToSend',
-                    undefined
-                )
-            );
-        };
-
-        this.unsetPlayerCommand = () => {
-            this.setState(
-                addPropertyToObject(
-                    this.state,
-                    'playerCommandToSend',
-                    undefined
-                )
-            );
-        };
+    // The sCU method will check if the new state has all the 'commands to send', currently just 2,
+    // set to `undefined`. If so, it tells not to update.
+    shouldComponentUpdate(newProps, newState) {
+        if (
+            newState.playerCommandToSend === undefined &&
+            newState.editorCommandToSend === undefined
+        ) {
+            return false;
+        }
+        return true;
     }
 
     // Notify the command to the youtube player component. Returns the current time of the video.
