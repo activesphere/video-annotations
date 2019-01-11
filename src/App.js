@@ -700,7 +700,7 @@ class EditorComponent extends React.Component {
         // If the user changes block type before entering any text, we can either
         // style the placeholder or hide it. Let's just hide it now.
 
-        let className = 'console-editor-editor';
+        let editorDivClassName = 'console-editor-editor';
         let contentState = editorState.getCurrentContent();
         if (!contentState.hasText()) {
             if (
@@ -709,7 +709,7 @@ class EditorComponent extends React.Component {
                     .first()
                     .getType() !== 'unstyled'
             ) {
-                className += ' console-editor-hidePlaceholder';
+                editorDivClassName += ' console-editor-hidePlaceholder';
             }
         }
 
@@ -723,7 +723,7 @@ class EditorComponent extends React.Component {
                     editorState={editorState}
                     onToggle={this.toggleInlineStyle}
                 />
-                <div className={className} onClick={this.focus}>
+                <div className={editorDivClassName} onClick={this.focus}>
                     <VanillaEditor
                         blockStyleFn={getBlockStyle}
                         customStyleMap={styleMap}
@@ -972,7 +972,7 @@ export default class App extends Component {
 
     // The sCU method will check if the new state has a command to send to at least one of the two
     // components. If so, it tells not to update. (Keeping it like this for now, although we don't
-    // *need* to)
+    // *need* to stop intervene.)
     shouldComponentUpdate(newProps, newState) {
         if (
             newState.playerCommandToSend === undefined &&
