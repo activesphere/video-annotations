@@ -17,7 +17,7 @@ import MarkdownEditor from 'draft-js-plugins-editor';
 import React, { Component } from 'react';
 import { HotKeys } from 'react-hotkeys';
 import KEY_SEQUENCES from './keysequences';
-import { Trie, TrieWalker } from './trie';
+import { Trie, TrieWalker, TRIE_WALKER_RESULT } from './trie';
 
 const TEST_VIDEO_ID = '6orsmFndx_o';
 
@@ -35,18 +35,6 @@ function secondsToHhmmss(seconds) {
     return `${hours}:${minutes}:${remainingSeconds.toFixed(0)}`;
 }
 
-// Copies object and adds the given key and value.
-function addPropertyToObject(o, newKey, newValue) {
-    const newObject = {};
-    for (let k in o) {
-        if (o.hasOwnProperty(k)) {
-            newObject[k] = o[k];
-        }
-    }
-    newObject[newKey] = newValue;
-    return newObject;
-}
-
 function makeYoutubeUrl(videoId, videoTimeInSeconds) {
     // Seconds to mmss
     let remainingSeconds = videoTimeInSeconds;
@@ -57,6 +45,7 @@ function makeYoutubeUrl(videoId, videoTimeInSeconds) {
 }
 
 // Appends given text to the editor
+/*
 function appendTextToEditor(editorState, text) {
     let selectionState = editorState.getSelection();
 
@@ -89,6 +78,7 @@ function appendTextToEditor(editorState, text) {
     newEditorState = EditorState.moveFocusToEnd(newEditorState);
     return newEditorState;
 }
+*/
 
 function insertVideoLinkAtCursor(editorState, text, videoId, videoTime) {
     console.log('Inserting video link');
@@ -128,15 +118,11 @@ function insertVideoLinkAtCursor(editorState, text, videoId, videoTime) {
         isBackward: false,
     });
 
-    newContentState = newContentState.createEntity(
-        'VIDEO_TIMESTAMP',
-        'MUTABLE',
-        {
-            url: makeYoutubeUrl(videoId, videoTime),
-            videoId: videoId,
-            videoTime: videoTime,
-        }
-    );
+    newContentState = newContentState.createEntity('VIDEO_TIMESTAMP', 'MUTABLE', {
+        url: makeYoutubeUrl(videoId, videoTime),
+        videoId: videoId,
+        videoTime: videoTime,
+    });
 
     const linkEntityKey = newContentState.getLastCreatedEntityKey();
 
@@ -144,11 +130,7 @@ function insertVideoLinkAtCursor(editorState, text, videoId, videoTime) {
         currentContent: newContentState,
     });
 
-    newEditorState = RichUtils.toggleLink(
-        newEditorState,
-        selInsertedCharacters,
-        linkEntityKey
-    );
+    newEditorState = RichUtils.toggleLink(newEditorState, selInsertedCharacters, linkEntityKey);
 
     // Move cursor to end of the inserted text
 
@@ -158,10 +140,7 @@ function insertVideoLinkAtCursor(editorState, text, videoId, videoTime) {
         isBackward: false,
     });
 
-    newEditorState = EditorState.forceSelection(
-        newEditorState,
-        selEndOfInsertedChars
-    );
+    newEditorState = EditorState.forceSelection(newEditorState, selEndOfInsertedChars);
 
     return newEditorState;
 }
@@ -334,6 +313,17 @@ class YoutubeIframeComponent extends Component {
             console.log('Unknown command - ', command);
             newPlaybackState = 'playing';
         }
+
+        if (!this.player || !this.player.getCurrentTime) {
+            // Player api has not loaded yet
+            if (command.appCallbackFn) {
+                command.appCallbackFn();
+            }
+
+            console.log('YoutubePlayer api has not loaded yet');
+            return;
+        }
+
         command.time = this.player.getCurrentTime();
 
         console.log(
@@ -344,15 +334,10 @@ class YoutubeIframeComponent extends Component {
         );
 
         if (
-            (this.storedPlaybackState !== newPlaybackState &&
-                newPlaybackState) ||
+            (this.storedPlaybackState !== newPlaybackState && newPlaybackState) ||
             command.name === 'seekToTime'
         ) {
-            this.updatePlaybackState(
-                newPlaybackState,
-                seekToTime,
-                command.appCallbackFn
-            );
+            this.updatePlaybackState(newPlaybackState, seekToTime, command.appCallbackFn);
         }
     }
 
@@ -421,9 +406,7 @@ function findVideoTimestampEntities(contentBlock, callback) {
         // console.log('Running on character ', characterMetadata);
         const entityKey = characterMetadata.getEntity();
 
-        const result =
-            entityKey !== null &&
-            Entity.get(entityKey).getType() === 'VIDEO_TIMESTAMP';
+        const result = entityKey !== null && Entity.get(entityKey).getType() === 'VIDEO_TIMESTAMP';
 
         if (result) {
             console.log('TRUE for this metadata', characterMetadata);
@@ -458,6 +441,13 @@ class EditorComponent extends React.Component {
         // Create the trie for the key sequences
         this.trie = new Trie();
 
+        for (const sequence of Object.keys(KEY_SEQUENCES)) {
+            this.trie.addSequence(sequence, KEY_SEQUENCES[sequence]);
+        }
+
+        this.trie.setDoneAddingSequences();
+        this.trieWalker = new TrieWalker(this.trie);
+
         this.state = {
             editorState: EditorState.createEmpty(g_decorator),
             plugins: [createMarkdownPlugin()],
@@ -489,7 +479,7 @@ class EditorComponent extends React.Component {
         this.toggleBlockType = type => this._toggleBlockType(type);
         this.toggleInlineStyle = style => this._toggleInlineStyle(style);
 
-        this.lastInputCharacter = '';
+        this.lastInputCharacter = ''; // TODO: stop maintaining this variable once we use the trie.
 
         this.handleBeforeInput = (chars, editorState, eventTimeStamp) => {
             // If more than one chars are being input (pasted perhaps), we ignore previous character.
@@ -506,7 +496,29 @@ class EditorComponent extends React.Component {
             );
             */
 
-            return this._handleBeforeInput(chars, editorState, eventTimeStamp);
+            // return this._handleBeforeInput(chars, editorState, eventTimeStamp);
+
+            // Add to the trie
+            const c = chars;
+            const trieResult = this.trieWalker.addNextChar(c);
+
+            console.log('trieResult =', trieResult);
+
+            if (trieResult.name === TRIE_WALKER_RESULT.RESET) {
+                this.lastInputCharacter = '';
+            }
+
+            if (trieResult.name === TRIE_WALKER_RESULT.CONTINUE) {
+                this.lastInputCharacter = c;
+            }
+
+            if (trieResult.name === TRIE_WALKER_RESULT.MATCH) {
+                this.lastInputCharacter = '';
+                this._doCommandFromTrieResult(trieResult);
+                return 'handled';
+            }
+
+            return 'not-handled';
         };
 
         this.handleReturn = (e, editorState) => {
@@ -514,12 +526,66 @@ class EditorComponent extends React.Component {
         };
     }
 
+    _doCommandFromTrieResult(trieResult) {
+        const commandName = trieResult.mappedValue;
+        console.assert(commandName !== undefined);
+
+        let videoTime = 0;
+
+        if (commandName === 'playVideo') {
+            videoTime = this.props.app.notifyConsoleCommand({
+                name: 'playVideo',
+            });
+        } else {
+            console.log('Command -', commandName, 'not implemented yet');
+            return;
+        }
+
+        let newEditorState = this.state.editorState;
+        const selectionState = newEditorState.getSelection();
+        const blockKey = selectionState.getAnchorKey();
+        let currentContentState = newEditorState.getCurrentContent();
+        let cursorOffsetInBlock = selectionState.getStartOffset();
+
+        // Remove the text sequence from the editor.
+        /*
+        const selNCharsBack = SelectionState.createEmpty(blockKey).merge({
+            anchorOffset: cursorOffsetInBlock,
+            focusOffset: cursorOffsetInBlock - (trieResult.stringLength - 1),
+            isBackward: false,
+        });
+        */
+
+        const N = trieResult.stringLength - 1;
+        // ^ -1 because the last char is not put into the editor.
+
+        const selNCharsBack = SelectionState.createEmpty(blockKey).merge({
+            anchorOffset: cursorOffsetInBlock - N,
+            focusOffset: cursorOffsetInBlock,
+            isBackward: false,
+        });
+
+        const newContentState = Modifier.removeRange(currentContentState, selNCharsBack, 'forward');
+
+        newEditorState = EditorState.set(newEditorState, {
+            currentContent: newContentState,
+        });
+
+        // Position the cursor right at the beginning of the (now-deleted) sequence.
+        const selAtSequenceBegin = SelectionState.createEmpty(blockKey).merge({
+            anchorOffset: cursorOffsetInBlock - 1,
+            focusOffset: cursorOffsetInBlock - 1,
+            isBackward: false,
+        });
+
+        newEditorState = EditorState.forceSelection(newEditorState, selAtSequenceBegin);
+
+        this.onChange(newEditorState);
+    }
+
     _handleBeforeInput(singleChar, editorState, eventTimeStamp) {
         // Handle command based on the character after # and current mode
-        if (
-            '/>'.indexOf(singleChar) !== -1 &&
-            this.lastInputCharacter === '#'
-        ) {
+        if ('/>'.indexOf(singleChar) !== -1 && this.lastInputCharacter === '#') {
             return this._enterPoundKeyMode(singleChar, editorState);
         }
 
@@ -569,17 +635,12 @@ class EditorComponent extends React.Component {
             anchorOffset: cursorOffsetInBlock - 1,
             focusOffset: cursorOffsetInBlock,
             isBackward: false,
-            hasFocus: true,
         });
 
         console.log('selOneCharBack = ', selOneCharBack);
 
         // Remove the preceding # character
-        const newContent = Modifier.removeRange(
-            currentContentState,
-            selOneCharBack,
-            'forward'
-        );
+        const newContent = Modifier.removeRange(currentContentState, selOneCharBack, 'forward');
 
         newEditorState = EditorState.set(editorState, {
             currentContent: newContent,
@@ -591,10 +652,7 @@ class EditorComponent extends React.Component {
             isBackward: false,
         });
 
-        newEditorState = EditorState.forceSelection(
-            newEditorState,
-            selBeforeHash
-        );
+        newEditorState = EditorState.forceSelection(newEditorState, selBeforeHash);
 
         // Go to end
         // newEditorState = EditorState.moveFocusToEnd(newEditorState);
@@ -619,6 +677,9 @@ class EditorComponent extends React.Component {
         const { editorState } = this.state;
         const newState = RichUtils.handleKeyCommand(editorState, command);
 
+        // All key commands will reset the key sequence trie. Simple to handle.
+        this.trieWalker.resetManually();
+
         if (newState) {
             this.onChange(newState);
             return 'handled';
@@ -633,22 +694,16 @@ class EditorComponent extends React.Component {
     }
 
     _toggleBlockType(blockType) {
-        this.onChange(
-            RichUtils.toggleBlockType(this.state.editorState, blockType)
-        );
+        this.onChange(RichUtils.toggleBlockType(this.state.editorState, blockType));
     }
 
     _toggleInlineStyle(inlineStyle) {
-        this.onChange(
-            RichUtils.toggleInlineStyle(this.state.editorState, inlineStyle)
-        );
+        this.onChange(RichUtils.toggleInlineStyle(this.state.editorState, inlineStyle));
     }
 
     componentWillReceiveProps(newProps) {
         if (!newProps.editorCommand) {
-            console.log(
-                'newProps.editorCommand was undefined, not doing anything'
-            );
+            console.log('newProps.editorCommand was undefined, not doing anything');
             return;
         }
 
@@ -669,9 +724,7 @@ class EditorComponent extends React.Component {
 
             return;
         } else if (editorCommand.name === 'getRawContentCommand') {
-            editorCommand.appCallbackFn(
-                convertToRaw(this.state.editorState.getCurrentContent())
-            );
+            editorCommand.appCallbackFn(convertToRaw(this.state.editorState.getCurrentContent()));
             return;
         } else if (editorCommand.name === 'setRawContentCommand') {
             console.log(
@@ -743,14 +796,8 @@ class EditorComponent extends React.Component {
 
         return (
             <div className="console-editor-root">
-                <BlockStyleControls
-                    editorState={editorState}
-                    onToggle={this.toggleBlockType}
-                />
-                <InlineStyleControls
-                    editorState={editorState}
-                    onToggle={this.toggleInlineStyle}
-                />
+                <BlockStyleControls editorState={editorState} onToggle={this.toggleBlockType} />
+                <InlineStyleControls editorState={editorState} onToggle={this.toggleInlineStyle} />
                 <div className={editorDivClassName} onClick={this.focus}>
                     <VanillaEditor
                         blockStyleFn={getBlockStyle}
@@ -917,10 +964,7 @@ export default class App extends Component {
 
                 let newState = {
                     ...this.state,
-                    playerCommandToSend: makeSeekToTimeCommand(
-                        videoTime,
-                        this.unsetPlayerCommand
-                    ),
+                    playerCommandToSend: makeSeekToTimeCommand(videoTime, this.unsetPlayerCommand),
                     editorCommandToSend: undefined,
                 };
 
@@ -942,39 +986,26 @@ export default class App extends Component {
 
             const callbackAfterEditorResponds = rawContent => {
                 console.log('Raw content = ', rawContent);
-                localStorage.setItem(
-                    'lastSavedEditorState',
-                    JSON.stringify(rawContent)
-                );
+                localStorage.setItem('lastSavedEditorState', JSON.stringify(rawContent));
                 this.unsetEditorCommand();
             };
 
             this.setState({
                 ...this.state,
-                editorCommandToSend: makeGetRawContentCommand(
-                    callbackAfterEditorResponds
-                ),
+                editorCommandToSend: makeGetRawContentCommand(callbackAfterEditorResponds),
             });
         };
 
         this.onHotkeyLoadFromLocalStorage = event => {
             event.preventDefault();
-            const rawContent = JSON.parse(
-                localStorage.getItem('lastSavedEditorState')
-            );
-            console.log(
-                'Loaded editor contents from local storage',
-                rawContent
-            );
+            const rawContent = JSON.parse(localStorage.getItem('lastSavedEditorState'));
+            console.log('Loaded editor contents from local storage', rawContent);
 
             this.setState({
                 ...this.state,
-                editorCommandToSend: makeSetRawContentCommand(
-                    rawContent,
-                    () => {
-                        this.unsetEditorCommand();
-                    }
-                ),
+                editorCommandToSend: makeSetRawContentCommand(rawContent, () => {
+                    this.unsetEditorCommand();
+                }),
             });
         };
 
@@ -982,17 +1013,11 @@ export default class App extends Component {
 
         this.hotkeyHandlers = {};
 
-        this.hotkeyHandlers[
-            'seekToTimeUnderCursor'
-        ] = this.onHotkeySeekToTimeUnderCursor;
+        this.hotkeyHandlers['seekToTimeUnderCursor'] = this.onHotkeySeekToTimeUnderCursor;
 
-        this.hotkeyHandlers[
-            'saveToLocalStorage'
-        ] = this.onHotkeySaveToLocalStorage;
+        this.hotkeyHandlers['saveToLocalStorage'] = this.onHotkeySaveToLocalStorage;
 
-        this.hotkeyHandlers[
-            'loadFromLocalStorage'
-        ] = this.onHotkeyLoadFromLocalStorage;
+        this.hotkeyHandlers['loadFromLocalStorage'] = this.onHotkeyLoadFromLocalStorage;
     }
 
     // The sCU method will check if the new state has a command to send to at least one of the two
@@ -1012,20 +1037,21 @@ export default class App extends Component {
     notifyConsoleCommand(consoleCommand) {
         if (consoleCommand.name === 'pauseVideo') {
             this.setState({
-                playerCommandToSend: makePauseVideoCommand(
-                    this.unsetPlayerCommand
-                ),
+                playerCommandToSend: makePauseVideoCommand(this.unsetPlayerCommand),
             });
         } else if (consoleCommand.name === 'playVideo') {
             this.setState({
-                playerCommandToSend: makePlayVideoCommand(
-                    this.unsetPlayerCommand
-                ),
+                playerCommandToSend: makePlayVideoCommand(this.unsetPlayerCommand),
             });
         } else if (consoleCommand.name === 'restartVideo') {
             this.setState({ playerCommandToSend: makeSeekToTimeCommand(0) });
         } else {
             console.log('Received unknown console command', consoleCommand);
+        }
+
+        if (!this.player || !this.player.getCurrentTime) {
+            // Player has not loaded yet
+            return INVALID_VIDEO_TIME;
         }
 
         return this.player.getCurrentTime();
@@ -1044,10 +1070,7 @@ export default class App extends Component {
                         playerCommand={this.state.playerCommandToSend}
                         storeRefInParent={this.setPlayerRef}
                     />
-                    <EditorComponent
-                        app={this}
-                        editorCommand={this.state.editorCommandToSend}
-                    />
+                    <EditorComponent app={this} editorCommand={this.state.editorCommandToSend} />
                 </HotKeys>
             </div>
         );
