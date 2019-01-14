@@ -502,8 +502,6 @@ class EditorComponent extends React.Component {
             const c = chars;
             const trieResult = this.trieWalker.addNextChar(c);
 
-            console.log('trieResult =', trieResult);
-
             if (trieResult.name === TRIE_WALKER_RESULT.RESET) {
                 this.lastInputCharacter = '';
             }
@@ -531,11 +529,18 @@ class EditorComponent extends React.Component {
         console.assert(commandName !== undefined);
 
         let videoTime = 0;
+        let shouldPutTimestamp = false;
 
         if (commandName === 'playVideo') {
-            videoTime = this.props.app.notifyConsoleCommand({
-                name: 'playVideo',
-            });
+            videoTime = this.props.app.notifyConsoleCommand({ name: 'playVideo' });
+        } else if (commandName === 'pauseVideo') {
+            videoTime = this.props.app.notifyConsoleCommand({ name: 'pauseVideo' });
+        } else if (commandName === 'playVideoWithTimestamp') {
+            videoTime = this.props.app.notifyConsoleCommand({ name: 'playVideo' });
+            shouldPutTimestamp = true;
+        } else if (commandName === 'pauseVideoWithTimestamp') {
+            videoTime = this.props.app.notifyConsoleCommand({ name: 'pauseVideo' });
+            shouldPutTimestamp = true;
         } else {
             console.log('Command -', commandName, 'not implemented yet');
             return;
@@ -558,6 +563,7 @@ class EditorComponent extends React.Component {
 
         const N = trieResult.stringLength - 1;
         // ^ -1 because the last char is not put into the editor.
+        console.log('N =', N);
 
         const selNCharsBack = SelectionState.createEmpty(blockKey).merge({
             anchorOffset: cursorOffsetInBlock - N,
@@ -573,12 +579,23 @@ class EditorComponent extends React.Component {
 
         // Position the cursor right at the beginning of the (now-deleted) sequence.
         const selAtSequenceBegin = SelectionState.createEmpty(blockKey).merge({
-            anchorOffset: cursorOffsetInBlock - 1,
-            focusOffset: cursorOffsetInBlock - 1,
+            anchorOffset: cursorOffsetInBlock - N,
+            focusOffset: cursorOffsetInBlock - N,
             isBackward: false,
         });
 
         newEditorState = EditorState.forceSelection(newEditorState, selAtSequenceBegin);
+
+        if (shouldPutTimestamp) {
+            console.log('Should put timestamp');
+            // Append the timestamp link.
+            newEditorState = insertVideoLinkAtCursor(
+                newEditorState,
+                secondsToHhmmss(videoTime),
+                TEST_VIDEO_ID,
+                videoTime
+            );
+        }
 
         this.onChange(newEditorState);
     }
@@ -1022,7 +1039,7 @@ export default class App extends Component {
 
     // The sCU method will check if the new state has a command to send to at least one of the two
     // components. If so, it tells not to update. (Keeping it like this for now, although we don't
-    // *need* to stop intervene.)
+    // *need* to intervene)
     shouldComponentUpdate(newProps, newState) {
         if (
             newState.playerCommandToSend === undefined &&
