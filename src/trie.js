@@ -58,7 +58,8 @@ export class Trie {
 
     // Adds a sequence to the trie along. mappedValue is the name of the command to associate with
     // the key sequence. TODO: check if added command is not a prefix of any other previously
-    // inserted command.
+    // inserted command. Also check repeated char is not the last in the sequence. Should be easy to
+    // do.
     addSequence(sequence, mappedValue) {
         console.log(`Adding sequence ${sequence}, with mappedValue = ${mappedValue}`);
 
@@ -97,9 +98,18 @@ export class Trie {
 
         // Create new chain if the full sequence didn't match
         while (commonPrefixLength !== sequence.length) {
+            const c = sequence[commonPrefixLength];
+
+            if (c === '*') {
+                console.assert(commonPrefixLength > 0);
+                currentNode.repeatable = true;
+                commonPrefixLength += 1;
+                continue;
+            }
+
             const newNode = new TrieNode(sequence[commonPrefixLength], mappedValue);
 
-            console.log(`addSequence:  Grew tree with character ${sequence[commonPrefixLength]}`);
+            console.log(`addSequence: Grew tree with character ${sequence[commonPrefixLength]}`);
 
             this.nodeStorage.push(newNode);
             currentNode.childrenIndices.push(this.nodeStorage.length - 1);

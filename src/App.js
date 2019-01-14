@@ -44,42 +44,6 @@ function makeYoutubeUrl(videoId, videoTimeInSeconds) {
     return `http://www.youtube.com/watch?v=${videoId}&t=${mmss}`;
 }
 
-// Appends given text to the editor
-/*
-function appendTextToEditor(editorState, text) {
-    let selectionState = editorState.getSelection();
-
-    if (!selectionState.isCollapsed()) {
-        return editorState;
-    }
-
-    let currentContentState = editorState.getCurrentContent();
-    let cursorOffsetInBlock = selectionState.getStartOffset();
-
-    const blockKey = selectionState.getAnchorKey();
-
-    const selBlockEnd = SelectionState.createEmpty(blockKey).merge({
-        anchorOffset: cursorOffsetInBlock,
-        focusOffset: cursorOffsetInBlock,
-        isBackward: false,
-    });
-
-    // Remove the character, update editor state.
-    const newContent = Modifier.insertText(
-        currentContentState,
-        selBlockEnd,
-        text
-    );
-
-    let newEditorState = EditorState.set(editorState, {
-        currentContent: newContent,
-    });
-
-    newEditorState = EditorState.moveFocusToEnd(newEditorState);
-    return newEditorState;
-}
-*/
-
 function insertVideoLinkAtCursor(editorState, text, videoId, videoTime) {
     console.log('Inserting video link');
     let newEditorState = editorState;
@@ -168,6 +132,13 @@ function makeSeekToTimeCommand(time = 0, appCallbackFn) {
         name: 'seekToTime',
         time: time,
         appCallbackFn: appCallbackFn,
+    };
+}
+
+function makeAddToCurrentTimeCommand(secondsToAdd) {
+    return {
+        name: 'addToCurrentTime',
+        secondsToAdd: secondsToAdd,
     };
 }
 
@@ -488,19 +459,11 @@ class EditorComponent extends React.Component {
                 return 'not-handled';
             }
 
-            /*
-            console.log(
-                `handleBeforeInput... chars =  '${chars}', lastInputCharacter =  '${
-                    this.lastInputCharacter
-                }'`
-            );
-            */
-
-            // return this._handleBeforeInput(chars, editorState, eventTimeStamp);
-
             // Add to the trie
             const c = chars;
             const trieResult = this.trieWalker.addNextChar(c);
+
+            console.log('trieResult =', trieResult);
 
             if (trieResult.name === TRIE_WALKER_RESULT.RESET) {
                 this.lastInputCharacter = '';
@@ -512,8 +475,7 @@ class EditorComponent extends React.Component {
 
             if (trieResult.name === TRIE_WALKER_RESULT.MATCH) {
                 this.lastInputCharacter = '';
-                this._doCommandFromTrieResult(trieResult);
-                return 'handled';
+                return this._doCommandFromTrieResult(trieResult);
             }
 
             return 'not-handled';
@@ -531,6 +493,8 @@ class EditorComponent extends React.Component {
         let videoTime = 0;
         let shouldPutTimestamp = false;
 
+        // Send the app component the appropriate command using notifyConsoleCommand.
+
         if (commandName === 'playVideo') {
             videoTime = this.props.app.notifyConsoleCommand({ name: 'playVideo' });
         } else if (commandName === 'pauseVideo') {
@@ -541,9 +505,29 @@ class EditorComponent extends React.Component {
         } else if (commandName === 'pauseVideoWithTimestamp') {
             videoTime = this.props.app.notifyConsoleCommand({ name: 'pauseVideo' });
             shouldPutTimestamp = true;
+        } else if (commandName === 'seekForwardNSeconds') {
+            const seconds = trieResult.repeatCounts['>'];
+            if (!seconds || seconds <= 0) {
+                console.warn('Should not happen, seconds = ', seconds);
+                return 'not-handled';
+            }
+            this.props.app.notifyConsoleCommand({
+                name: 'addToCurrentTime',
+                secondsToAdd: seconds,
+            });
+        } else if (commandName === 'seekBackwardNSeconds') {
+            const seconds = trieResult.repeatCounts['<'];
+            if (!seconds || seconds <= 0) {
+                console.warn('Should not happen, seconds = ', seconds);
+                return 'not-handled';
+            }
+            this.props.app.notifyConsoleCommand({
+                name: 'addToCurrentTime',
+                secondsToAdd: -seconds,
+            });
         } else {
             console.log('Command -', commandName, 'not implemented yet');
-            return;
+            return 'not-handled';
         }
 
         let newEditorState = this.state.editorState;
@@ -553,17 +537,10 @@ class EditorComponent extends React.Component {
         let cursorOffsetInBlock = selectionState.getStartOffset();
 
         // Remove the text sequence from the editor.
-        /*
-        const selNCharsBack = SelectionState.createEmpty(blockKey).merge({
-            anchorOffset: cursorOffsetInBlock,
-            focusOffset: cursorOffsetInBlock - (trieResult.stringLength - 1),
-            isBackward: false,
-        });
-        */
 
         const N = trieResult.stringLength - 1;
         // ^ -1 because the last char is not put into the editor.
-        console.log('N =', N);
+        // console.log('N =', N);
 
         const selNCharsBack = SelectionState.createEmpty(blockKey).merge({
             anchorOffset: cursorOffsetInBlock - N,
@@ -598,96 +575,12 @@ class EditorComponent extends React.Component {
         }
 
         this.onChange(newEditorState);
-    }
-
-    _handleBeforeInput(singleChar, editorState, eventTimeStamp) {
-        // Handle command based on the character after # and current mode
-        if ('/>'.indexOf(singleChar) !== -1 && this.lastInputCharacter === '#') {
-            return this._enterPoundKeyMode(singleChar, editorState);
-        }
-
-        this.lastInputCharacter = singleChar;
-        return 'not-handled';
+        return 'handled';
     }
 
     _handleReturn(e, editorState) {
         printContentState(editorState);
         return 'not-handled';
-    }
-
-    _enterPoundKeyMode(argChar, editorState) {
-        console.log('_enterPoundKeyMode # command followed by', argChar);
-
-        let newEditorState = editorState;
-
-        let selectionState = editorState.getSelection();
-
-        if (!selectionState.isCollapsed()) {
-            return 'not-handled';
-        }
-
-        const blockKey = selectionState.getAnchorKey();
-        let currentContentState = editorState.getCurrentContent();
-        let cursorOffsetInBlock = selectionState.getStartOffset();
-
-        let videoTime = 0;
-
-        if (argChar === '/') {
-            videoTime = this.props.app.notifyConsoleCommand({
-                name: 'pauseVideo',
-            });
-        } else if (argChar === '>') {
-            videoTime = this.props.app.notifyConsoleCommand({
-                name: 'playVideo',
-            });
-        } else {
-            console.warn('Should not reach here');
-            return 'not-handled';
-        }
-
-        console.log(`Video time = ${videoTime}, ${secondsToHhmmss(videoTime)}`);
-
-        // Create a selectionState range to include exactly the previous character '#' character.
-        const selOneCharBack = SelectionState.createEmpty(blockKey).merge({
-            anchorOffset: cursorOffsetInBlock - 1,
-            focusOffset: cursorOffsetInBlock,
-            isBackward: false,
-        });
-
-        console.log('selOneCharBack = ', selOneCharBack);
-
-        // Remove the preceding # character
-        const newContent = Modifier.removeRange(currentContentState, selOneCharBack, 'forward');
-
-        newEditorState = EditorState.set(editorState, {
-            currentContent: newContent,
-        });
-
-        const selBeforeHash = SelectionState.createEmpty(blockKey).merge({
-            anchorOffset: cursorOffsetInBlock - 1,
-            focusOffset: cursorOffsetInBlock - 1,
-            isBackward: false,
-        });
-
-        newEditorState = EditorState.forceSelection(newEditorState, selBeforeHash);
-
-        // Go to end
-        // newEditorState = EditorState.moveFocusToEnd(newEditorState);
-
-        // Append the timestamp link.
-        newEditorState = insertVideoLinkAtCursor(
-            newEditorState,
-            secondsToHhmmss(videoTime),
-            TEST_VIDEO_ID,
-            videoTime
-        );
-
-        // Go to end.
-        // newEditorState = EditorState.moveFocusToEnd(newEditorState);
-
-        this.onChange(newEditorState);
-        this.lastInputCharacter = '';
-        return 'handled';
     }
 
     _handleKeyCommand(command) {
@@ -1052,6 +945,11 @@ export default class App extends Component {
 
     // Notify the command to the youtube player component. Returns the current time of the video.
     notifyConsoleCommand(consoleCommand) {
+        const currentTime =
+            !this.player || !this.player.getCurrentTime
+                ? INVALID_VIDEO_TIME
+                : this.player.getCurrentTime();
+
         if (consoleCommand.name === 'pauseVideo') {
             this.setState({
                 playerCommandToSend: makePauseVideoCommand(this.unsetPlayerCommand),
@@ -1062,16 +960,19 @@ export default class App extends Component {
             });
         } else if (consoleCommand.name === 'restartVideo') {
             this.setState({ playerCommandToSend: makeSeekToTimeCommand(0) });
+        } else if (consoleCommand.name === 'addToCurrentTime') {
+            let seekTime = currentTime + consoleCommand.secondsToAdd;
+            seekTime = Math.max(seekTime, 0);
+
+            this.setState({
+                ...this.state,
+                playerCommandToSend: makeSeekToTimeCommand(seekTime, this.unsetPlayerCommand),
+            });
         } else {
             console.log('Received unknown console command', consoleCommand);
         }
 
-        if (!this.player || !this.player.getCurrentTime) {
-            // Player has not loaded yet
-            return INVALID_VIDEO_TIME;
-        }
-
-        return this.player.getCurrentTime();
+        return currentTime;
     }
 
     render() {
