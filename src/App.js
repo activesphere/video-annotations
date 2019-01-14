@@ -14,15 +14,16 @@ import {
 
 import createMarkdownPlugin from 'draft-js-markdown-plugin';
 import MarkdownEditor from 'draft-js-plugins-editor';
-import React, {Component} from 'react';
-import {HotKeys} from 'react-hotkeys';
+import React, { Component } from 'react';
+import { HotKeys } from 'react-hotkeys';
+import KEY_SEQUENCES from './keysequences';
+import { Trie, TrieWalker } from './trie';
 
 const TEST_VIDEO_ID = '6orsmFndx_o';
 
 const INVALID_VIDEO_TIME = -1;
 
-function secondsToHhmmss(seconds)
-{
+function secondsToHhmmss(seconds) {
     let remainingSeconds = seconds;
 
     let hours = Math.floor(remainingSeconds / 3600);
@@ -35,8 +36,7 @@ function secondsToHhmmss(seconds)
 }
 
 // Copies object and adds the given key and value.
-function addPropertyToObject(o, newKey, newValue)
-{
+function addPropertyToObject(o, newKey, newValue) {
     const newObject = {};
     for (let k in o) {
         if (o.hasOwnProperty(k)) {
@@ -47,8 +47,7 @@ function addPropertyToObject(o, newKey, newValue)
     return newObject;
 }
 
-function makeYoutubeUrl(videoId, videoTimeInSeconds)
-{
+function makeYoutubeUrl(videoId, videoTimeInSeconds) {
     // Seconds to mmss
     let remainingSeconds = videoTimeInSeconds;
     let minutes = Math.floor(remainingSeconds / 60);
@@ -58,8 +57,7 @@ function makeYoutubeUrl(videoId, videoTimeInSeconds)
 }
 
 // Appends given text to the editor
-function appendTextToEditor(editorState, text)
-{
+function appendTextToEditor(editorState, text) {
     let selectionState = editorState.getSelection();
 
     if (!selectionState.isCollapsed()) {
@@ -72,24 +70,27 @@ function appendTextToEditor(editorState, text)
     const blockKey = selectionState.getAnchorKey();
 
     const selBlockEnd = SelectionState.createEmpty(blockKey).merge({
-        anchorOffset : cursorOffsetInBlock,
-        focusOffset : cursorOffsetInBlock,
-        isBackward : false,
+        anchorOffset: cursorOffsetInBlock,
+        focusOffset: cursorOffsetInBlock,
+        isBackward: false,
     });
 
     // Remove the character, update editor state.
-    const newContent = Modifier.insertText(currentContentState, selBlockEnd, text);
+    const newContent = Modifier.insertText(
+        currentContentState,
+        selBlockEnd,
+        text
+    );
 
     let newEditorState = EditorState.set(editorState, {
-        currentContent : newContent,
+        currentContent: newContent,
     });
 
     newEditorState = EditorState.moveFocusToEnd(newEditorState);
     return newEditorState;
 }
 
-function insertVideoLinkAtCursor(editorState, text, videoId, videoTime)
-{
+function insertVideoLinkAtCursor(editorState, text, videoId, videoTime) {
     console.log('Inserting video link');
     let newEditorState = editorState;
 
@@ -108,123 +109,133 @@ function insertVideoLinkAtCursor(editorState, text, videoId, videoTime)
     const blockKey = selectionState.getAnchorKey();
 
     const selAtCursor = SelectionState.createEmpty(blockKey).merge({
-        anchorOffset : cursorOffsetInBlock,
-        focusOffset : cursorOffsetInBlock,
-        isBackward : false,
+        anchorOffset: cursorOffsetInBlock,
+        focusOffset: cursorOffsetInBlock,
+        isBackward: false,
     });
 
     newContentState = Modifier.insertText(newContentState, selAtCursor, text);
 
     newEditorState = EditorState.set(newEditorState, {
-        currentContent : newContentState,
+        currentContent: newContentState,
     });
 
     // Add entity link
 
     const selInsertedCharacters = SelectionState.createEmpty(blockKey).merge({
-        anchorOffset : cursorOffsetInBlock,
-        focusOffset : cursorOffsetInBlock + text.length,
-        isBackward : false,
+        anchorOffset: cursorOffsetInBlock,
+        focusOffset: cursorOffsetInBlock + text.length,
+        isBackward: false,
     });
 
-    newContentState = newContentState.createEntity('VIDEO_TIMESTAMP', 'MUTABLE', {
-        url : makeYoutubeUrl(videoId, videoTime),
-        videoId : videoId,
-        videoTime : videoTime,
-    });
+    newContentState = newContentState.createEntity(
+        'VIDEO_TIMESTAMP',
+        'MUTABLE',
+        {
+            url: makeYoutubeUrl(videoId, videoTime),
+            videoId: videoId,
+            videoTime: videoTime,
+        }
+    );
 
     const linkEntityKey = newContentState.getLastCreatedEntityKey();
 
     newEditorState = EditorState.set(newEditorState, {
-        currentContent : newContentState,
+        currentContent: newContentState,
     });
 
-    newEditorState = RichUtils.toggleLink(newEditorState, selInsertedCharacters, linkEntityKey);
+    newEditorState = RichUtils.toggleLink(
+        newEditorState,
+        selInsertedCharacters,
+        linkEntityKey
+    );
 
     // Move cursor to end of the inserted text
 
     const selEndOfInsertedChars = SelectionState.createEmpty(blockKey).merge({
-        anchorOffset : cursorOffsetInBlock + text.length,
-        focusOffset : cursorOffsetInBlock + text.length,
-        isBackward : false,
+        anchorOffset: cursorOffsetInBlock + text.length,
+        focusOffset: cursorOffsetInBlock + text.length,
+        isBackward: false,
     });
 
-    newEditorState = EditorState.forceSelection(newEditorState, selEndOfInsertedChars);
+    newEditorState = EditorState.forceSelection(
+        newEditorState,
+        selEndOfInsertedChars
+    );
 
     return newEditorState;
 }
 
 // --- Commands sent by the App to the YoutubeIframeComponent
 
-function makePlayVideoCommand(appCallbackFn)
-{
+function makePlayVideoCommand(appCallbackFn) {
     return {
-        name : 'playVideo',
-        time : 0,
-        appCallbackFn : appCallbackFn,
+        name: 'playVideo',
+        time: 0,
+        appCallbackFn: appCallbackFn,
     };
 }
 
-function makePauseVideoCommand(appCallbackFn)
-{
+function makePauseVideoCommand(appCallbackFn) {
     return {
-        name : 'pauseVideo',
-        time : 0,
-        appCallbackFn : appCallbackFn,
+        name: 'pauseVideo',
+        time: 0,
+        appCallbackFn: appCallbackFn,
     };
 }
 
-function makeSeekToTimeCommand(time = 0, appCallbackFn)
-{
+function makeSeekToTimeCommand(time = 0, appCallbackFn) {
     return {
-        name : 'seekToTime',
-        time : time,
-        appCallbackFn : appCallbackFn,
+        name: 'seekToTime',
+        time: time,
+        appCallbackFn: appCallbackFn,
     };
 }
 
 // --- Commands sent by App to EditorComponent
 
-function makeGetVideoTimeUnderCursorCommand(appCallbackFn)
-{
-    return {name : 'getVideoTimeUnderCursor', appCallbackFn : appCallbackFn};
+function makeGetVideoTimeUnderCursorCommand(appCallbackFn) {
+    return { name: 'getVideoTimeUnderCursor', appCallbackFn: appCallbackFn };
 }
 
-function makeGetRawContentCommand(appCallbackFn)
-{
-    return {name : 'getRawContentCommand', appCallbackFn : appCallbackFn};
+function makeGetRawContentCommand(appCallbackFn) {
+    return { name: 'getRawContentCommand', appCallbackFn: appCallbackFn };
 }
 
-function makeSetRawContentCommand(rawContent, appCallbackFn)
-{
-    return {name : 'setRawContentCommand', rawContent : rawContent, appCallbackFn : appCallbackFn};
+function makeSetRawContentCommand(rawContent, appCallbackFn) {
+    return {
+        name: 'setRawContentCommand',
+        rawContent: rawContent,
+        appCallbackFn: appCallbackFn,
+    };
 }
 
 const YT_PLAYBACK_STATE_NAMES = {
-    '-1' : 'unstarted',
-    1 : 'playing',
-    2 : 'paused',
-    3 : 'buffering',
-    5 : 'cued',
+    '-1': 'unstarted',
+    1: 'playing',
+    2: 'paused',
+    3: 'buffering',
+    5: 'cued',
 };
 
 let g_youtubeLoadedPromise = undefined;
 
-class YoutubeIframeComponent extends Component
-{
-    constructor(props)
-    {
+class YoutubeIframeComponent extends Component {
+    constructor(props) {
         super(props);
 
         this.storedPlaybackState = 'unstarted';
-        this.player = undefined;    // The youtube iframe api is represented by this object
+        this.player = undefined; // The youtube iframe api is represented by this object
         this.refPlayer = undefined; // Will refer to the div in which the iframe will be created
 
         this.onPlayerStateChange = ytEvent => {
             this.storedPlaybackState = YT_PLAYBACK_STATE_NAMES[ytEvent.data];
 
             console.log(
-                `YT playback state changed. New state = ${ytEvent.data} (${this.storedPlaybackState})`);
+                `YT playback state changed. New state = ${ytEvent.data} (${
+                    this.storedPlaybackState
+                })`
+            );
 
             if (this.storedPlaybackState === 'ended') {
                 this.props.onEnd(ytEvent);
@@ -242,20 +253,19 @@ class YoutubeIframeComponent extends Component
         };
     }
 
-    render()
-    {
+    render() {
         return (
             <div className="youtube-player">
                 <div
-                    ref={
-            r => { this.refPlayer = r; }}
+                    ref={r => {
+                        this.refPlayer = r;
+                    }}
                 />
             </div>
         );
     }
 
-    componentDidMount()
-    {
+    componentDidMount() {
         if (!g_youtubeLoadedPromise) {
             g_youtubeLoadedPromise = new Promise((resolve, reject) => {
                 // Create the element for Youtube API script and attach it to the HTML.
@@ -274,11 +284,11 @@ class YoutubeIframeComponent extends Component
             g_youtubeLoadedPromise.then(YT => {
                 console.log('YoutubePlayer ready');
                 this.player = new YT.Player(this.refPlayer, {
-                    videoId : TEST_VIDEO_ID,
-                    height : '100%',
-                    width : '100%',
-                    events : {
-                        onStateChange : this.onPlayerStateChange,
+                    videoId: TEST_VIDEO_ID,
+                    height: '100%',
+                    width: '100%',
+                    events: {
+                        onStateChange: this.onPlayerStateChange,
                     },
                 });
                 this.props.storeRefInParent(this.player);
@@ -287,15 +297,13 @@ class YoutubeIframeComponent extends Component
         }
     }
 
-    componentWillUnmount()
-    {
+    componentWillUnmount() {
         if (this.player) {
             this.player.destroy();
         }
     }
 
-    componentWillReceiveProps(nextProps)
-    {
+    componentWillReceiveProps(nextProps) {
         // Handle the video commands here.
         // console.log('Youtube Component will receive new props', nextProps);
 
@@ -328,17 +336,27 @@ class YoutubeIframeComponent extends Component
         }
         command.time = this.player.getCurrentTime();
 
-        console.log('storedPlaybackState = ', this.storedPlaybackState,
-                    'newPlaybackState = ', newPlaybackState);
+        console.log(
+            'storedPlaybackState = ',
+            this.storedPlaybackState,
+            'newPlaybackState = ',
+            newPlaybackState
+        );
 
-        if ((this.storedPlaybackState !== newPlaybackState && newPlaybackState) ||
-            command.name === 'seekToTime') {
-            this.updatePlaybackState(newPlaybackState, seekToTime, command.appCallbackFn);
+        if (
+            (this.storedPlaybackState !== newPlaybackState &&
+                newPlaybackState) ||
+            command.name === 'seekToTime'
+        ) {
+            this.updatePlaybackState(
+                newPlaybackState,
+                seekToTime,
+                command.appCallbackFn
+            );
         }
     }
 
-    updatePlaybackState(newPlaybackState, seekToTime, appCallbackFn)
-    {
+    updatePlaybackState(newPlaybackState, seekToTime, appCallbackFn) {
         console.log('Updating playback state to ', newPlaybackState);
         if (newPlaybackState === 'playing') {
             if (seekToTime !== -1) {
@@ -359,49 +377,53 @@ class YoutubeIframeComponent extends Component
         }
     }
 
-    shouldComponentUpdate(newProps, newState) { return false; }
+    shouldComponentUpdate(newProps, newState) {
+        return false;
+    }
 }
 
 YoutubeIframeComponent.defaultProps = {
-    onBuffer : ytEvent => {},
+    onBuffer: ytEvent => {},
 
-    onCued : ytEvent => {},
+    onCued: ytEvent => {},
 
-    onEnd : ytEvent => {},
+    onEnd: ytEvent => {},
 
-    onError : ytEvent => { console.log('youtube iframe api error - ', ytEvent); },
+    onError: ytEvent => {
+        console.log('youtube iframe api error - ', ytEvent);
+    },
 
-    onPause : ytEvent => {},
+    onPause: ytEvent => {},
 
-    onPlay : ytEvent => {},
+    onPlay: ytEvent => {},
 
-    onUnstarted : ytEvent => {},
+    onUnstarted: ytEvent => {},
 
-    playbackState : 'unstarted',
-    playerConfig : {},
+    playbackState: 'unstarted',
+    playerConfig: {},
 
-    pauseVideo : (commandDesc, player) => {},
-    playVideo : (commandDesc, player) => {},
-    skipAhead : (commandDesc, player) => {},
-    storeRefInParent : player => {},
+    pauseVideo: (commandDesc, player) => {},
+    playVideo: (commandDesc, player) => {},
+    skipAhead: (commandDesc, player) => {},
+    storeRefInParent: player => {},
 };
 
 // Just prints the current content blocks in the editor for debugging.
-function printContentState(editorState, message = '')
-{
+function printContentState(editorState, message = '') {
     console.log(message, convertToRaw(editorState.getCurrentContent()));
 }
 
 // Used as the strategy parameter of the CompositeDecorator we are using. Renders the LinkComponent
 // for VIDEO_TIMESTAMP entities.
-function findVideoTimestampEntities(contentBlock, callback)
-{
+function findVideoTimestampEntities(contentBlock, callback) {
     // console.log('findEntityRanges');
     contentBlock.findEntityRanges(characterMetadata => {
         // console.log('Running on character ', characterMetadata);
         const entityKey = characterMetadata.getEntity();
 
-        const result = entityKey !== null && Entity.get(entityKey).getType() === 'VIDEO_TIMESTAMP';
+        const result =
+            entityKey !== null &&
+            Entity.get(entityKey).getType() === 'VIDEO_TIMESTAMP';
 
         if (result) {
             console.log('TRUE for this metadata', characterMetadata);
@@ -432,6 +454,9 @@ const g_decorator = new CompositeDecorator([
 class EditorComponent extends React.Component {
     constructor(props) {
         super(props);
+
+        // Create the trie for the key sequences
+        this.trie = new Trie();
 
         this.state = {
             editorState: EditorState.createEmpty(g_decorator),
@@ -649,11 +674,14 @@ class EditorComponent extends React.Component {
             );
             return;
         } else if (editorCommand.name === 'setRawContentCommand') {
-            console.log('Creating new content from raw content', JSON.stringify(editorCommand.rawContent));
+            console.log(
+                'Creating new content from raw content',
+                JSON.stringify(editorCommand.rawContent)
+            );
             const newContentState = convertFromRaw(editorCommand.rawContent);
 
             const newEditorState = EditorState.set(this.state.editorState, {
-                currentContent: newContentState
+                currentContent: newContentState,
             });
             this.onChange(newEditorState);
         }
@@ -870,23 +898,11 @@ export default class App extends Component {
 
         // Helpers to set the current editor or the player command to undefined
         this.unsetEditorCommand = () => {
-            this.setState(
-                addPropertyToObject(
-                    this.state,
-                    'editorCommandToSend',
-                    undefined
-                )
-            );
+            this.setState({ ...this.state, editorCommandToSend: undefined });
         };
 
         this.unsetPlayerCommand = () => {
-            this.setState(
-                addPropertyToObject(
-                    this.state,
-                    'playerCommandToSend',
-                    undefined
-                )
-            );
+            this.setState({ ...this.state, playerCommandToSend: undefined });
         };
 
         this.onHotkeySeekToTimeUnderCursor = event => {
@@ -899,25 +915,24 @@ export default class App extends Component {
                     return;
                 }
 
-                let newState = addPropertyToObject(
-                    this.state,
-                    'playerCommandToSend',
-                    makeSeekToTimeCommand(videoTime, this.unsetPlayerCommand)
-                );
+                let newState = {
+                    ...this.state,
+                    playerCommandToSend: makeSeekToTimeCommand(
+                        videoTime,
+                        this.unsetPlayerCommand
+                    ),
+                    editorCommandToSend: undefined,
+                };
 
-                newState.editorCommandToSend = undefined;
                 this.setState(newState);
             };
 
-            this.setState(
-                addPropertyToObject(
-                    this.state,
-                    'editorCommandToSend',
-                    makeGetVideoTimeUnderCursorCommand(
-                        callbackAfterEditorResponds
-                    )
-                )
-            );
+            this.setState({
+                ...this.state,
+                editorCommandToSend: makeGetVideoTimeUnderCursorCommand(
+                    callbackAfterEditorResponds
+                ),
+            });
         };
 
         this.onHotkeySaveToLocalStorage = event => {
@@ -927,30 +942,40 @@ export default class App extends Component {
 
             const callbackAfterEditorResponds = rawContent => {
                 console.log('Raw content = ', rawContent);
-                localStorage.setItem('lastSavedEditorState', JSON.stringify(rawContent));
+                localStorage.setItem(
+                    'lastSavedEditorState',
+                    JSON.stringify(rawContent)
+                );
                 this.unsetEditorCommand();
             };
 
-            this.setState(
-                addPropertyToObject(
-                    this.state,
-                    'editorCommandToSend',
-                    makeGetRawContentCommand(callbackAfterEditorResponds)
-                )
-            );
+            this.setState({
+                ...this.state,
+                editorCommandToSend: makeGetRawContentCommand(
+                    callbackAfterEditorResponds
+                ),
+            });
         };
 
         this.onHotkeyLoadFromLocalStorage = event => {
             event.preventDefault();
-            const rawContent = JSON.parse(localStorage.getItem('lastSavedEditorState'));
-            console.log('Loaded editor contents from local storage', rawContent);
-
-            this.setState(
-                addPropertyToObject(this.state, 'editorCommandToSend',
-                    makeSetRawContentCommand(
-                        rawContent, () => { this.unsetEditorCommand(); }
-                    ))
+            const rawContent = JSON.parse(
+                localStorage.getItem('lastSavedEditorState')
             );
+            console.log(
+                'Loaded editor contents from local storage',
+                rawContent
+            );
+
+            this.setState({
+                ...this.state,
+                editorCommandToSend: makeSetRawContentCommand(
+                    rawContent,
+                    () => {
+                        this.unsetEditorCommand();
+                    }
+                ),
+            });
         };
 
         // Initializing the hotkey handler map

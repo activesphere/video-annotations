@@ -37,3 +37,4 @@ Icon
 
 # Build
 /dist
+tmp/
