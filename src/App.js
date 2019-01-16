@@ -19,9 +19,14 @@ import { HotKeys } from 'react-hotkeys';
 import KEY_SEQUENCES from './keysequences';
 import { Trie, TrieWalker, TRIE_WALKER_RESULT } from './trie';
 
+const EditorToUse = MarkdownEditor;
+
 const TEST_VIDEO_ID = '6orsmFndx_o';
 
 const INVALID_VIDEO_TIME = -1;
+
+let g_latestSavedContentStateRaw = undefined;
+let g_latestLoadedContentStateRaw = undefined;
 
 function secondsToHhmmss(seconds) {
     let remainingSeconds = seconds;
@@ -58,9 +63,14 @@ function insertVideoLinkAtCursor(editorState, text, videoId, videoTime) {
     let newContentState = newEditorState.getCurrentContent();
     const cursorOffsetInBlock = selectionState.getStartOffset();
 
-    console.log('cursorOffsetInBlock = ', cursorOffsetInBlock);
-
     const blockKey = selectionState.getAnchorKey();
+
+    console.log(
+        'blockKey of the block in which to put the link = ',
+        blockKey,
+        'cursorOffsetInBlock = ',
+        cursorOffsetInBlock
+    );
 
     const selAtCursor = SelectionState.createEmpty(blockKey).merge({
         anchorOffset: cursorOffsetInBlock,
@@ -132,13 +142,6 @@ function makeSeekToTimeCommand(time = 0, appCallbackFn) {
         name: 'seekToTime',
         time: time,
         appCallbackFn: appCallbackFn,
-    };
-}
-
-function makeAddToCurrentTimeCommand(secondsToAdd) {
-    return {
-        name: 'addToCurrentTime',
-        secondsToAdd: secondsToAdd,
     };
 }
 
@@ -371,13 +374,14 @@ function printContentState(editorState, message = '') {
 
 // Used as the strategy parameter of the CompositeDecorator we are using. Renders the LinkComponent
 // for VIDEO_TIMESTAMP entities.
-function findVideoTimestampEntities(contentBlock, callback) {
+function findVideoTimestampEntities(contentBlock, callback, contentState) {
     // console.log('findEntityRanges');
     contentBlock.findEntityRanges(characterMetadata => {
         // console.log('Running on character ', characterMetadata);
         const entityKey = characterMetadata.getEntity();
 
-        const result = entityKey !== null && Entity.get(entityKey).getType() === 'VIDEO_TIMESTAMP';
+        const result =
+            entityKey !== null && contentState.getEntity(entityKey).getType() === 'VIDEO_TIMESTAMP';
 
         if (result) {
             console.log('TRUE for this metadata', characterMetadata);
@@ -404,6 +408,17 @@ const g_decorator = new CompositeDecorator([
     },
 ]);
 
+function createEmptyEditorState() {
+    let editorState = undefined;
+    if (EditorToUse === MarkdownEditor) {
+        editorState = EditorState.createEmpty();
+    } else {
+        editorState = EditorState.createEmpty(g_decorator);
+    }
+
+    return editorState;
+}
+
 // The editor component.
 class EditorComponent extends React.Component {
     constructor(props) {
@@ -420,7 +435,7 @@ class EditorComponent extends React.Component {
         this.trieWalker = new TrieWalker(this.trie);
 
         this.state = {
-            editorState: EditorState.createEmpty(g_decorator),
+            editorState: createEmptyEditorState(),
             plugins: [createMarkdownPlugin()],
         };
 
@@ -621,6 +636,10 @@ class EditorComponent extends React.Component {
     }
 
     _executeEditorCommand(editorCommand) {
+        this.trieWalker.resetManually();
+
+        console.log('_executeEditorCommand', editorCommand);
+
         if (editorCommand.name === 'getVideoTimeUnderCursor') {
             const videoTimeUnderCursor = this._getVideoTimeUnderCursor();
 
@@ -643,10 +662,19 @@ class EditorComponent extends React.Component {
             );
             const newContentState = convertFromRaw(editorCommand.rawContent);
 
-            const newEditorState = EditorState.set(this.state.editorState, {
+            // Create a new editor state and then set the loaded content state.
+            let newEditorState = createEmptyEditorState();
+            newEditorState = EditorState.set(this.state.editorState, {
                 currentContent: newContentState,
             });
+            newEditorState = EditorState.moveFocusToEnd(newEditorState);
             this.onChange(newEditorState);
+
+            if (editorCommand.appCallbackFn) {
+                editorCommand.appCallbackFn();
+            }
+
+            return;
         }
 
         console.warn('Unknown command -', editorCommand);
@@ -709,7 +737,7 @@ class EditorComponent extends React.Component {
                 <BlockStyleControls editorState={editorState} onToggle={this.toggleBlockType} />
                 <InlineStyleControls editorState={editorState} onToggle={this.toggleInlineStyle} />
                 <div className={editorDivClassName} onClick={this.focus}>
-                    <VanillaEditor
+                    <MarkdownEditor
                         blockStyleFn={getBlockStyle}
                         customStyleMap={styleMap}
                         editorState={editorState}
@@ -721,6 +749,7 @@ class EditorComponent extends React.Component {
                         handleBeforeInput={this.handleBeforeInput}
                         handleReturn={this.handleReturn}
                         plugins={this.state.plugins}
+                        decorators={[g_decorator]}
                     />
                 </div>
             </div>
@@ -787,10 +816,18 @@ const BLOCK_TYPES = [
 const BlockStyleControls = props => {
     const { editorState } = props;
     const selection = editorState.getSelection();
-    const blockType = editorState
-        .getCurrentContent()
-        .getBlockForKey(selection.getStartKey())
-        .getType();
+
+    const blockKey = selection.getStartKey();
+
+    const blockForKey = editorState.getCurrentContent().getBlockForKey(blockKey);
+    console.log('BlockStyleControls retrieved block = ', blockForKey, '\n with key =', blockKey);
+
+    if (!blockForKey) {
+        console.log('Will crash, last raw content saved was - \n', g_latestSavedContentStateRaw);
+        console.log('Will crash, last raw content loaded was - \n', g_latestLoadedContentStateRaw);
+    }
+
+    const blockType = blockForKey.getType();
 
     return (
         <div className="console-editor-controls">
@@ -859,7 +896,10 @@ export default class App extends Component {
         };
 
         this.unsetPlayerCommand = () => {
-            this.setState({ ...this.state, playerCommandToSend: undefined });
+            const newState = { ...this.state, playerCommandToSend: undefined };
+            console.log('Unset player command = ', newState);
+            // this.setState({ ...this.state, playerCommandToSend: undefined });
+            return newState;
         };
 
         this.onHotkeySeekToTimeUnderCursor = event => {
@@ -868,15 +908,23 @@ export default class App extends Component {
             // Callback will send the player the seekToTime command and unset current editor
             // command.
             const callbackAfterEditorResponds = videoTime => {
+                let newState = undefined;
                 if (videoTime === INVALID_VIDEO_TIME) {
-                    return;
+                    newState = {
+                        ...this.state,
+                        playerCommandToSend: undefined,
+                        editorCommandToSend: undefined,
+                    };
+                } else {
+                    newState = {
+                        ...this.state,
+                        playerCommandToSend: makeSeekToTimeCommand(
+                            videoTime,
+                            this.unsetPlayerCommand
+                        ),
+                        editorCommandToSend: undefined,
+                    };
                 }
-
-                let newState = {
-                    ...this.state,
-                    playerCommandToSend: makeSeekToTimeCommand(videoTime, this.unsetPlayerCommand),
-                    editorCommandToSend: undefined,
-                };
 
                 this.setState(newState);
             };
@@ -896,7 +944,10 @@ export default class App extends Component {
 
             const callbackAfterEditorResponds = rawContent => {
                 console.log('Raw content = ', rawContent);
-                localStorage.setItem('lastSavedEditorState', JSON.stringify(rawContent));
+                const savedContentString = JSON.stringify(rawContent);
+                console.log(`Saved content =${savedContentString}`);
+                sessionStorage.setItem('lastSavedEditorState', savedContentString);
+                g_latestSavedContentStateRaw = rawContent;
                 this.unsetEditorCommand();
             };
 
@@ -908,8 +959,9 @@ export default class App extends Component {
 
         this.onHotkeyLoadFromLocalStorage = event => {
             event.preventDefault();
-            const rawContent = JSON.parse(localStorage.getItem('lastSavedEditorState'));
+            const rawContent = JSON.parse(sessionStorage.getItem('lastSavedEditorState'));
             console.log('Loaded editor contents from local storage', rawContent);
+            g_latestLoadedContentStateRaw = rawContent;
 
             this.setState({
                 ...this.state,
@@ -952,14 +1004,16 @@ export default class App extends Component {
 
         if (consoleCommand.name === 'pauseVideo') {
             this.setState({
+                ...this.state,
                 playerCommandToSend: makePauseVideoCommand(this.unsetPlayerCommand),
             });
         } else if (consoleCommand.name === 'playVideo') {
             this.setState({
+                ...this.state,
                 playerCommandToSend: makePlayVideoCommand(this.unsetPlayerCommand),
             });
         } else if (consoleCommand.name === 'restartVideo') {
-            this.setState({ playerCommandToSend: makeSeekToTimeCommand(0) });
+            this.setState({ ...this.state, playerCommandToSend: makeSeekToTimeCommand(0) });
         } else if (consoleCommand.name === 'addToCurrentTime') {
             let seekTime = currentTime + consoleCommand.secondsToAdd;
             seekTime = Math.max(seekTime, 0);

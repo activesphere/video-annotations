@@ -81,7 +81,7 @@ export class Trie {
             // Check if previous character should be repeated
             if (i !== 0 && c === '*') {
                 currentNode.repeatable = true;
-                console.log(`addSequence: Set ${currentNode.c} as repeatable`);
+                // console.log(`addSequence: Set ${currentNode.c} as repeatable`);
                 continue;
             }
 
@@ -91,7 +91,7 @@ export class Trie {
                 commonPrefixLength = i;
                 break;
             } else {
-                console.log(`addSequence:  Walked common path with character ${c}`);
+                // console.log(`addSequence:  Walked common path with character ${c}`);
                 currentNode = childNode;
             }
         }
@@ -109,7 +109,7 @@ export class Trie {
 
             const newNode = new TrieNode(sequence[commonPrefixLength], mappedValue);
 
-            console.log(`addSequence: Grew tree with character ${sequence[commonPrefixLength]}`);
+            // console.log(`addSequence: Grew tree with character ${sequence[commonPrefixLength]}`);
 
             this.nodeStorage.push(newNode);
             currentNode.childrenIndices.push(this.nodeStorage.length - 1);
