@@ -17,9 +17,12 @@ import MarkdownEditor from 'draft-js-plugins-editor';
 import React, { Component } from 'react';
 import { HotKeys } from 'react-hotkeys';
 import KEY_SEQUENCES from './keysequences';
+import { TEST_CONTENT_2 } from './test_raw_content';
 import { Trie, TrieWalker, TRIE_WALKER_RESULT } from './trie';
 
 const EditorToUse = MarkdownEditor;
+
+const TEST_RAW_CONTENT = true;
 
 const TEST_VIDEO_ID = '6orsmFndx_o';
 
@@ -62,7 +65,6 @@ function insertVideoLinkAtCursor(editorState, text, videoId, videoTime) {
     // Insert the text
     let newContentState = newEditorState.getCurrentContent();
     const cursorOffsetInBlock = selectionState.getStartOffset();
-
     const blockKey = selectionState.getAnchorKey();
 
     console.log(
@@ -392,7 +394,13 @@ function findVideoTimestampEntities(contentBlock, callback, contentState) {
 }
 
 const LinkComponent = props => {
-    const { url } = Entity.get(props.entityKey).getData();
+    const entityKey = props.entityKey;
+
+    let { url } = props.contentState.getEntity(entityKey).getData();
+
+    if (!url) {
+        url = '';
+    }
 
     return (
         <a href={url} className="console-editor-link">
@@ -419,8 +427,8 @@ function createEmptyEditorState() {
     return editorState;
 }
 
-// The editor component.
-class EditorComponent extends React.Component {
+// The editor component. Exported for testing.
+export class EditorComponent extends React.Component {
     constructor(props) {
         super(props);
 
@@ -468,6 +476,12 @@ class EditorComponent extends React.Component {
         this.lastInputCharacter = ''; // TODO: stop maintaining this variable once we use the trie.
 
         this.handleBeforeInput = (chars, editorState, eventTimeStamp) => {
+            // If app is not in props, it means we are testing.
+
+            if (!this.props.app) {
+                return 'not-handled';
+            }
+
             // If more than one chars are being input (pasted perhaps), we ignore previous character.
             if (chars.length > 1) {
                 this.lastInputCharacter = '';
@@ -478,7 +492,7 @@ class EditorComponent extends React.Component {
             const c = chars;
             const trieResult = this.trieWalker.addNextChar(c);
 
-            console.log('trieResult =', trieResult);
+            // console.log('trieResult =', trieResult);
 
             if (trieResult.name === TRIE_WALKER_RESULT.RESET) {
                 this.lastInputCharacter = '';
@@ -499,6 +513,15 @@ class EditorComponent extends React.Component {
         this.handleReturn = (e, editorState) => {
             this._handleReturn(e, editorState);
         };
+
+        if (TEST_RAW_CONTENT) {
+            console.log('Loading raw content');
+            const newContentState = convertFromRaw(TEST_CONTENT_2);
+            const newEditorState = EditorState.set(this.state.editorState, {
+                currentContent: newContentState,
+            });
+            this.state.editorState = newEditorState;
+        }
     }
 
     _doCommandFromTrieResult(trieResult) {
@@ -653,6 +676,8 @@ class EditorComponent extends React.Component {
 
             return;
         } else if (editorCommand.name === 'getRawContentCommand') {
+            const dirMap = this.state.editorState.getDirectionMap();
+            console.log('direction map =', dirMap);
             editorCommand.appCallbackFn(convertToRaw(this.state.editorState.getCurrentContent()));
             return;
         } else if (editorCommand.name === 'setRawContentCommand') {
@@ -660,13 +685,15 @@ class EditorComponent extends React.Component {
                 'Creating new content from raw content',
                 JSON.stringify(editorCommand.rawContent)
             );
+
             const newContentState = convertFromRaw(editorCommand.rawContent);
 
             // Create a new editor state and then set the loaded content state.
+            // let newEditorState = this.state.editorState;
+
             let newEditorState = createEmptyEditorState();
-            newEditorState = EditorState.set(this.state.editorState, {
-                currentContent: newContentState,
-            });
+            newEditorState = EditorState.set(newEditorState, { currentContent: newContentState });
+
             newEditorState = EditorState.moveFocusToEnd(newEditorState);
             this.onChange(newEditorState);
 
@@ -716,8 +743,8 @@ class EditorComponent extends React.Component {
     render() {
         const { editorState } = this.state;
 
-        // If the user changes block type before entering any text, we can either
-        // style the placeholder or hide it. Let's just hide it now.
+        // If the user changes block type before entering any text, we can either style the
+        // placeholder or hide it. Let's just hide it now.
 
         let editorDivClassName = 'console-editor-editor';
         let contentState = editorState.getCurrentContent();
@@ -734,13 +761,10 @@ class EditorComponent extends React.Component {
 
         return (
             <div className="console-editor-root">
-                <BlockStyleControls editorState={editorState} onToggle={this.toggleBlockType} />
-                <InlineStyleControls editorState={editorState} onToggle={this.toggleInlineStyle} />
                 <div className={editorDivClassName} onClick={this.focus}>
-                    <MarkdownEditor
-                        blockStyleFn={getBlockStyle}
-                        customStyleMap={styleMap}
+                    <EditorToUse
                         editorState={editorState}
+                        textAlignment={'left'}
                         handleKeyCommand={this.handleKeyCommand}
                         onChange={this.onChange}
                         onTab={this.onTab}
@@ -754,7 +778,12 @@ class EditorComponent extends React.Component {
                 </div>
             </div>
         );
+        // Goes before EditorToUse
+        /* <BlockStyleControls editorState={editorState} onToggle={this.toggleBlockType} />
+        <InlineStyleControls editorState={editorState} onToggle={this.toggleInlineStyle} /> */
+        /* blockStyleFn={getBlockStyle} */
         /* decorators={[g_decorator]} */
+        /* customStyleMap={styleMap} */
     }
 }
 
@@ -875,7 +904,7 @@ const g_HotkeysOfCommands = {
 };
 
 // The commands from console are send via the App component
-export default class App extends Component {
+export class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -980,6 +1009,8 @@ export default class App extends Component {
         this.hotkeyHandlers['saveToLocalStorage'] = this.onHotkeySaveToLocalStorage;
 
         this.hotkeyHandlers['loadFromLocalStorage'] = this.onHotkeyLoadFromLocalStorage;
+
+        // Test loading raw content
     }
 
     // The sCU method will check if the new state has a command to send to at least one of the two
