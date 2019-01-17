@@ -5,5 +5,12 @@
     "manifest_version": 2,
     "name": "Vid-Annot For Chrome",
     "short_name": "Vid-Annot",
-    "version": "1.0"
+    "version": "1.0",
+    "content_scripts": [
+        {
+            "matches": ["https://reactjs.org/*"],
+            "css": ["/static/css/App.css"],
+            "js": ["/static/js/index.js"]
+        }
+    ]
 }
