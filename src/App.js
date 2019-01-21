@@ -809,7 +809,7 @@ class LoadYoutubeVideoIdComponent extends Component {
         value: PropTypes.string,
         error: PropTypes.string,
         label: PropTypes.string,
-        onChange: PropTypes.func,
+        onChange: PropTypes.func.isRequired,
     };
 
     constructor(props) {
@@ -960,7 +960,8 @@ export class App extends Component {
 
         this.hotkeyHandlers['loadFromLocalStorage'] = this.onHotkeyLoadFromLocalStorage;
 
-        // Test loading raw content
+        // Callback for "load new video" will be sent to LoadYoutubeVideoIdComponent
+        this.loadNewVideoCallback = videoId => {};
     }
 
     // The sCU method will check if the new state has a command to send to at least one of the two
