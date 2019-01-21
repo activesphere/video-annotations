@@ -14,6 +14,7 @@ import {
 import createMarkdownPlugin from 'draft-js-markdown-plugin';
 import MarkdownEditor from 'draft-js-plugins-editor';
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { HotKeys } from 'react-hotkeys';
 import KEY_SEQUENCES from './keysequences';
 import { TEST_CONTENT_2 } from './test_raw_content';
@@ -23,7 +24,7 @@ const EditorToUse = MarkdownEditor;
 
 const TEST_RAW_CONTENT = true;
 
-const TEST_VIDEO_ID = '6orsmFndx_o';
+const TEST_VIDEO_ID = '495nCzxM9PI';
 
 const INVALID_VIDEO_TIME = -1;
 
@@ -424,7 +425,7 @@ function createEmptyEditorState() {
 }
 
 // The editor component. Exported for testing.
-export class EditorComponent extends React.Component {
+class EditorComponent extends React.Component {
     constructor(props) {
         super(props);
 
@@ -573,8 +574,7 @@ export class EditorComponent extends React.Component {
         // Remove the text sequence from the editor.
 
         const N = trieResult.stringLength - 1;
-        // ^ -1 because the last char is not put into the editor.
-        // console.log('N =', N);
+        // ^ -1 because the last char is not put into the editor. console.log('N =', N);
 
         const selNCharsBack = SelectionState.createEmpty(blockKey).merge({
             anchorOffset: cursorOffsetInBlock - N,
@@ -779,8 +779,8 @@ export class EditorComponent extends React.Component {
 
 const ShowInstructionsComponent = props => {
     const keySequenceInfoText = `
-        Default key sequences for controlling video (don't give space as input, only used as delimitor)
-        ================================================================================================
+        Default key sequences for controlling video
+        ===========================================
 
         # >                         Play Video,
         # /                         Pause Video,
@@ -800,6 +800,54 @@ const ShowInstructionsComponent = props => {
         </div>
     );
 };
+
+class LoadYoutubeVideoIdComponent extends Component {
+    static propTypes = {
+        id: PropTypes.string.isRequired,
+        locked: PropTypes.bool,
+        focussed: PropTypes.bool,
+        value: PropTypes.string,
+        error: PropTypes.string,
+        label: PropTypes.string,
+        onChange: PropTypes.func,
+    };
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            focussed: (props.locked && props.focussed) || false,
+            value: props.value ? props.value : '',
+            error: props.error ? props.error : '',
+            label: props.label ? props.label : 'Video ID',
+        };
+
+        this.onChange = event => {
+            const { id } = this.props;
+            const value = event.target.value;
+            this.setState({ ...this.state, value, error: '' });
+            return this.props.onChange(id, value);
+        };
+    }
+
+    render() {
+        const { id, type, locked } = this.props;
+        const { focussed, value, error, label } = this.state;
+
+        return (
+            <div className="youtube-id-input">
+                <input
+                    id={id}
+                    type="text"
+                    value={value}
+                    placeholder={label}
+                    onChange={this.onChange}
+                    spellCheck="false"
+                />
+            </div>
+        );
+    }
+}
 
 const g_HotkeysOfCommands = {
     seekToTimeUnderCursor: 'alt+shift+a',
@@ -971,6 +1019,7 @@ export class App extends Component {
                     className="hotkey-root"
                 >
                     <div className="left-panel">
+                        <LoadYoutubeVideoIdComponent />
                         <YoutubeIframeComponent
                             app={this}
                             playerCommand={this.state.playerCommandToSend}
