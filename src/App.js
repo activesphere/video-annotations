@@ -6,7 +6,6 @@ import {
     convertFromRaw,
     Editor as VanillaEditor,
     EditorState,
-    Entity,
     Modifier,
     RichUtils,
     SelectionState,
@@ -27,9 +26,6 @@ const TEST_RAW_CONTENT = true;
 const TEST_VIDEO_ID = '6orsmFndx_o';
 
 const INVALID_VIDEO_TIME = -1;
-
-let g_latestSavedContentStateRaw = undefined;
-let g_latestLoadedContentStateRaw = undefined;
 
 function secondsToHhmmss(seconds) {
     let remainingSeconds = seconds;
@@ -778,121 +774,29 @@ export class EditorComponent extends React.Component {
                 </div>
             </div>
         );
-        // Goes before EditorToUse
-        /* <BlockStyleControls editorState={editorState} onToggle={this.toggleBlockType} />
-        <InlineStyleControls editorState={editorState} onToggle={this.toggleInlineStyle} /> */
-        /* blockStyleFn={getBlockStyle} */
-        /* decorators={[g_decorator]} */
-        /* customStyleMap={styleMap} */
     }
 }
 
-// Custom overrides for "code" block-style
-const styleMap = {
-    CODE: {
-        backgroundColor: 'rgba(0, 0, 0, 0.05)',
-        fontFamily: '"SF Mono Regular", Inconsolata, monospace',
-        fontSize: 16,
-        padding: 2,
-    },
-};
+const ShowInstructionsComponent = props => {
+    const keySequenceInfoText = `
+        Default key sequences for controlling video (don't give space as input, only used as delimitor)
+        ================================================================================================
 
-function getBlockStyle(block) {
-    switch (block.getType()) {
-        case 'blockquote':
-            return 'console-editor-blockquote';
-        default:
-            return null;
-    }
-}
+        # >                         Play Video,
+        # /                         Pause Video,
+        # t >                       Place Timestamp and Play video
+        # t /                       Place Timestamp and Pause video
+        # [some number of <'s] g    Seek back N seconds where N = number of '<'
+        # [some number of >'s] g    Similarly seek forward N seconds
+    `;
 
-class StyleButton extends React.Component {
-    constructor() {
-        super();
-        this.onToggle = e => {
-            e.preventDefault();
-            this.props.onToggle(this.props.style);
-        };
-    }
+    console.log('keySequenceInfoText =', keySequenceInfoText);
 
-    render() {
-        let className = 'console-editor-styleButton';
-        if (this.props.active) {
-            className += ' console-editor-activeButton';
-        }
-
-        return (
-            <span className={className} onMouseDown={this.onToggle}>
-                {this.props.label}
-            </span>
-        );
-    }
-}
-
-const BLOCK_TYPES = [
-    { label: 'H1', style: 'header-one' },
-    { label: 'H2', style: 'header-two' },
-    { label: 'H3', style: 'header-three' },
-    { label: 'H4', style: 'header-four' },
-    { label: 'H5', style: 'header-five' },
-    { label: 'H6', style: 'header-six' },
-    { label: 'Blockquote', style: 'blockquote' },
-    { label: 'UL', style: 'unordered-list-item' },
-    { label: 'OL', style: 'ordered-list-item' },
-    { label: 'Code Block', style: 'code-block' },
-];
-
-const BlockStyleControls = props => {
-    const { editorState } = props;
-    const selection = editorState.getSelection();
-
-    const blockKey = selection.getStartKey();
-
-    const blockForKey = editorState.getCurrentContent().getBlockForKey(blockKey);
-    console.log('BlockStyleControls retrieved block = ', blockForKey, '\n with key =', blockKey);
-
-    if (!blockForKey) {
-        console.log('Will crash, last raw content saved was - \n', g_latestSavedContentStateRaw);
-        console.log('Will crash, last raw content loaded was - \n', g_latestLoadedContentStateRaw);
-    }
-
-    const blockType = blockForKey.getType();
+    const infoText = props.infoText ? props.infoText : keySequenceInfoText;
 
     return (
-        <div className="console-editor-controls">
-            {BLOCK_TYPES.map(type => (
-                <StyleButton
-                    key={type.label}
-                    active={type.style === blockType}
-                    label={type.label}
-                    onToggle={props.onToggle}
-                    style={type.style}
-                />
-            ))}
-        </div>
-    );
-};
-
-const INLINE_STYLES = [
-    { label: 'Bold', style: 'BOLD' },
-    { label: 'Italic', style: 'ITALIC' },
-    { label: 'Underline', style: 'UNDERLINE' },
-    { label: 'Monospace', style: 'CODE' },
-];
-
-const InlineStyleControls = props => {
-    let currentStyle = props.editorState.getCurrentInlineStyle();
-    return (
-        <div className="console-editor-controls">
-            {INLINE_STYLES.map(type => (
-                <StyleButton
-                    key={type.label}
-                    active={currentStyle.has(type.style)}
-                    label={type.label}
-                    onToggle={props.onToggle}
-                    style={type.style}
-                />
-            ))}
+        <div className="info-text">
+            <p id="__info_text__">{infoText}</p>
         </div>
     );
 };
@@ -976,7 +880,6 @@ export class App extends Component {
                 const savedContentString = JSON.stringify(rawContent);
                 console.log(`Saved content =${savedContentString}`);
                 sessionStorage.setItem('lastSavedEditorState', savedContentString);
-                g_latestSavedContentStateRaw = rawContent;
                 this.unsetEditorCommand();
             };
 
@@ -990,7 +893,6 @@ export class App extends Component {
             event.preventDefault();
             const rawContent = JSON.parse(sessionStorage.getItem('lastSavedEditorState'));
             console.log('Loaded editor contents from local storage', rawContent);
-            g_latestLoadedContentStateRaw = rawContent;
 
             this.setState({
                 ...this.state,
@@ -1068,11 +970,14 @@ export class App extends Component {
                     handlers={this.hotkeyHandlers}
                     className="hotkey-root"
                 >
-                    <YoutubeIframeComponent
-                        app={this}
-                        playerCommand={this.state.playerCommandToSend}
-                        storeRefInParent={this.setPlayerRef}
-                    />
+                    <div className="left-panel">
+                        <YoutubeIframeComponent
+                            app={this}
+                            playerCommand={this.state.playerCommandToSend}
+                            storeRefInParent={this.setPlayerRef}
+                        />
+                        <ShowInstructionsComponent />
+                    </div>
                     <EditorComponent app={this} editorCommand={this.state.editorCommandToSend} />
                 </HotKeys>
             </div>

@@ -143,7 +143,8 @@ module.exports = function(webpackEnv) {
       */
 
         entry: {
-            app: [paths.appIndexJs],
+            // app: [paths.appIndexJs],
+            content: ['./src/index.js'],
         },
 
         output: {
@@ -157,7 +158,7 @@ module.exports = function(webpackEnv) {
             // In development, it does not produce real files.
             filename: isEnvProduction
                 ? 'static/js/[name].js'
-                : isEnvDevelopment && 'static/js/bundle.js',
+                : isEnvDevelopment && 'static/js/content.js',
 
             // There are also additional JS chunk files if you use code splitting.
             chunkFilename: isEnvProduction
@@ -483,13 +484,13 @@ module.exports = function(webpackEnv) {
                         ? {
                               minify: {
                                   removeComments: true,
-                                  collapseWhitespace: true,
+                                  collapseWhitespace: false,
                                   removeRedundantAttributes: true,
                                   useShortDoctype: true,
                                   removeEmptyAttributes: true,
                                   removeStyleLinkTypeAttributes: true,
                                   keepClosingSlash: true,
-                                  minifyJS: true,
+                                  minifyJS: false,
                                   minifyCSS: true,
                                   minifyURLs: true,
                               },

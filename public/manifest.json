@@ -1,16 +1,18 @@
 {
-    "browser_action": {
-        "default_popup": "index.html"
-    },
+    "content_security_policy": "object-src 'self'; script-src 'self' 'sha256-eY4kccJ3zhrNsHkryVddADWljTlegCmmzhFk/0PF7z0=';",
     "manifest_version": 2,
     "name": "Vid-Annot For Chrome",
     "short_name": "Vid-Annot",
     "version": "1.0",
+    "background": {
+        "scripts": ["background_script.js"],
+        "persistent": false
+    },
     "content_scripts": [
         {
-            "matches": ["https://reactjs.org/*"],
-            "css": ["/static/css/App.css"],
-            "js": ["/static/js/index.js"]
+            "matches": ["<all_urls>"],
+            "js": ["content_script.js"]
         }
-    ]
+    ],
+    "permissions": ["contextMenus", "tabs"]
 }

@@ -36,3 +36,19 @@ timepoint of the video.
 
 Key sequence syntax
 -----------------------
+
+Stored in keysequences.js file. One thing I want to add is the ability to not
+just put arbitrary text in the timestamp as opposed to just the hhmmss format
+time. Should be simple to to.
+
+
+Extension style
+-----------------------
+
+I'm thinking all we should do is open a new window with the currently playing
+youtube video in an iframe? It's the simplest way to get the functionality in.
+
+
+I can get fancier like insert that editor component right in the youtube page,
+but that.. is probably better to do after I get my hands dirty with chrome
+extension api first.
