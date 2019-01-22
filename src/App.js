@@ -118,32 +118,6 @@ function insertVideoLinkAtCursor(editorState, text, videoId, videoTime) {
     return newEditorState;
 }
 
-// --- Commands sent by the App to the YoutubeIframeComponent
-
-function makePlayVideoCommand(appCallbackFn) {
-    return {
-        name: 'playVideo',
-        time: 0,
-        appCallbackFn: appCallbackFn,
-    };
-}
-
-function makePauseVideoCommand(appCallbackFn) {
-    return {
-        name: 'pauseVideo',
-        time: 0,
-        appCallbackFn: appCallbackFn,
-    };
-}
-
-function makeSeekToTimeCommand(time = 0, appCallbackFn) {
-    return {
-        name: 'seekToTime',
-        time: time,
-        appCallbackFn: appCallbackFn,
-    };
-}
-
 // --- Commands sent by App to EditorComponent
 
 function makeGetVideoTimeUnderCursorCommand(appCallbackFn) {
@@ -162,209 +136,71 @@ function makeSetRawContentCommand(rawContent, appCallbackFn) {
     };
 }
 
-const YT_PLAYBACK_STATE_NAMES = {
-    '-1': 'unstarted',
-    1: 'playing',
-    2: 'paused',
-    3: 'buffering',
-    5: 'cued',
-};
-
-let g_youtubeLoadedPromise = undefined;
-
 class YoutubeIframeComponent extends Component {
+    static propTypes = {
+        // (refToPlayerDiv) => void
+        getYtPlayerApiCallback: PropTypes.func.isRequired,
+    };
+
     constructor(props) {
         super(props);
+        this.refToPlayerDiv = undefined;
+        this.ytPlayerApiLoadedPromise = undefined;
+    }
 
-        this.storedPlaybackState = 'unstarted';
-        this.player = undefined; // The youtube iframe api is represented by this object
-        this.refPlayer = undefined; // Will refer to the div in which the iframe will be created
-
-        this.onPlayerStateChange = ytEvent => {
-            this.storedPlaybackState = YT_PLAYBACK_STATE_NAMES[ytEvent.data];
-
-            console.log(
-                `YT playback state changed. New state = ${ytEvent.data} (${
-                    this.storedPlaybackState
-                })`
-            );
-
-            if (this.storedPlaybackState === 'ended') {
-                this.props.onEnd(ytEvent);
-            } else if (this.storedPlaybackState === 'playing') {
-                this.props.onPlay(ytEvent);
-            } else if (this.storedPlaybackState === 'paused') {
-                this.props.onPause(ytEvent);
-            } else if (this.storedPlaybackState === 'buffering') {
-                this.props.onBuffer(ytEvent);
-            } else if (this.storedPlaybackState === 'cued') {
-                this.props.onCued(ytEvent);
-            } else if (this.storedPlaybackState === 'unstarted') {
-                this.props.onUnstarted(ytEvent);
-            }
-        };
+    shouldComponentUpdate(newProps, newState) {
+        return false;
     }
 
     render() {
         return (
             <div className="youtube-player">
                 <div
-                    ref={r => {
-                        this.refPlayer = r;
+                    ref={refToPlayerDiv => {
+                        this.refToPlayerDiv = refToPlayerDiv;
                     }}
                 />
             </div>
         );
     }
 
+    // In cDM we load the youtube api.
     componentDidMount() {
-        if (!g_youtubeLoadedPromise) {
-            g_youtubeLoadedPromise = new Promise((resolve, reject) => {
+        if (!this.ytPlayerApiLoadedPromise) {
+            this.ytPlayerApiLoadedPromise = new Promise((resolve, reject) => {
                 // Create the element for Youtube API script and attach it to the HTML.
                 const apiScriptElement = document.createElement('script');
                 apiScriptElement.src = 'https://www.youtube.com/iframe_api';
                 apiScriptElement.id = '__iframe_api__';
 
-                // console.log('apiScriptElement = ', apiScriptElement);
-
                 document.body.appendChild(apiScriptElement);
 
                 // Pass the YT object as the result of the promise
-                window.onYouTubeIframeAPIReady = () => resolve(window.YT);
+                window.onYouTubeIframeAPIReady = () =>
+                    resolve({
+                        YT: window.YT,
+                        refToPlayerDiv: this.refToPlayerDiv,
+                    });
             });
 
-            g_youtubeLoadedPromise.then(YT => {
-                console.log('YoutubePlayer ready');
-                this.player = new YT.Player(this.refPlayer, {
-                    videoId: TEST_VIDEO_ID,
-                    height: '100%',
-                    width: '100%',
-                    events: {
-                        onStateChange: this.onPlayerStateChange,
-                    },
-                });
-                this.props.storeRefInParent(this.player);
-                console.log('player = ', this.player);
+            this.ytPlayerApiLoadedPromise.then(this.props.getYtPlayerApiCallback);
+
+            // If youtube api doesn't load within 4 seconds, we freaking crash x_). For now.
+            const timeoutPromise = new Promise((resolve, reject) => {
+                const timeoutSeconds = 10;
+
+                setTimeout(() => {
+                    console.assert(
+                        false,
+                        `Failed to load youtube player api in ${timeoutSeconds} seconds`
+                    );
+                }, timeoutSeconds * 1000);
             });
+
+            Promise.race([timeoutPromise, this.ytPlayerApiLoadedPromise]);
         }
-    }
-
-    componentWillUnmount() {
-        if (this.player) {
-            this.player.destroy();
-        }
-    }
-
-    componentWillReceiveProps(nextProps) {
-        // Handle the video commands here.
-        // console.log('Youtube Component will receive new props', nextProps);
-
-        if (this.props.videoId !== nextProps.videoId && nextProps.videoId) {
-            this.cueVideoId(nextProps.videoId);
-        }
-
-        let newPlaybackState = undefined;
-
-        const command = nextProps.playerCommand;
-
-        let seekToTime = -1;
-
-        if (!command) {
-            console.log('YoutubePlayer received undefined command.');
-            return;
-        }
-
-        // Execute the command and put the current timestamp of the video.
-        if (command.name === 'playVideo') {
-            newPlaybackState = 'playing';
-        } else if (command.name === 'pauseVideo') {
-            newPlaybackState = 'paused';
-        } else if (command.name === 'seekToTime') {
-            newPlaybackState = 'playing';
-            seekToTime = command.time;
-        } else {
-            console.log('Unknown command - ', command);
-            newPlaybackState = 'playing';
-        }
-
-        if (!this.player || !this.player.getCurrentTime) {
-            // Player api has not loaded yet
-            if (command.appCallbackFn) {
-                command.appCallbackFn();
-            }
-
-            console.log('YoutubePlayer api has not loaded yet');
-            return;
-        }
-
-        command.time = this.player.getCurrentTime();
-
-        console.log(
-            'storedPlaybackState = ',
-            this.storedPlaybackState,
-            'newPlaybackState = ',
-            newPlaybackState
-        );
-
-        if (
-            (this.storedPlaybackState !== newPlaybackState && newPlaybackState) ||
-            command.name === 'seekToTime'
-        ) {
-            this.updatePlaybackState(newPlaybackState, seekToTime, command.appCallbackFn);
-        }
-    }
-
-    updatePlaybackState(newPlaybackState, seekToTime, appCallbackFn) {
-        console.log('Updating playback state to ', newPlaybackState);
-        if (newPlaybackState === 'playing') {
-            if (seekToTime !== -1) {
-                this.player.seekTo(seekToTime, true);
-            } else {
-                this.player.playVideo();
-            }
-        } else if (newPlaybackState === 'paused') {
-            this.player.pauseVideo();
-        } else if (newPlaybackState === 'unstarted') {
-            this.player.stopVideo();
-        } else {
-            throw new Error(`Invalid new playback state "${newPlaybackState}"`);
-        }
-
-        if (appCallbackFn) {
-            appCallbackFn();
-        }
-    }
-
-    shouldComponentUpdate(newProps, newState) {
-        return false;
     }
 }
-
-YoutubeIframeComponent.defaultProps = {
-    onBuffer: ytEvent => {},
-
-    onCued: ytEvent => {},
-
-    onEnd: ytEvent => {},
-
-    onError: ytEvent => {
-        console.log('youtube iframe api error - ', ytEvent);
-    },
-
-    onPause: ytEvent => {},
-
-    onPlay: ytEvent => {},
-
-    onUnstarted: ytEvent => {},
-
-    playbackState: 'unstarted',
-    playerConfig: {},
-
-    pauseVideo: (commandDesc, player) => {},
-    playVideo: (commandDesc, player) => {},
-    skipAhead: (commandDesc, player) => {},
-    storeRefInParent: player => {},
-};
 
 // Just prints the current content blocks in the editor for debugging.
 function printContentState(editorState, message = '') {
@@ -528,17 +364,17 @@ class EditorComponent extends React.Component {
         let videoTime = 0;
         let shouldPutTimestamp = false;
 
-        // Send the app component the appropriate command using notifyConsoleCommand.
+        // Send the app component the appropriate command using sendCommandFromEditorToPlayer.
 
         if (commandName === 'playVideo') {
-            videoTime = this.props.app.notifyConsoleCommand({ name: 'playVideo' });
+            videoTime = this.props.app.sendCommandFromEditorToPlayer({ name: 'playVideo' });
         } else if (commandName === 'pauseVideo') {
-            videoTime = this.props.app.notifyConsoleCommand({ name: 'pauseVideo' });
+            videoTime = this.props.app.sendCommandFromEditorToPlayer({ name: 'pauseVideo' });
         } else if (commandName === 'playVideoWithTimestamp') {
-            videoTime = this.props.app.notifyConsoleCommand({ name: 'playVideo' });
+            videoTime = this.props.app.sendCommandFromEditorToPlayer({ name: 'playVideo' });
             shouldPutTimestamp = true;
         } else if (commandName === 'pauseVideoWithTimestamp') {
-            videoTime = this.props.app.notifyConsoleCommand({ name: 'pauseVideo' });
+            videoTime = this.props.app.sendCommandFromEditorToPlayer({ name: 'pauseVideo' });
             shouldPutTimestamp = true;
         } else if (commandName === 'seekForwardNSeconds') {
             const seconds = trieResult.repeatCounts['>'];
@@ -546,7 +382,7 @@ class EditorComponent extends React.Component {
                 console.warn('Should not happen, seconds = ', seconds);
                 return 'not-handled';
             }
-            this.props.app.notifyConsoleCommand({
+            this.props.app.sendCommandFromEditorToPlayer({
                 name: 'addToCurrentTime',
                 secondsToAdd: seconds,
             });
@@ -556,7 +392,7 @@ class EditorComponent extends React.Component {
                 console.warn('Should not happen, seconds = ', seconds);
                 return 'not-handled';
             }
-            this.props.app.notifyConsoleCommand({
+            this.props.app.sendCommandFromEditorToPlayer({
                 name: 'addToCurrentTime',
                 secondsToAdd: -seconds,
             });
@@ -803,7 +639,6 @@ const ShowInstructionsComponent = props => {
 
 class LoadYoutubeVideoIdComponent extends Component {
     static propTypes = {
-        id: PropTypes.string.isRequired,
         locked: PropTypes.bool,
         focussed: PropTypes.bool,
         value: PropTypes.string,
@@ -831,13 +666,12 @@ class LoadYoutubeVideoIdComponent extends Component {
     }
 
     render() {
-        const { id, type, locked } = this.props;
-        const { focussed, value, error, label } = this.state;
+        const { value, label } = this.state;
 
         return (
             <div className="youtube-id-input">
                 <input
-                    id={id}
+                    id="__yt_video_id_input__"
                     type="text"
                     value={value}
                     placeholder={label}
@@ -846,6 +680,54 @@ class LoadYoutubeVideoIdComponent extends Component {
                 />
             </div>
         );
+    }
+}
+
+const YT_PLAYBACK_STATE_NAMES = {
+    '-1': 'unstarted',
+    1: 'playing',
+    2: 'paused',
+    3: 'buffering',
+    5: 'cued',
+};
+
+class YoutubePlayerController {
+    constructor(playerApi) {
+        console.assert(playerApi !== undefined);
+        this.playerApi = playerApi;
+        // this.currentVideoId = '';
+        this.currentVideoId = TEST_VIDEO_ID;
+    }
+
+    getPlayerState() {
+        return this.playerApi.getPlayerState();
+    }
+
+    playVideo(videoId = undefined) {
+        if (!videoId && !this.currentVideoId) {
+            return;
+        }
+
+        this.currentVideoId = videoId ? videoId : this.currentVideoId;
+        this.playerApi.cueVideoById(this.currentVideoId, 0);
+        this.playerApi.playVideo(this.currentVideoId);
+    }
+
+    pauseVideo() {
+        this.playerApi.pauseVideo(this.currentVideoId);
+    }
+
+    addToCurrentTime(seconds) {
+        const currentTime = this.playerApi.getCurrentTime();
+        this.playerApi.seekTo(Math.max(currentTime + seconds, 0));
+    }
+
+    getCurrentTime() {
+        return this.playerApi.getCurrentTime();
+    }
+
+    seekTo(timeInSeconds) {
+        this.playerApi.seekTo(timeInSeconds);
     }
 }
 
@@ -859,62 +741,27 @@ const g_HotkeysOfCommands = {
 export class App extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            playerCommandToSend: undefined,
-            editorCommandToSend: undefined,
-        };
+        this.state = { editorCommandToSend: undefined };
 
         // We keep a handle to the youtube player (the player API, not the dom element itself).
-        this.player = undefined;
-
-        this.setPlayerRef = player => {
-            this.player = player;
-        };
+        this.ytPlayerController = undefined;
 
         // Helpers to set the current editor or the player command to undefined
         this.unsetEditorCommand = () => {
             this.setState({ ...this.state, editorCommandToSend: undefined });
         };
 
-        this.unsetPlayerCommand = () => {
-            const newState = { ...this.state, playerCommandToSend: undefined };
-            console.log('Unset player command = ', newState);
-            // this.setState({ ...this.state, playerCommandToSend: undefined });
-            return newState;
-        };
-
         this.onHotkeySeekToTimeUnderCursor = event => {
             event.preventDefault();
 
-            // Callback will send the player the seekToTime command and unset current editor
-            // command.
-            const callbackAfterEditorResponds = videoTime => {
-                let newState = undefined;
-                if (videoTime === INVALID_VIDEO_TIME) {
-                    newState = {
-                        ...this.state,
-                        playerCommandToSend: undefined,
-                        editorCommandToSend: undefined,
-                    };
-                } else {
-                    newState = {
-                        ...this.state,
-                        playerCommandToSend: makeSeekToTimeCommand(
-                            videoTime,
-                            this.unsetPlayerCommand
-                        ),
-                        editorCommandToSend: undefined,
-                    };
-                }
-
-                this.setState(newState);
-            };
-
             this.setState({
                 ...this.state,
-                editorCommandToSend: makeGetVideoTimeUnderCursorCommand(
-                    callbackAfterEditorResponds
-                ),
+                editorCommandToSend: makeGetVideoTimeUnderCursorCommand(videoTime => {
+                    if (videoTime !== INVALID_VIDEO_TIME) {
+                        this.ytPlayerController.seekTo(videoTime);
+                    }
+                    this.unsetEditorCommand();
+                }),
             });
         };
 
@@ -955,63 +802,47 @@ export class App extends Component {
         this.hotkeyHandlers = {};
 
         this.hotkeyHandlers['seekToTimeUnderCursor'] = this.onHotkeySeekToTimeUnderCursor;
-
         this.hotkeyHandlers['saveToLocalStorage'] = this.onHotkeySaveToLocalStorage;
-
         this.hotkeyHandlers['loadFromLocalStorage'] = this.onHotkeyLoadFromLocalStorage;
 
         // Callback for "load new video" will be sent to LoadYoutubeVideoIdComponent
         this.loadNewVideoCallback = videoId => {};
     }
 
-    // The sCU method will check if the new state has a command to send to at least one of the two
-    // components. If so, it tells not to update. (Keeping it like this for now, although we don't
-    // *need* to intervene)
-    shouldComponentUpdate(newProps, newState) {
-        if (
-            newState.playerCommandToSend === undefined &&
-            newState.editorCommandToSend === undefined
-        ) {
-            return false;
-        }
-        return true;
-    }
-
-    // Notify the command to the youtube player component. Returns the current time of the video.
-    notifyConsoleCommand(consoleCommand) {
-        const currentTime =
-            !this.player || !this.player.getCurrentTime
-                ? INVALID_VIDEO_TIME
-                : this.player.getCurrentTime();
-
-        if (consoleCommand.name === 'pauseVideo') {
-            this.setState({
-                ...this.state,
-                playerCommandToSend: makePauseVideoCommand(this.unsetPlayerCommand),
-            });
-        } else if (consoleCommand.name === 'playVideo') {
-            this.setState({
-                ...this.state,
-                playerCommandToSend: makePlayVideoCommand(this.unsetPlayerCommand),
-            });
-        } else if (consoleCommand.name === 'restartVideo') {
-            this.setState({ ...this.state, playerCommandToSend: makeSeekToTimeCommand(0) });
-        } else if (consoleCommand.name === 'addToCurrentTime') {
-            let seekTime = currentTime + consoleCommand.secondsToAdd;
-            seekTime = Math.max(seekTime, 0);
-
-            this.setState({
-                ...this.state,
-                playerCommandToSend: makeSeekToTimeCommand(seekTime, this.unsetPlayerCommand),
-            });
+    sendCommandFromEditorToPlayer(command) {
+        console.assert(this.ytPlayerController !== undefined);
+        const currentTime = this.ytPlayerController.getCurrentTime();
+        if (command.name === 'pauseVideo') {
+            this.ytPlayerController.pauseVideo();
+        } else if (command.name === 'playVideo') {
+            this.ytPlayerController.playVideo();
+        } else if (command.name === 'restartVideo') {
+            this.ytPlayerController.seekTo(0);
+        } else if (command.name === 'addToCurrentTime') {
+            this.ytPlayerController.addToCurrentTime(command.secondsToAdd);
         } else {
-            console.log('Received unknown console command', consoleCommand);
+            console.log('Received unknown command from editor', command);
         }
-
         return currentTime;
     }
 
     render() {
+        const getYtPlayerApiCallback = ({ YT, refToPlayerDiv }) => {
+            const ytPlayerApi = new YT.Player(refToPlayerDiv, {
+                videoId: TEST_VIDEO_ID,
+                height: '100%',
+                width: '100%',
+                events: {
+                    onStateChange: this.onPlayerStateChange,
+                },
+            });
+            this.ytPlayerController = new YoutubePlayerController(ytPlayerApi);
+        };
+
+        const onVideoIdInput = videoId => {
+            this.ytPlayerController.playVideo(videoId);
+        };
+
         return (
             <div className="app">
                 <HotKeys
@@ -1020,14 +851,11 @@ export class App extends Component {
                     className="hotkey-root"
                 >
                     <div className="left-panel">
-                        <LoadYoutubeVideoIdComponent />
-                        <YoutubeIframeComponent
-                            app={this}
-                            playerCommand={this.state.playerCommandToSend}
-                            storeRefInParent={this.setPlayerRef}
-                        />
+                        <LoadYoutubeVideoIdComponent onChange={onVideoIdInput} />
+                        <YoutubeIframeComponent getYtPlayerApiCallback={getYtPlayerApiCallback} />
                         <ShowInstructionsComponent />
                     </div>
+
                     <EditorComponent app={this} editorCommand={this.state.editorCommandToSend} />
                 </HotKeys>
             </div>
