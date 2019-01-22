@@ -119,13 +119,18 @@ body {
 
 .youtube-id-input {
     position: relative;
-    background-color: #fffef7;
-    font-family: 'Courier', sans-serif;
     transition: 0.3s all;
-    width: 100%;
+    width: 99%;
     flex: 0.02;
-    align-content: center;
     justify-content: flex-end;
+}
+
+#__yt_video_id_input__ {
+    font-family: 'Courier', sans-serif;
+    font-size: 16px;
+    background-color: #040404;
+    width: 100%;
+    color: #e9e9f9;
 }
 
 .youtube-id-input:hover {

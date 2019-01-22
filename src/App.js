@@ -167,6 +167,8 @@ class YoutubeIframeComponent extends Component {
     // In cDM we load the youtube api.
     componentDidMount() {
         if (!this.ytPlayerApiLoadedPromise) {
+            let loadedYtPlayerApi = false;
+
             this.ytPlayerApiLoadedPromise = new Promise((resolve, reject) => {
                 // Create the element for Youtube API script and attach it to the HTML.
                 const apiScriptElement = document.createElement('script');
@@ -176,11 +178,14 @@ class YoutubeIframeComponent extends Component {
                 document.body.appendChild(apiScriptElement);
 
                 // Pass the YT object as the result of the promise
-                window.onYouTubeIframeAPIReady = () =>
+                window.onYouTubeIframeAPIReady = () => {
                     resolve({
                         YT: window.YT,
                         refToPlayerDiv: this.refToPlayerDiv,
                     });
+
+                    loadedYtPlayerApi = true;
+                };
             });
 
             this.ytPlayerApiLoadedPromise.then(this.props.getYtPlayerApiCallback);
@@ -188,12 +193,13 @@ class YoutubeIframeComponent extends Component {
             // If youtube api doesn't load within 4 seconds, we freaking crash x_). For now.
             const timeoutPromise = new Promise((resolve, reject) => {
                 const timeoutSeconds = 10;
-
                 setTimeout(() => {
-                    console.assert(
-                        false,
-                        `Failed to load youtube player api in ${timeoutSeconds} seconds`
-                    );
+                    if (!loadedYtPlayerApi) {
+                        console.assert(
+                            false,
+                            `Failed to load youtube player api in ${timeoutSeconds} seconds`
+                        );
+                    }
                 }, timeoutSeconds * 1000);
             });
 
@@ -265,6 +271,9 @@ class EditorComponent extends React.Component {
     constructor(props) {
         super(props);
 
+        // Keeping a ref to the editor (which is a contenteditable in DOM, just saying)
+        this.editorRef = undefined;
+
         // Create the trie for the key sequences
         this.trie = new Trie();
 
@@ -280,7 +289,7 @@ class EditorComponent extends React.Component {
             plugins: [createMarkdownPlugin()],
         };
 
-        this.focus = () => this.refs.editor.focus();
+        this.focus = () => this.editorRef.focus();
 
         this.onChange = editorState => {
             /*
@@ -600,7 +609,12 @@ class EditorComponent extends React.Component {
                         handleKeyCommand={this.handleKeyCommand}
                         onChange={this.onChange}
                         onTab={this.onTab}
-                        ref="editor"
+                        ref={editorRef => {
+                            if (this.props.getEditorRef) {
+                                this.props.getEditorRef(editorRef);
+                            }
+                            this.editorRef = editorRef;
+                        }}
                         spellCheck={true}
                         handleBeforeInput={this.handleBeforeInput}
                         handleReturn={this.handleReturn}
@@ -644,7 +658,8 @@ class LoadYoutubeVideoIdComponent extends Component {
         value: PropTypes.string,
         error: PropTypes.string,
         label: PropTypes.string,
-        onChange: PropTypes.func.isRequired,
+        onChange: PropTypes.func,
+        onSubmit: PropTypes.func.isRequired,
     };
 
     constructor(props) {
@@ -657,11 +672,19 @@ class LoadYoutubeVideoIdComponent extends Component {
             label: props.label ? props.label : 'Video ID',
         };
 
-        this.onChange = event => {
-            const { id } = this.props;
+        this.handleChange = event => {
             const value = event.target.value;
             this.setState({ ...this.state, value, error: '' });
-            return this.props.onChange(id, value);
+
+            if (this.props.onChange) {
+                return this.props.onChange(value);
+            }
+        };
+
+        this.handleSubmit = event => {
+            event.preventDefault();
+            // this.setState({ ...this.state, value, error: '' });
+            return this.props.onSubmit(this.state.value);
         };
     }
 
@@ -670,14 +693,16 @@ class LoadYoutubeVideoIdComponent extends Component {
 
         return (
             <div className="youtube-id-input">
-                <input
-                    id="__yt_video_id_input__"
-                    type="text"
-                    value={value}
-                    placeholder={label}
-                    onChange={this.onChange}
-                    spellCheck="false"
-                />
+                <form onSubmit={this.handleSubmit}>
+                    <input
+                        id="__yt_video_id_input__"
+                        type="text"
+                        value={value}
+                        placeholder={label}
+                        onChange={this.handleChange}
+                        spellCheck="false"
+                    />
+                </form>
             </div>
         );
     }
@@ -709,6 +734,14 @@ class YoutubePlayerController {
         }
 
         this.currentVideoId = videoId ? videoId : this.currentVideoId;
+        // this.playerApi.cueVideoById(this.currentVideoId, 0);
+
+        console.log('playVideo', this.currentVideoId);
+        this.playerApi.playVideo(this.currentVideoId);
+    }
+
+    loadAndPlayVideo(videoId) {
+        this.currentVideoId = videoId;
         this.playerApi.cueVideoById(this.currentVideoId, 0);
         this.playerApi.playVideo(this.currentVideoId);
     }
@@ -745,6 +778,8 @@ export class App extends Component {
 
         // We keep a handle to the youtube player (the player API, not the dom element itself).
         this.ytPlayerController = undefined;
+
+        this.editorRef = undefined;
 
         // Helpers to set the current editor or the player command to undefined
         this.unsetEditorCommand = () => {
@@ -839,8 +874,21 @@ export class App extends Component {
             this.ytPlayerController = new YoutubePlayerController(ytPlayerApi);
         };
 
-        const onVideoIdInput = videoId => {
-            this.ytPlayerController.playVideo(videoId);
+        const onVideoIdInput = inputString => {
+            console.log('onVideoIdInput called with videoId', inputString);
+
+            if (!inputString) {
+                return;
+            }
+
+            const videoId = inputString.trim();
+            console.log('Cueing video ', videoId);
+            this.ytPlayerController.loadAndPlayVideo(videoId);
+            this.editorRef.focus();
+        };
+
+        const getEditorRef = editorRef => {
+            this.editorRef = editorRef;
         };
 
         return (
@@ -851,12 +899,16 @@ export class App extends Component {
                     className="hotkey-root"
                 >
                     <div className="left-panel">
-                        <LoadYoutubeVideoIdComponent onChange={onVideoIdInput} />
+                        <LoadYoutubeVideoIdComponent onSubmit={onVideoIdInput} />
                         <YoutubeIframeComponent getYtPlayerApiCallback={getYtPlayerApiCallback} />
                         <ShowInstructionsComponent />
                     </div>
 
-                    <EditorComponent app={this} editorCommand={this.state.editorCommandToSend} />
+                    <EditorComponent
+                        app={this}
+                        editorCommand={this.state.editorCommandToSend}
+                        getEditorRef={getEditorRef}
+                    />
                 </HotKeys>
             </div>
         );
