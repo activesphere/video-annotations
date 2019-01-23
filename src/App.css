@@ -1,5 +1,7 @@
-html,
-body {
+@import url('https://fonts.googleapis.com/css?family=IBM+Plex+Mono');
+
+.root {
+    width: 100%;
     height: 100%;
 }
 
@@ -8,10 +10,11 @@ body {
 }
 
 .hotkey-root {
+    width: 100%;
     height: 100%;
     margin: 0;
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     flex-direction: row;
 
     justify-content: flex-start;
@@ -20,7 +23,7 @@ body {
 }
 
 .left-panel {
-    flex: 2;
+    flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -29,79 +32,39 @@ body {
 }
 
 .youtube-player {
-    border: 1px solid #eee;
+    border: 2px dotted #04fff0;
     height: 50%;
     width: 100%;
     flex: 0.49;
 }
 
-.console-editor-root {
-    background-color: #fffef7;
-    border: 2px solid #fffefe;
-    font-family: 'Courier', serif;
-    font-size: 20px;
-    flex: 2;
+.editor-top-level {
+    background-color: #090909;
+    border: 0px dashed #04fff0;
+    font-family: 'IBM Plex Mono', serif;
+    font-size: 16px;
+    flex: 1;
+    min-height: 100vh;
+    color: #04fff0;
     overflow-y: scroll;
-    box-shadow: 0px 0px 6px 1px rgba(0, 0, 0, 0.5);
+    caret-color: #f0fe40;
+    box-shadow: 0px 0px 1px 1px rgba(0, 0, 0, 0.5);
 }
 
-.console-editor-editor {
-    border-top: 1px solid #ddd;
+.editor-editor {
+    border-top: 0px solid #ddd;
     cursor: text;
     margin-top: 2px;
 }
 
-.console-editor-editor .public-DraftEditorPlaceholder-root,
-.console-editor-editor .public-DraftEditor-content {
-}
-
-.console-editor-editor .public-DraftEditor-content {
+.editor-editor {
     min-height: 300px;
     max-height: fit-content;
-    font-family: 'Courier', sans-serif;
+    font-family: 'IBM Plex Mono', sans-serif;
     font-size: 16px;
 }
 
-.console-editor-hidePlaceholder .public-DraftEditorPlaceholder-root {
-    display: none;
-}
-
-.console-editor-editor .console-editor-blockquote {
-    border-left: 2px solid #eee;
-    color: #020202;
-    font-family: 'Courier', 'Georgia', serif;
-    font-style: italic;
-    margin: 16px 0;
-    background-color: #efefef;
-}
-
-.console-editor-editor .public-DraftStyleDefault-pre {
-    background-color: rgba(0, 0, 0, 0.05);
-    font-family: 'Courier', 'Menlo', 'Courier', monospace;
-    font-size: 20px;
-    padding: 20px;
-}
-
-.console-editor-controls {
-    font-family: 'Courier', sans-serif;
-    font-size: 16px;
-    margin-bottom: 5px;
-    user-select: none;
-}
-
-.console-editor-styleButton {
-    color: #999;
-    cursor: pointer;
-    margin-right: 16px;
-    padding: 4px 5px;
-    display: inline-block;
-}
-
-.console-editor-activeButton {
-    color: #5890ff;
-}
-
-.console-editor-link {
+.editor-link {
     color: '#9ebdff';
     text-decoration: 'underline';
     font-style: 'italic';
@@ -109,10 +72,12 @@ body {
 
 .info-text {
     white-space: pre-wrap;
-    background-color: #fffef7;
+    background-color: #090909;
+    color: #f0fe40;
     font-weight: bold;
-    border: 2px solid #fffefe;
-    font-family: Courier, serif;
+    border: 2px dotted #04fff0;
+    box-sizing: content-box;
+    font-family: 'IBM Plex Mono', monospace;
     font-size: 12px;
     flex: 0.49;
 }
@@ -126,26 +91,11 @@ body {
 }
 
 #__yt_video_id_input__ {
-    font-family: 'Courier', sans-serif;
+    font-family: 'IBM Plex Mono', sans-serif;
     font-size: 16px;
-    background-color: #040404;
+    background-color: #090909;
     width: 100%;
-    color: #e9e9f9;
-}
-
-.youtube-id-input:hover {
-    background-color: #e7f7e7;
-    box-shadow: 0px 4px 20px 0px rgba(0, 0, 0, 0.05);
-}
-
-.youtube-id-input.focussed input {
-    padding: 24px 16px 8px 16px;
-}
-
-.youtube-id-input.focussed input + label {
-    top: 4px;
-    opacity: 1;
-    color: #28cc70;
+    color: #04fff0;
 }
 
 .youtube-id-input.locked {
