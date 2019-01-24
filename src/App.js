@@ -5,10 +5,9 @@ import React, { Component } from 'react';
 import { HotKeys } from 'react-hotkeys';
 import { TEST_VIDEO_ID } from './utils';
 import YoutubeIframeComponent from './YoutubeIframeComponent';
-import ShowInstructionsComponent from './ShowInstructionsComponent';
+import LogComponent, { defaultInfoText } from './LogComponent';
 import EditorComponent from './EditorComponent';
 import LoadYoutubeVideoIdComponent from './LoadYoutubeVideoIdComponent';
-import { Value } from 'slate';
 
 const INVALID_VIDEO_TIME = -1;
 
@@ -96,33 +95,15 @@ const g_HotkeysOfCommands = {
     loadFromLocalStorage: 'alt+shift+v',
 };
 
-const initialValue = Value.fromJSON({
-  document: {
-    nodes: [
-      {
-        object: 'block',
-        type: 'paragraph',
-        nodes: [
-          {
-            object: 'text',
-            leaves: [
-              {
-                text: '...........................................................................',
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-});
-
-
 // The commands from console are send via the App component
 export default class App extends Component {
     constructor(props) {
         super(props);
-        this.state = { editorCommandToSend: undefined, editorValue: initialValue};
+        this.state = {
+            editorCommandToSend: undefined,
+            infoText: undefined,
+            infoLastTime: undefined,
+        };
 
         // We keep a handle to the youtube player (the player API, not the dom element itself).
         this.ytPlayerController = undefined;
@@ -212,7 +193,6 @@ export default class App extends Component {
                 }
                 this.ytPlayerController.seekTo(command.videoTime);
             }
-
         } else {
             console.log('Received unknown command from editor', command);
         }
@@ -224,6 +204,16 @@ export default class App extends Component {
             videoId: this.ytPlayerController.currentVideoId,
             videoTime: this.ytPlayerController.getCurrentTime(),
         };
+    }
+
+    showInfo(infoText, infoDuration) {
+        console.log('Showing info ', infoText);
+
+        this.setState({ ...this.state, infoText });
+
+        setTimeout(() => {
+            this.setState({ ...this.state, infoText: defaultInfoText });
+        }, infoDuration * 1000.0);
     }
 
     render() {
@@ -265,14 +255,13 @@ export default class App extends Component {
                     <div className="left-panel">
                         <LoadYoutubeVideoIdComponent onSubmit={onVideoIdInput} />
                         <YoutubeIframeComponent getYtPlayerApiCallback={getYtPlayerApiCallback} />
-                        <ShowInstructionsComponent />
+                        <LogComponent infoText={this.state.infoText} />
                     </div>
 
                     <EditorComponent
                         parentApp={this}
                         editorCommand={this.state.editorCommandToSend}
                         getEditorRef={getEditorRef}
-                        value={this.state.editorValue}
                     />
                 </HotKeys>
             </div>

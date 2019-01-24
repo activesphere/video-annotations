@@ -4,6 +4,7 @@ import { Value, Mark } from 'slate';
 import { makeYoutubeUrl, secondsToHhmmss, TEST_VIDEO_ID, GIGANTOR_THEME_SONG } from './utils';
 import PropTypes from 'prop-types';
 import AutoReplace from 'slate-auto-replace';
+import { saveVideoNote } from './save_note';
 
 const MARK_TYPES = {
     YOUTUBE_TIMESTAMP: 'youtube_timestamp',
@@ -39,17 +40,23 @@ const TimestampMarkComponent = props => {
         color: '#9ebdff',
         textDecoration: 'underline',
         fontStyle: 'italic',
-        cursor: 'pointer'
+        cursor: 'pointer',
     };
 
-    const url = makeYoutubeUrl(props.mark.data.get("videoId"), props.mark.data.get("videoTime"));
+    const url = makeYoutubeUrl(props.mark.data.get('videoId'), props.mark.data.get('videoTime'));
 
     const openUrl = () => {
-    	window.open(url);
+        window.open(url);
     };
 
     return (
-        <a href={url} onClick={openUrl} className="inline-youtube-timestamp" {...props.attributes} style={style}>
+        <a
+            href={url}
+            onClick={openUrl}
+            className="inline-youtube-timestamp"
+            {...props.attributes}
+            style={style}
+        >
             {props.children}
         </a>
     );
@@ -62,79 +69,108 @@ function makeYoutubeTimestampMark(videoId, videoTime) {
 const AUTOSAVE = false;
 
 export default class EditorComponent extends Component {
-	static propTypes = {
-		parentApp: PropTypes.object.isRequired,
-		editorCommand: PropTypes.object.isRequired,
-		getEditorRef: PropTypes.func.isRequired,
-	};
+    static propTypes = {
+        parentApp: PropTypes.object.isRequired,
+        editorCommand: PropTypes.object,
+        getEditorRef: PropTypes.func.isRequired,
+    };
 
-	// Just a place to create the plugins in. The action functions of the plugins do need to use
-	// `this`. So this is a method rather than a free function.
-	_makePlugins() {
-		let plugins = [];
+    // Just a place to create the plugins in. The action functions of the plugins do need to use
+    // `this`. So this is a method rather than a free function.
+    _makePlugins() {
+        let plugins = [];
 
-		// Play video key-sequence
-		plugins.push(
-			AutoReplace({trigger: '>', before: /[^#]?(#)$/, change: (change) => {
-				change.insertText('');
-				this.props.parentApp.doVideoCommand({name: 'playVideo'});
-			} }));
+        // Play video key-sequence
+        plugins.push(
+            AutoReplace({
+                trigger: '>',
+                before: /[^#]?(#)$/,
+                change: change => {
+                    change.insertText('');
+                    this.props.parentApp.doVideoCommand({ name: 'playVideo' });
+                },
+            })
+        );
 
-		// Pause video key-sequence
-		plugins.push(
-			AutoReplace({trigger: '/', before: /[^#]?(#)$/, change: (change) => {
-				change.insertText('');
-				this.props.parentApp.doVideoCommand({name: 'pauseVideo'});
-			} }));
+        // Pause video key-sequence
+        plugins.push(
+            AutoReplace({
+                trigger: '/',
+                before: /[^#]?(#)$/,
+                change: change => {
+                    change.insertText('');
+                    this.props.parentApp.doVideoCommand({ name: 'pauseVideo' });
+                },
+            })
+        );
 
-		// Puts a timestamp mark. Used by the following AutoReplace plugins
-		const putTimestampMark = (change, videoCommandName) => {
-			const { videoId, videoTime } = this.props.parentApp.currentVideoInfo();
-			if (!videoId) {
-				return;
-			}
-			if (!videoTime && videoTime !== 0) {
-				return
-			}
+        // Puts a timestamp mark. Used by the following AutoReplace plugins
+        const putTimestampMark = (change, videoCommandName) => {
+            const { videoId, videoTime } = this.props.parentApp.currentVideoInfo();
+            if (!videoId) {
+                return;
+            }
+            if (!videoTime && videoTime !== 0) {
+                return;
+            }
 
-			const timeStampMark = makeYoutubeTimestampMark(videoId, videoTime);
-			change.toggleMark(timeStampMark);
-			change.insertText(secondsToHhmmss(videoTime));
-			change.toggleMark(timeStampMark);
-			this.props.parentApp.doVideoCommand({name: videoCommandName });
+            const timeStampMark = makeYoutubeTimestampMark(videoId, videoTime);
+            change.toggleMark(timeStampMark);
+            change.insertText(secondsToHhmmss(videoTime));
+            change.toggleMark(timeStampMark);
+            this.props.parentApp.doVideoCommand({ name: videoCommandName });
 
-			console.log(change);
-		};
+            console.log(change);
+        };
 
-		// Put video timestamp and play (or continue playing) video
-		plugins.push(
-			AutoReplace({trigger: '>', before: /[^#]?(#t)$/, change: (change) => { putTimestampMark(change, 'playVideo'); } }));
+        // Put video timestamp and play (or continue playing) video
+        plugins.push(
+            AutoReplace({
+                trigger: '>',
+                before: /[^#]?(#t)$/,
+                change: change => {
+                    putTimestampMark(change, 'playVideo');
+                },
+            })
+        );
 
-		// Put video timestamp and pause video
-		plugins.push(
-			AutoReplace({trigger: '/', before: /[^#]?(#t)$/, change: (change) => { putTimestampMark(change, 'pauseVideo'); } }));
+        // Put video timestamp and pause video
+        plugins.push(
+            AutoReplace({
+                trigger: '/',
+                before: /[^#]?(#t)$/,
+                change: change => {
+                    putTimestampMark(change, 'pauseVideo');
+                },
+            })
+        );
 
-		// Seek to time. The format of input is /#-?[0-9]+(s|m)s/. So input #, then -10s, then g,
-		// and you go back 10 seconds. The full sequence is #-10ss.
-		plugins.push(
-			AutoReplace({
-				trigger: 's', before: /[^#]?(#(-?)([0-9]+)(s|m))$/,
-				change: (change, event, matches) => {
-					const groups = matches.before;
-					const amount = +groups[3];
-					const unit = groups[4] === 's'? 1 : 60;
-					const sign = groups[2] === '-'? -1 : 1;
-					const deltaTimeInSeconds = sign * amount * unit;
+        // Seek to time. The format of input is /#-?[0-9]+(s|m)s/. So input #, then -10s, then s,
+        // and you go back 10 seconds. The full sequence is #-10ss.
+        plugins.push(
+            AutoReplace({
+                trigger: 's',
+                before: /[^#]?(#(-?)([0-9]+)(s|m))$/,
+                change: (change, event, matches) => {
+                    const groups = matches.before;
+                    const amount = +groups[3];
+                    const unit = groups[4] === 's' ? 1 : 60;
+                    const sign = groups[2] === '-' ? -1 : 1;
+                    const deltaTimeInSeconds = sign * amount * unit;
 
-					console.log('addToCurrentTime', deltaTimeInSeconds, ' seconds');
+                    console.log('addToCurrentTime', deltaTimeInSeconds, ' seconds');
 
-					this.props.parentApp.doVideoCommand({name: 'addToCurrentTime', secondsToAdd: deltaTimeInSeconds});
-					change.insertText('.');
-				}
-			}));
+                    this.props.parentApp.doVideoCommand({
+                        name: 'addToCurrentTime',
+                        secondsToAdd: deltaTimeInSeconds,
+                    });
+                    change.insertText('.');
+                },
+            })
+        );
 
-		return plugins;
-	}
+        return plugins;
+    }
 
     constructor(props) {
         super(props);
@@ -174,12 +210,12 @@ export default class EditorComponent extends Component {
         };
 
         this.onKeyDown = (event, editor, next) => {
-        	// Special handling of TAB key. Put 4 spaces.
-        	if (event.keyCode === 9) {
-        		editor.insertText('    ');
-        		event.preventDefault();
-        		return true;
-        	}
+            // Special handling of TAB key. Put 4 spaces.
+            if (event.keyCode === 9) {
+                editor.insertText('    ');
+                event.preventDefault();
+                return true;
+            }
 
             if (!event.ctrlKey) {
                 return next();
@@ -208,7 +244,8 @@ export default class EditorComponent extends Component {
 
                 case 't': {
                     // Test adding a youtube timestamp mark.
-                    const timeStampMark = makeYoutubeTimestampMark(TEST_VIDEO_ID, 0);
+                    const {videoId, videoTime} = this.props.parentApp.currentVideoInfo();
+                    const timeStampMark = makeYoutubeTimestampMark(videoId, videoTime);
                     editor.toggleMark(timeStampMark);
                     editor.insertText('Hello Friend');
                     editor.toggleMark(timeStampMark);
@@ -217,31 +254,35 @@ export default class EditorComponent extends Component {
                 }
 
                 case 'd': {
-                	if (!editor.value.selection.isCollapsed) {
-                		break;
-                	}
+                    if (!editor.value.selection.isCollapsed) {
+                        break;
+                    }
 
-                	// Get mark under cursor. It's a list, as there can be multiple marks applied to
-                	// overlapping ranges I guess.
-                	const marks = editor.value.marks;
+                    // Get mark under cursor. It's a list, as there can be multiple marks applied to
+                    // overlapping ranges I guess.
+                    const marks = editor.value.marks;
 
-                	for (let mark of marks) {
-                		if (mark.type === MARK_TYPES.YOUTUBE_TIMESTAMP) {
-                			const videoCommand = {
-                				name: 'seekToTime',
-                				videoId: mark.data.get('videoId'),
-                				videoTime: mark.data.get('videoTime'),
-                			};
+                    for (let mark of marks) {
+                        if (mark.type === MARK_TYPES.YOUTUBE_TIMESTAMP) {
+                            const videoCommand = {
+                                name: 'seekToTime',
+                                videoId: mark.data.get('videoId'),
+                                videoTime: mark.data.get('videoTime'),
+                            };
 
-                			console.log(`Seeking video ${videoCommand.videoId} to time ${secondsToHhmmss(videoCommand.videoTime)}`);
+                            console.log(
+                                `Seeking video ${videoCommand.videoId} to time ${secondsToHhmmss(
+                                    videoCommand.videoTime
+                                )}`
+                            );
 
-                			this.props.parentApp.doVideoCommand(videoCommand);
-                		}
-                	}
+                            this.props.parentApp.doVideoCommand(videoCommand);
+                        }
+                    }
 
-                	handled = true;
+                    handled = true;
 
-                	break;
+                    break;
                 }
 
                 // Associate a mark at the current selected text
@@ -254,10 +295,19 @@ export default class EditorComponent extends Component {
 
                 case 's': {
                     // Ctrl + s saves current state of editor
-                    console.log(event);
+                    // console.log(event);
 
-                    const content = JSON.stringify(this.state.value.toJSON());
-                    localStorage.setItem('saved_editor_state', content);
+                    console.log('Saving note');
+
+                    const strEditorState = JSON.stringify(this.state.value.toJSON());
+                    // localStorage.setItem('saved_editor_state', strEditorState);
+
+                    const {videoId} = this.props.parentApp.currentVideoInfo();
+                    saveVideoNote(videoId, strEditorState, "sameNoteName");
+
+                    const infoText = `Saved Note for video "${videoId}"`;
+                    this.props.parentApp.showInfo(infoText, 2.0);
+
                     handled = true;
                     break;
                 }
@@ -273,7 +323,7 @@ export default class EditorComponent extends Component {
 
                     const savedJsonValue = JSON.parse(savedValueJsonStr);
 
-                    this.setState({...this.state, value: Value.fromJSON(savedJsonValue) });
+                    this.setState({ ...this.state, value: Value.fromJSON(savedJsonValue) });
                     handled = true;
                     break;
                 }
@@ -300,12 +350,10 @@ export default class EditorComponent extends Component {
                 renderMark={this.renderMark}
                 className="editor-top-level"
                 autoCorrect={false}
-
-                refs={(editorRef) => {
-                	this.editorRef = editorRef;
-                	this.props.getEditorRef = editorRef;
+                refs={editorRef => {
+                    this.editorRef = editorRef;
+                    this.props.getEditorRef = editorRef;
                 }}
-
                 plugins={this.plugins}
             />
         );
