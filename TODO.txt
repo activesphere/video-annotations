@@ -1,0 +1,20 @@
+#### Better saving (important)
+
+* Save notes with a name. Doesn't have to be per-video. Show a simple dialog
+when user wants to save.
+
+* A load menu. Show a modal menu (like Sublime text's) and enable fuzzy
+(longest subsequence)searching for notes with note-name, video-id, or video
+name
+
+
+#### CSS fixes (important)
+
+Using flexbox stretches the video player div when user starts writing more
+that one screen-height worth of text.
+
+
+#### More edit options
+
+* Support arbitrary hyperlinks (with slate paste link plugin)
+* Add full markdown support

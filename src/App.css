@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css?family=IBM+Plex+Mono');
+@import url('https://fonts.googleapis.com/css?family=Roboto+Mono');
 
 .root {
     width: 100%;
@@ -7,9 +7,6 @@
 
 .app {
     height: 100%;
-}
-
-.hotkey-root {
     width: 100%;
     height: 100%;
     margin: 0;
@@ -40,11 +37,13 @@
 }
 
 .editor-top-level {
-    background-color: #606080;
+    background-color: #404070;
     border: 0px dashed #04fff0;
-    font-family: 'IBM Plex Mono', serif;
+    font-family: 'Roboto Mono', serif;
     font-size: 16px;
     flex: 1;
+    min-width: 100vh;
+    max-width: 100vh;
     min-height: 100vh;
     color: #04fff0;
     overflow-y: scroll;
@@ -65,7 +64,7 @@
 .editor-editor {
     min-height: 300px;
     max-height: fit-content;
-    font-family: 'IBM Plex Mono', sans-serif;
+    font-family: 'Roboto Mono', sans-serif;
     font-size: 16px;
 }
 
@@ -103,7 +102,7 @@ blockquote[dir='rtl'] {
     color: #f0fe40;
     font-weight: bold;
     border: 2px dotted #04fff0;
-    font-family: 'IBM Plex Mono', monospace;
+    font-family: 'Roboto Mono', monospace;
     font-size: 12px;
     flex: 0.49;
 }
@@ -117,7 +116,7 @@ blockquote[dir='rtl'] {
 }
 
 #__yt_video_id_input__ {
-    font-family: 'IBM Plex Mono', sans-serif;
+    font-family: 'Roboto Mono', sans-serif;
     font-size: 16px;
     background-color: #090909;
     width: 100%;

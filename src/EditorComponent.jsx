@@ -4,7 +4,7 @@ import { Value, Mark } from 'slate';
 import { makeYoutubeUrl, secondsToHhmmss, TEST_VIDEO_ID, GIGANTOR_THEME_SONG } from './utils';
 import PropTypes from 'prop-types';
 import AutoReplace from './slate-auto-replace-alt';
-import { saveVideoNote, loadVideoNote } from './save_note';
+import { saveVideoNote, loadVideoNote, NoteData } from './save_note';
 
 const MARK_TYPES = {
     YOUTUBE_TIMESTAMP: 'youtube_timestamp',
@@ -83,7 +83,7 @@ export default class EditorComponent extends Component {
         // Play video key-sequence
         plugins.push(
             AutoReplace({
-                trigger: 'n',
+                trigger: '-',
                 before: /[^#]?(#)$/,
                 change: change => {
                     change.insertText('');
@@ -126,7 +126,7 @@ export default class EditorComponent extends Component {
         // Put video timestamp and play (or continue playing) video
         plugins.push(
             AutoReplace({
-                trigger: 'n',
+                trigger: '-',
                 before: /[^#]?(#t)$/,
                 change: change => {
                     putTimestampMark(change, 'playVideo');
@@ -175,7 +175,7 @@ export default class EditorComponent extends Component {
     constructor(props) {
         super(props);
 
-        this.state = { value: initialEditorValue };
+        this.state = { value: initialEditorValue, showWindowPortal: false };
 
         this.editorRef = undefined;
 
@@ -206,6 +206,25 @@ export default class EditorComponent extends Component {
 
                 default:
                     return next();
+            }
+        };
+
+        this.loadNoteForVideo = videoId => {
+            if (!videoId) {
+                this.props.parentApp.showInfo(
+                    'No video current playing. Not loading note.',
+                    2,
+                    true
+                );
+                // TODO(rksht): load note independently of video.
+            }
+
+            const jsonEditorValue = loadVideoNote(videoId);
+
+            if (!jsonEditorValue) {
+                this.props.parentApp.showInfo(`No note saved for videoId = ${videoId}`);
+            } else {
+                this.setState({ ...this.state, value: Value.fromJSON(jsonEditorValue) });
             }
         };
 
@@ -317,11 +336,11 @@ export default class EditorComponent extends Component {
 
                 // Ctrl + s saves current state of editor
                 case 's': {
-                    const strEditorState = JSON.stringify(this.state.value.toJSON());
-                    // localStorage.setItem('saved_editor_state', strEditorState);
-
+                    const jsonEditorValue = this.state.value.toJSON();
                     const { videoId } = this.props.parentApp.currentVideoInfo();
-                    saveVideoNote(videoId, strEditorState, 'sameNoteName');
+                    const noteData = new NoteData(videoId, jsonEditorValue);
+
+                    saveVideoNote(noteData, 'sameNoteName');
 
                     const infoText = `Saved Note for video "${videoId}"`;
                     this.props.parentApp.showInfo(infoText, 2.0);
@@ -332,26 +351,15 @@ export default class EditorComponent extends Component {
 
                 // Ctrl + l will load most recently saved version of this video from local storage
                 case 'l': {
-                	const { videoId } = this.props.parentApp.currentVideoInfo();
+                    const { videoId } = this.props.parentApp.currentVideoInfo();
+                    this.loadNoteForVideo(videoId);
+                    handled = true;
+                    break;
+                }
 
-                	if (!videoId) {
-                		console.warn('No video playing');
-                		// TODO: load note independently of video.
-                	}
-
-                    saveVideoNote(videoId, strEditorState, 'sameNoteName');
-
-                    const strEditorState = loadVideoNote(videoId);
-
-                    if (!strEditorState) {
-                    	this.props.parentApp.showInfo(`No note saved for videoId = ${videoId}`);
-                    } else {
-                    	const savedJsonValue = JSON.parse(strEditorState);
-                    	console.assert(!!savedJsonValue);
-                    	
-                    	this.setState({ ...this.state, value: Value.fromJSON(savedJsonValue) });
-                    }
-
+                // Ctrl + o will open the saved notes list
+                case 'o': {
+                    this.setState({ ...this.state, showWindowPortal: true });
                     handled = true;
                     break;
                 }
@@ -549,22 +557,31 @@ export default class EditorComponent extends Component {
         };
     }
 
+    componentWillReceiveProps(newProps) {
+        if (newProps.editorCommand && newProps.editorCommand.name === 'loadNoteForVideo') {
+        	this.loadNoteForVideo(newProps.editorCommand.videoId);
+        	newProps.editorCommand.resetCommand();
+        }
+    }
+
     render() {
         return (
-            <Editor
-                value={this.state.value}
-                onChange={this.onChange}
-                onKeyDown={this.onKeyDown}
-                renderMark={this.renderMark}
-                renderNode={this.renderNode}
-                className="editor-top-level"
-                autoCorrect={false}
-                refs={editorRef => {
-                    this.editorRef = editorRef;
-                    this.props.getEditorRef = editorRef;
-                }}
-                plugins={this.plugins}
-            />
+            <div>
+                <Editor
+                    value={this.state.value}
+                    onChange={this.onChange}
+                    onKeyDown={this.onKeyDown}
+                    renderMark={this.renderMark}
+                    renderNode={this.renderNode}
+                    className="editor-top-level"
+                    autoCorrect={false}
+                    refs={editorRef => {
+                        this.editorRef = editorRef;
+                        this.props.getEditorRef = editorRef;
+                    }}
+                    plugins={this.plugins}
+                />
+            </div>
         );
     }
 }

@@ -2,7 +2,6 @@ import './App.css';
 
 import React, { Component } from 'react';
 
-import { HotKeys } from 'react-hotkeys';
 import { TEST_VIDEO_ID } from './utils';
 import YoutubeIframeComponent from './YoutubeIframeComponent';
 import LogComponent, { defaultInfoText } from './LogComponent';
@@ -10,24 +9,6 @@ import EditorComponent from './EditorComponent';
 import LoadYoutubeVideoIdComponent from './LoadYoutubeVideoIdComponent';
 
 const INVALID_VIDEO_TIME = -1;
-
-// --- Commands sent by App to EditorComponent
-
-function makeGetVideoTimeUnderCursorCommand(appCallbackFn) {
-    return { name: 'getVideoTimeUnderCursor', appCallbackFn: appCallbackFn };
-}
-
-function makeGetRawContentCommand(appCallbackFn) {
-    return { name: 'getRawContentCommand', appCallbackFn: appCallbackFn };
-}
-
-function makeSetRawContentCommand(rawContent, appCallbackFn) {
-    return {
-        name: 'setRawContentCommand',
-        rawContent: rawContent,
-        appCallbackFn: appCallbackFn,
-    };
-}
 
 /*
 const YT_PLAYBACK_STATE_NAMES = {
@@ -40,11 +21,35 @@ const YT_PLAYBACK_STATE_NAMES = {
 */
 
 class YoutubePlayerController {
-    constructor(playerApi) {
+    constructor(YT, playerApi) {
         console.assert(playerApi !== undefined);
+        this.YT = YT;
         this.playerApi = playerApi;
         // this.currentVideoId = '';
+        // this.currentVideoId = TEST_VIDEO_ID;
         this.currentVideoId = TEST_VIDEO_ID;
+
+        this.currentVideoTitle = undefined;
+
+        /* TODO(rksht) - Without going through this, it's better to just get the video name using Youtube's
+        Data API.
+        const onStateChange = e => {
+        	console.log('player state change - e.data =', e.data);
+            switch (e.data) {
+                case this.YT.PlayerState.UNSTARTED:
+                    break;
+
+                default:
+                    if (!this.currentVideoTitle) {
+                        this.currentVideoTitle = this.player.getVideoData().title;
+                        console.log('currentVideoTitle =', this.currentVideoTitle);
+                    }
+                    break;
+            }
+        };
+
+        this.playerApi.addEventListener('onStateChange', this.onStateChange);
+        */
     }
 
     getPlayerState() {
@@ -89,18 +94,12 @@ class YoutubePlayerController {
     }
 }
 
-const g_HotkeysOfCommands = {
-    seekToTimeUnderCursor: 'alt+shift+a',
-    saveToLocalStorage: 'alt+shift+s',
-    loadFromLocalStorage: 'alt+shift+v',
-};
-
 // The commands from console are send via the App component
 export default class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            editorCommandToSend: undefined,
+            editorCommand: undefined,
             infoText: undefined,
             infoLastTime: undefined,
         };
@@ -108,94 +107,54 @@ export default class App extends Component {
         // We keep a handle to the youtube player (the player API, not the dom element itself).
         this.ytPlayerController = undefined;
 
-        // Helpers to set the current editor or the player command to undefined
-        this.unsetEditorCommand = () => {
-            this.setState({ ...this.state, editorCommandToSend: undefined });
-        };
-
-        this.onHotkeySeekToTimeUnderCursor = event => {
-            event.preventDefault();
-
-            this.setState({
-                ...this.state,
-                editorCommandToSend: makeGetVideoTimeUnderCursorCommand(videoTime => {
-                    if (videoTime !== INVALID_VIDEO_TIME) {
-                        this.ytPlayerController.seekTo(videoTime);
-                    }
-                    this.unsetEditorCommand();
-                }),
-            });
-        };
-
-        this.onHotkeySaveToLocalStorage = event => {
-            event.preventDefault();
-
-            console.log('Saving to local storage');
-
-            const callbackAfterEditorResponds = rawContent => {
-                console.log('Raw content = ', rawContent);
-                const savedContentString = JSON.stringify(rawContent);
-                console.log(`Saved content =${savedContentString}`);
-                sessionStorage.setItem('lastSavedEditorState', savedContentString);
-                this.unsetEditorCommand();
-            };
-
-            this.setState({
-                ...this.state,
-                editorCommandToSend: makeGetRawContentCommand(callbackAfterEditorResponds),
-            });
-        };
-
-        this.onHotkeyLoadFromLocalStorage = event => {
-            event.preventDefault();
-            const rawContent = JSON.parse(sessionStorage.getItem('lastSavedEditorState'));
-            console.log('Loaded editor contents from local storage', rawContent);
-
-            this.setState({
-                ...this.state,
-                editorCommandToSend: makeSetRawContentCommand(rawContent, () => {
-                    this.unsetEditorCommand();
-                }),
-            });
-        };
-
-        // Initializing the hotkey handler map
-
-        this.hotkeyHandlers = {};
-
-        this.hotkeyHandlers['seekToTimeUnderCursor'] = this.onHotkeySeekToTimeUnderCursor;
-        this.hotkeyHandlers['saveToLocalStorage'] = this.onHotkeySaveToLocalStorage;
-        this.hotkeyHandlers['loadFromLocalStorage'] = this.onHotkeyLoadFromLocalStorage;
-
-        // Callback for "load new video" will be sent to LoadYoutubeVideoIdComponent
-        this.loadNewVideoCallback = videoId => {};
+        /*
+        setTimeout(() => {
+            this.ytPlayerController.loadAndPlayVideo(TEST_VIDEO_ID);
+        }, 3 * 1000);
+        */
     }
 
-    // TODO - perhaps break these into multiple functions instead of sending command objects, which
-    // is a leftover from the previous style.
+    // TODO(rksht) - perhaps break these into multiple functions instead of sending command objects,
+    // which is a leftover from the previous style.
     doVideoCommand(command) {
         console.assert(this.ytPlayerController !== undefined);
         const currentTime = this.ytPlayerController.getCurrentTime();
-        if (command.name === 'pauseVideo') {
-            this.ytPlayerController.pauseVideo();
-        } else if (command.name === 'playVideo') {
-            this.ytPlayerController.playVideo();
-        } else if (command.name === 'restartVideo') {
-            this.ytPlayerController.seekTo(0);
-        } else if (command.name === 'addToCurrentTime') {
-            this.ytPlayerController.addToCurrentTime(command.secondsToAdd);
-        } else if (command.name === 'seekToTime') {
-            if (!command.videoId || (!command.videoTime !== undefined && command.videoTime !== 0)) {
-                // Check if currently playing videoId is the same as sent as command, if not we will
-                // load the given video
-                if (this.ytPlayerController.currentVideoId !== command.videoId) {
-                    this.ytPlayerController.loadAndPlayVideo(command.videoId);
+
+        switch (command.name) {
+            case 'playVideo':
+                this.ytPlayerController.playVideo();
+                break;
+
+            case 'pauseVideo':
+                this.ytPlayerController.pauseVideo();
+                break;
+
+            case 'restartVideo':
+                this.ytPlayerController.seekTo(0);
+                break;
+
+            case 'addToCurrentTime':
+                this.ytPlayerController.addToCurrentTime(command.secondsToAdd);
+                break;
+
+            case 'seekToTime':
+                if (
+                    !command.videoId ||
+                    (!command.videoTime !== undefined && command.videoTime !== 0)
+                ) {
+                    // Check if currently playing videoId is the same as sent as command, if not we
+                    // will load the given video
+                    if (this.ytPlayerController.currentVideoId !== command.videoId) {
+                        this.ytPlayerController.loadAndPlayVideo(command.videoId);
+                    }
+                    this.ytPlayerController.seekTo(command.videoTime);
                 }
-                this.ytPlayerController.seekTo(command.videoTime);
-            }
-        } else {
-            console.log('Received unknown command from editor', command);
+                break;
+
+            default:
+                console.warn('Received unknown command from editor', command);
         }
+
         return currentTime;
     }
 
@@ -206,8 +165,10 @@ export default class App extends Component {
         };
     }
 
-    showInfo(infoText, infoDuration) {
-        console.log('Showing info ', infoText);
+    showInfo(infoText, infoDuration, logToConsole = false) {
+        if (logToConsole) {
+            console.log(infoText);
+        }
 
         this.setState({ ...this.state, infoText });
 
@@ -219,14 +180,14 @@ export default class App extends Component {
     render() {
         const getYtPlayerApiCallback = ({ YT, refToPlayerDiv }) => {
             const ytPlayerApi = new YT.Player(refToPlayerDiv, {
-                videoId: TEST_VIDEO_ID,
+                videoId: undefined,
                 height: '100%',
                 width: '100%',
                 events: {
                     onStateChange: this.onPlayerStateChange,
                 },
             });
-            this.ytPlayerController = new YoutubePlayerController(ytPlayerApi);
+            this.ytPlayerController = new YoutubePlayerController(YT, ytPlayerApi);
         };
 
         const onVideoIdInput = inputString => {
@@ -239,6 +200,19 @@ export default class App extends Component {
             const videoId = inputString.trim();
             console.log('Cueing video ', videoId);
             this.ytPlayerController.loadAndPlayVideo(videoId);
+
+            // Tell the editor component to load the saved editor value for this video.
+
+            this.setState({
+                ...this.state,
+                editorCommand: {
+                    name: 'loadNoteForVideo',
+                    videoId: videoId,
+                    resetCommand: () => {
+                        this.setState({ ...this.state, editorCommand: undefined });
+                    },
+                },
+            });
         };
 
         const getEditorRef = editorRef => {
@@ -247,23 +221,17 @@ export default class App extends Component {
 
         return (
             <div className="app">
-                <HotKeys
-                    keyMap={g_HotkeysOfCommands}
-                    handlers={this.hotkeyHandlers}
-                    className="hotkey-root"
-                >
-                    <div className="left-panel">
-                        <LoadYoutubeVideoIdComponent onSubmit={onVideoIdInput} />
-                        <YoutubeIframeComponent getYtPlayerApiCallback={getYtPlayerApiCallback} />
-                        <LogComponent infoText={this.state.infoText} />
-                    </div>
+                <div className="left-panel">
+                    <LoadYoutubeVideoIdComponent onSubmit={onVideoIdInput} />
+                    <YoutubeIframeComponent getYtPlayerApiCallback={getYtPlayerApiCallback} />
+                    <LogComponent infoText={this.state.infoText} />
+                </div>
 
-                    <EditorComponent
-                        parentApp={this}
-                        editorCommand={this.state.editorCommandToSend}
-                        getEditorRef={getEditorRef}
-                    />
-                </HotKeys>
+                <EditorComponent
+                    parentApp={this}
+                    editorCommand={this.state.editorCommand}
+                    getEditorRef={getEditorRef}
+                />
             </div>
         );
     }

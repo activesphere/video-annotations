@@ -12,3 +12,5 @@ shown in the preview.
 
 You can place timestamp links in the document and seek to that time in the
 corresponding video.
+
+#### Key sequences inside editor
