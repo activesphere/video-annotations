@@ -35,17 +35,29 @@ export function saveVideoNote(videoId, strEditorState, noteName) {
 
     const key = `saved_noted_${videoId}`;
     if (!(key in idToNoteData)) {
-    	idToNoteData[key] = {
-    		videoId,
-    		strEditorState,
-    		noteName,
-    	}
+        idToNoteData[key] = {
+            videoId,
+            strEditorState,
+            noteName,
+        };
     } else {
-    	idToNoteData[key].videoId = videoId;
-    	idToNoteData[key].strEditorState = strEditorState;
-    	idToNoteData[key].noteName = noteName;
+        idToNoteData[key].videoId = videoId;
+        idToNoteData[key].strEditorState = strEditorState;
+        idToNoteData[key].noteName = noteName;
     }
 
     localStorage.setItem(LS_KEYS.VIDEO_ID_TO_NOTE_DATA, JSON.stringify(idToNoteData));
     saveVideoIdOfNote(noteName, videoId);
+}
+
+export function loadVideoNote(videoId) {
+	initMaps();
+
+	let idToNoteData = JSON.parse(localStorage.getItem(LS_KEYS.VIDEO_ID_TO_NOTE_DATA));
+	const key = `saved_note_${videoId}`;
+
+	if (!(key in idToNoteData)) {
+		return undefined;
+	}
+	return idToNoteData[key].strEditorState;
 }

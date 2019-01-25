@@ -3,8 +3,8 @@ import { Editor } from 'slate-react';
 import { Value, Mark } from 'slate';
 import { makeYoutubeUrl, secondsToHhmmss, TEST_VIDEO_ID, GIGANTOR_THEME_SONG } from './utils';
 import PropTypes from 'prop-types';
-import AutoReplace from 'slate-auto-replace';
-import { saveVideoNote } from './save_note';
+import AutoReplace from './slate-auto-replace-alt';
+import { saveVideoNote, loadVideoNote } from './save_note';
 
 const MARK_TYPES = {
     YOUTUBE_TIMESTAMP: 'youtube_timestamp',
@@ -25,7 +25,7 @@ const initialEditorValue = Value.fromJSON({
                         object: 'text',
                         leaves: [
                             {
-                                text: GIGANTOR_THEME_SONG,
+                                text: '',
                             },
                         ],
                     },
@@ -83,7 +83,7 @@ export default class EditorComponent extends Component {
         // Play video key-sequence
         plugins.push(
             AutoReplace({
-                trigger: '>',
+                trigger: 'n',
                 before: /[^#]?(#)$/,
                 change: change => {
                     change.insertText('');
@@ -126,7 +126,7 @@ export default class EditorComponent extends Component {
         // Put video timestamp and play (or continue playing) video
         plugins.push(
             AutoReplace({
-                trigger: '>',
+                trigger: 'n',
                 before: /[^#]?(#t)$/,
                 change: change => {
                     putTimestampMark(change, 'playVideo');
@@ -164,7 +164,7 @@ export default class EditorComponent extends Component {
                         name: 'addToCurrentTime',
                         secondsToAdd: deltaTimeInSeconds,
                     });
-                    change.insertText('.');
+                    change.insertText('');
                 },
             })
         );
@@ -218,7 +218,7 @@ export default class EditorComponent extends Component {
             }
 
             if (!event.ctrlKey) {
-                return next();
+                return this.handleNonHotkey(event, editor, next);
             }
 
             let handled = false;
@@ -244,7 +244,7 @@ export default class EditorComponent extends Component {
 
                 case 't': {
                     // Test adding a youtube timestamp mark.
-                    const {videoId, videoTime} = this.props.parentApp.currentVideoInfo();
+                    const { videoId, videoTime } = this.props.parentApp.currentVideoInfo();
                     const timeStampMark = makeYoutubeTimestampMark(videoId, videoTime);
                     editor.toggleMark(timeStampMark);
                     editor.insertText('Hello Friend');
@@ -287,23 +287,41 @@ export default class EditorComponent extends Component {
 
                 // Associate a mark at the current selected text
                 case '\\': {
-                    const selection = editor.value.selection;
-                    editor.addMarkAtRange(selection, makeYoutubeTimestampMark(TEST_VIDEO_ID, 20));
+                    let selection = editor.value.selection;
+                    // selection = selection.moveEndBackward(1);
+
+                    console.log('Pressed Ctrl + \\');
+
+                    if (selection.isCollapsed) {
+                        console.log('Selection is collapsed');
+                        handled = false;
+                        break;
+                    }
+
+                    console.log('Selection not collapsed');
+
+                    const { videoId, videoTime } = this.props.parentApp.currentVideoInfo();
+
+                    if (!videoId) {
+                        handled = false;
+                        break;
+                    }
+
+                    const timeStampMark = makeYoutubeTimestampMark(videoId, videoTime);
+                    editor.addMarkAtRange(selection, timeStampMark);
+                    // ^ Could -1 from selection.end too instead of doing this?
+
                     handled = true;
                     break;
                 }
 
+                // Ctrl + s saves current state of editor
                 case 's': {
-                    // Ctrl + s saves current state of editor
-                    // console.log(event);
-
-                    console.log('Saving note');
-
                     const strEditorState = JSON.stringify(this.state.value.toJSON());
                     // localStorage.setItem('saved_editor_state', strEditorState);
 
-                    const {videoId} = this.props.parentApp.currentVideoInfo();
-                    saveVideoNote(videoId, strEditorState, "sameNoteName");
+                    const { videoId } = this.props.parentApp.currentVideoInfo();
+                    saveVideoNote(videoId, strEditorState, 'sameNoteName');
 
                     const infoText = `Saved Note for video "${videoId}"`;
                     this.props.parentApp.showInfo(infoText, 2.0);
@@ -314,17 +332,36 @@ export default class EditorComponent extends Component {
 
                 // Ctrl + l will load most recently saved version of this video from local storage
                 case 'l': {
-                    const savedValueJsonStr = localStorage.getItem('saved_editor_state');
+                	const { videoId } = this.props.parentApp.currentVideoInfo();
 
-                    if (!savedValueJsonStr) {
-                        console.warn('No editor Value was previously saved');
-                        return next();
+                	if (!videoId) {
+                		console.warn('No video playing');
+                		// TODO: load note independently of video.
+                	}
+
+                    saveVideoNote(videoId, strEditorState, 'sameNoteName');
+
+                    const strEditorState = loadVideoNote(videoId);
+
+                    if (!strEditorState) {
+                    	this.props.parentApp.showInfo(`No note saved for videoId = ${videoId}`);
+                    } else {
+                    	const savedJsonValue = JSON.parse(strEditorState);
+                    	console.assert(!!savedJsonValue);
+                    	
+                    	this.setState({ ...this.state, value: Value.fromJSON(savedJsonValue) });
                     }
 
-                    const savedJsonValue = JSON.parse(savedValueJsonStr);
-
-                    this.setState({ ...this.state, value: Value.fromJSON(savedJsonValue) });
                     handled = true;
+                    break;
+                }
+
+                // Log the editor state
+                case 'y': {
+                    const valueJson = this.state.value.toJSON();
+                    console.log(valueJson);
+                    handled = true;
+
                     break;
                 }
 
@@ -339,6 +376,177 @@ export default class EditorComponent extends Component {
             }
             return next();
         };
+
+        this.handleNonHotkey = (event, editor, next) => {
+            switch (event.key) {
+                case 'Backspace': {
+                    console.log('Backspace');
+                    return this.handleBackspaceKey(event, editor, next);
+                }
+
+                case 'Enter': {
+                    console.log('Enter');
+                    return this.handleEnterKey(event, editor, next);
+                }
+
+                case ' ': {
+                    console.log('space');
+                    return this.handleSpaceKey(event, editor, next);
+                }
+
+                default: {
+                    return next();
+                }
+            }
+        };
+
+        this.blockTypeOfCharSeq = charSeq => {
+            switch (charSeq) {
+                case '*':
+                case '-':
+                case '+':
+                    return 'list-item';
+                case '>':
+                    return 'block-quote';
+                case '#':
+                    return 'heading-one';
+                case '##':
+                    return 'heading-two';
+                case '###':
+                    return 'heading-three';
+                case '####':
+                    return 'heading-four';
+                case '#####':
+                    return 'heading-five';
+                case '######':
+                    return 'heading-six';
+                default:
+                    return undefined;
+            }
+        };
+
+        this.renderNode = (props, editor, next) => {
+            switch (props.node.type) {
+                case 'block-quote':
+                    return <blockquote {...props.attributes}>{props.children}</blockquote>;
+                case 'bulleted-list':
+                    return <ul {...props.attributes}>{props.children}</ul>;
+                case 'heading-one':
+                    return <h1 {...props.attributes}>{props.children}</h1>;
+                case 'heading-two':
+                    return <h2 {...props.attributes}>{props.children}</h2>;
+                case 'heading-three':
+                    return <h3 {...props.attributes}>{props.children}</h3>;
+                case 'heading-four':
+                    return <h4 {...props.attributes}>{props.children}</h4>;
+                case 'heading-five':
+                    return <h5 {...props.attributes}>{props.children}</h5>;
+                case 'heading-six':
+                    return <h6 {...props.attributes}>{props.children}</h6>;
+                case 'list-item':
+                    return <li {...props.attributes}>{props.children}</li>;
+                default:
+                    return next();
+            }
+        };
+
+        this.handleSpaceKey = (event, editor, next) => {
+            const { value } = editor;
+            const { selection } = value;
+            if (!selection.isCollapsed) {
+                return next();
+            }
+
+            const { startBlock } = value;
+            const { start } = selection;
+
+            const charSeq = startBlock.text.slice(0, start.offset).replace(/\s*/, '');
+
+            console.log('charSeq =', charSeq);
+
+            const blockType = this.blockTypeOfCharSeq(charSeq);
+
+            if (!blockType) {
+                return next();
+            }
+
+            console.log('Creating new block of type ', blockType);
+
+            if (blockType === 'list-item' && startBlock.type === 'list-item') {
+                return next();
+            }
+
+            event.preventDefault();
+
+            editor.setBlocks(blockType);
+
+            if (blockType === 'list-item') {
+                editor.wrapBlock('bulleted-list');
+            }
+
+            editor.insertText(' ');
+
+            // Not removing the markdown symbols
+            // editor.moveFocusToStartOfNode(startBlock).delete();
+
+            return next();
+        };
+
+        this.handleBackspaceKey = (event, editor, next) => {
+            const { value } = editor;
+            const { selection } = value;
+
+            if (!selection.isCollapsed) {
+                return next();
+            }
+
+            const { startBlock } = value;
+
+            if (startBlock.type === 'paragraph') {
+                return next();
+            }
+
+            if (startBlock.type === 'list-item') {
+                editor.unwrapBlock('bulleted-list');
+            }
+
+            return next();
+        };
+
+        this.handleEnterKey = (event, editor, next) => {
+            const { value } = editor;
+            const { selection } = value;
+
+            const { start, end, isExpanded } = selection;
+
+            if (isExpanded) {
+                return next();
+            }
+
+            const { startBlock } = value;
+
+            if (start.offset === 0 && startBlock.text.length === 0) {
+                return this.handleBackspaceKey(event, editor, next);
+            }
+            if (end.offset !== startBlock.text.length) {
+                return next();
+            }
+
+            if (
+                startBlock.type !== 'heading-one' &&
+                startBlock.type !== 'heading-two' &&
+                startBlock.type !== 'heading-three' &&
+                startBlock.type !== 'heading-four' &&
+                startBlock.type !== 'heading-five' &&
+                startBlock.type !== 'heading-six' &&
+                startBlock.type !== 'block-quote'
+            ) {
+                return next();
+            }
+
+            event.preventDefault();
+            editor.splitBlock().setBlocks('paragraph');
+        };
     }
 
     render() {
@@ -348,6 +556,7 @@ export default class EditorComponent extends Component {
                 onChange={this.onChange}
                 onKeyDown={this.onKeyDown}
                 renderMark={this.renderMark}
+                renderNode={this.renderNode}
                 className="editor-top-level"
                 autoCorrect={false}
                 refs={editorRef => {
