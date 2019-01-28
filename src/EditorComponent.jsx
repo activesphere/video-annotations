@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Editor } from 'slate-react';
 import { Value, Mark } from 'slate';
-import { makeYoutubeUrl, secondsToHhmmss, TEST_VIDEO_ID, GIGANTOR_THEME_SONG } from './utils';
+import { makeYoutubeUrl, secondsToHhmmss } from './utils';
 import PropTypes from 'prop-types';
 import AutoReplace from './slate-auto-replace-alt';
 import { saveVideoNote, loadVideoNote, NoteData } from './save_note';

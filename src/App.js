@@ -2,13 +2,14 @@ import './App.css';
 
 import React, { Component } from 'react';
 
-import { TEST_VIDEO_ID } from './utils';
+import { TEST_VIDEO_ID, GIGANTOR_THEME_SONG } from './utils';
 import YoutubeIframeComponent from './YoutubeIframeComponent';
 import LogComponent, { defaultInfoText } from './LogComponent';
 import EditorComponent from './EditorComponent';
 import LoadYoutubeVideoIdComponent from './LoadYoutubeVideoIdComponent';
 
-const INVALID_VIDEO_TIME = -1;
+// Muh test modal
+import NewbModal from './ModalTutorial';
 
 /*
 const YT_PLAYBACK_STATE_NAMES = {
@@ -231,6 +232,12 @@ export default class App extends Component {
                     parentApp={this}
                     editorCommand={this.state.editorCommand}
                     getEditorRef={getEditorRef}
+                />
+
+                <NewbModal
+                    buttonLabel={'press me'}
+                    dontShowContent={true}
+                    modalText={GIGANTOR_THEME_SONG}
                 />
             </div>
         );

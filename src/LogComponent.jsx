@@ -20,6 +20,8 @@ Hotkeys
 
 Ctrl + D                                        Seek to timestamp under cursor
 Select text and press Ctrl + \\                  Make timestamp at selected text
+Ctrl + S 										Load note for current video
+Ctrl + L 										Save note for current video
 
 `;
 

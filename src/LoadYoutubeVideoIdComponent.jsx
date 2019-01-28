@@ -19,7 +19,7 @@ export default class LoadYoutubeVideoIdComponent extends Component {
             focussed: (props.locked && props.focussed) || false,
             value: props.value ? props.value : '',
             error: props.error ? props.error : '',
-            label: props.label ? props.label : 'Video ID',
+            label: props.label ? props.label : 'Youtube Video ID',
         };
 
         this.handleChange = event => {

@@ -1,13 +1,3 @@
-import { Value } from 'slate';
-
-// Returns a note identifier that can be used to search the full list of notes using lcs. Ignore
-// this, unused for now.
-function makeNoteIdentifier(noteName, videoId, videoName) {
-    noteName = noteName.replace(/\s*/, '.');
-    videoName = videoName.replace(/\s*/, '.');
-    return `${noteName}.${videoId}.${videoName}`;
-}
-
 // localStorage key for the full JSON object we are storing which contains *all* notes.
 const VIDEO_ID_TO_NOTE_DATA = 'video_id_to_note_data';
 
@@ -22,9 +12,9 @@ export class NoteData {
 
 // Initialize maps if they don't exist
 function initMap() {
-	if (!localStorage.getItem(VIDEO_ID_TO_NOTE_DATA)) {
-		localStorage.setItem(VIDEO_ID_TO_NOTE_DATA, '{}');
-	}
+    if (!localStorage.getItem(VIDEO_ID_TO_NOTE_DATA)) {
+        localStorage.setItem(VIDEO_ID_TO_NOTE_DATA, '{}');
+    }
 }
 
 // Saves given NoteData

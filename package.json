@@ -4,10 +4,12 @@
     "private": true,
     "dependencies": {
         "@slate-editor/font-size-plugin": "^5.1.0",
+        "classnames": "^2.2.6",
         "immutable": "^4.0.0-rc.12",
         "react": "^16.7.0",
         "react-dom": "^16.7.0",
         "react-scripts": "2.1.3",
+        "react-transition-group": "^2.5.3",
         "reactjs-popup": "^1.3.2",
         "slate": "^0.44.9",
         "slate-auto-replace": "^0.12.1",

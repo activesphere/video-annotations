@@ -219,6 +219,9 @@ function normalizeTrigger(trigger) {
             };
         case 'string':
             return isHotkey(trigger);
+
+        default:
+            return undefined;
     }
 }
 
