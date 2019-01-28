@@ -83,7 +83,7 @@ export default class EditorComponent extends Component {
         // Play video key-sequence
         plugins.push(
             AutoReplace({
-                trigger: '-',
+                trigger: ')',
                 before: /[^#]?(#)$/,
                 change: change => {
                     change.insertText('');
@@ -126,7 +126,7 @@ export default class EditorComponent extends Component {
         // Put video timestamp and play (or continue playing) video
         plugins.push(
             AutoReplace({
-                trigger: '-',
+                trigger: ')',
                 before: /[^#]?(#t)$/,
                 change: change => {
                     putTimestampMark(change, 'playVideo');
@@ -559,8 +559,8 @@ export default class EditorComponent extends Component {
 
     componentWillReceiveProps(newProps) {
         if (newProps.editorCommand && newProps.editorCommand.name === 'loadNoteForVideo') {
-        	this.loadNoteForVideo(newProps.editorCommand.videoId);
-        	newProps.editorCommand.resetCommand();
+            this.loadNoteForVideo(newProps.editorCommand.videoId);
+            newProps.editorCommand.resetCommand();
         }
     }
 
