@@ -1,6 +1,7 @@
 import './App.css';
 
 import React, { Component } from 'react';
+import Select from 'react-select';
 
 import { TEST_VIDEO_ID, GIGANTOR_THEME_SONG } from './utils';
 import YoutubeIframeComponent from './YoutubeIframeComponent';
@@ -9,7 +10,7 @@ import EditorComponent from './EditorComponent';
 import LoadYoutubeVideoIdComponent from './LoadYoutubeVideoIdComponent';
 
 // Muh test modal
-import NewbModal from './ModalTutorial';
+// import { NewbModal, SearchNotesMenuModal } from './ModalTutorial';
 
 /*
 const YT_PLAYBACK_STATE_NAMES = {
@@ -95,6 +96,12 @@ class YoutubePlayerController {
     }
 }
 
+const options = [
+    { value: 'chocolate', label: 'Chocolate' },
+    { value: 'strawberry', label: 'Strawberry' },
+    { value: 'vanilla', label: 'Vanilla' },
+];
+
 // The commands from console are send via the App component
 export default class App extends Component {
     constructor(props) {
@@ -103,6 +110,7 @@ export default class App extends Component {
             editorCommand: undefined,
             infoText: undefined,
             infoLastTime: undefined,
+            selectedOption: undefined,
         };
 
         // We keep a handle to the youtube player (the player API, not the dom element itself).
@@ -178,6 +186,11 @@ export default class App extends Component {
         }, infoDuration * 1000.0);
     }
 
+    handleChange = selectedOption => {
+        this.setState({ ...this.state, selectedOption });
+        console.log(`Option selected:`, selectedOption);
+    };
+
     render() {
         const getYtPlayerApiCallback = ({ YT, refToPlayerDiv }) => {
             const ytPlayerApi = new YT.Player(refToPlayerDiv, {
@@ -214,16 +227,24 @@ export default class App extends Component {
                     },
                 },
             });
+
+            this.editorDivRef.focus();
         };
 
-        const getEditorRef = editorRef => {
-            this.editorRef = editorRef;
+        const getEditorRef = editorDivRef => {
+            console.log('Setting div ref');
+            this.editorDivRef = editorDivRef;
         };
 
         return (
             <div className="app">
                 <div className="left-panel">
                     <LoadYoutubeVideoIdComponent onSubmit={onVideoIdInput} />
+                    <Select
+                        value={this.selectedOption}
+                        onChange={this.handleChange}
+                        options={options}
+                    />
                     <YoutubeIframeComponent getYtPlayerApiCallback={getYtPlayerApiCallback} />
                     <LogComponent infoText={this.state.infoText} />
                 </div>
@@ -232,12 +253,6 @@ export default class App extends Component {
                     parentApp={this}
                     editorCommand={this.state.editorCommand}
                     getEditorRef={getEditorRef}
-                />
-
-                <NewbModal
-                    buttonLabel={'press me'}
-                    dontShowContent={true}
-                    modalText={GIGANTOR_THEME_SONG}
                 />
             </div>
         );

@@ -177,7 +177,7 @@ export default class EditorComponent extends Component {
 
         this.state = { value: initialEditorValue, showWindowPortal: false };
 
-        this.editorRef = undefined;
+        this.editorDivRef = undefined;
 
         this.plugins = this._makePlugins();
 
@@ -490,9 +490,12 @@ export default class EditorComponent extends Component {
 
             if (blockType === 'list-item') {
                 editor.wrapBlock('bulleted-list');
+                editor.moveFocusToStartOfNode(startBlock).delete();
+            } else {
+                editor.insertText(' ');
             }
 
-            editor.insertText(' ');
+            // editor.insertText(' ');
 
             // Not removing the markdown symbols
             // editor.moveFocusToStartOfNode(startBlock).delete();
@@ -508,11 +511,17 @@ export default class EditorComponent extends Component {
                 return next();
             }
 
+            if (selection.start.offset != 0) {
+                return next();
+            }
+
             const { startBlock } = value;
 
             if (startBlock.type === 'paragraph') {
                 return next();
             }
+
+            event.preventDefault();
 
             if (startBlock.type === 'list-item') {
                 editor.unwrapBlock('bulleted-list');
@@ -566,7 +575,12 @@ export default class EditorComponent extends Component {
 
     render() {
         return (
-            <div>
+            <div
+                ref={editorDivRef => {
+                    this.editorDivRef = editorDivRef;
+                    this.props.getEditorRef(editorDivRef);
+                }}
+            >
                 <Editor
                     value={this.state.value}
                     onChange={this.onChange}
@@ -575,10 +589,6 @@ export default class EditorComponent extends Component {
                     renderNode={this.renderNode}
                     className="editor-top-level"
                     autoCorrect={false}
-                    refs={editorRef => {
-                        this.editorRef = editorRef;
-                        this.props.getEditorRef = editorRef;
-                    }}
                     plugins={this.plugins}
                 />
             </div>

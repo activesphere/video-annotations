@@ -17,6 +17,9 @@ that one screen-height worth of text.
 #### More edit options
 
 * Support arbitrary hyperlinks (with slate paste link plugin)
+
+* Place video data (title and id) into editor with a hotkey.
+
 * Add full markdown support
 
 

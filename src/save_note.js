@@ -33,7 +33,8 @@ export function saveVideoNote(noteData, noteName) {
     localStorage.setItem(VIDEO_ID_TO_NOTE_DATA, JSON.stringify(idToNoteData));
 
     // TODO(rksht): (De-)serializing will slow down as number of notes or large notes increases. Use
-    // localstorage itself as a key, or cache the map.
+    // localstorage itself as a key, or cache the map. This *must* be done considering we want to
+    // search notes and autosave.
 }
 
 // Returns the saved editor
@@ -48,4 +49,58 @@ export function loadVideoNote(videoId) {
         return undefined;
     }
     return JSON.parse(idToNoteData[key].strJsonEditorValue);
+}
+
+// Search results
+
+export class SearchResult {
+    constructor(mainText, subText, key) {
+        this.mainText = mainText;
+        this.subText = subText;
+        this.key = key;
+    }
+}
+
+class DummyNote {
+    constructor(noteName, videoId) {
+        this.noteName = noteName;
+        this.videoId = videoId;
+    }
+
+    toString() {
+        return `${this.noteName}-${this.videoId}-dummy`;
+    }
+}
+
+// For testing
+const dummyNotes = [
+    new DummyNote('Ode to the West Wind', 'oa98kj098'),
+    new DummyNote('Wuthering Heights', '8098njanwd'),
+    new DummyNote('Guided Missiles', '8nawd90kwf'),
+    new DummyNote('The Wanderer', '36tjcrifjrv'),
+];
+
+export function searchNotesByName(name) {
+    if (!name) {
+        return [];
+    }
+
+    const matchedNoteIndices = [];
+    const strNoteInfos = dummyNotes.map(n => n.toString().toLowerCase());
+    name = name.toLowerCase();
+
+    for (let i = 0; i < strNoteInfos.length; ++i) {
+        const strInfo = strNoteInfos[i];
+        if (strInfo.includes(name)) {
+            matchedNoteIndices.push(i);
+        }
+    }
+
+    return matchedNoteIndices.map(i => {
+        return new SearchResult(
+            dummyNotes[i].noteName,
+            dummyNotes[i].videoId,
+            dummyNotes[i].videoId
+        );
+    });
 }
