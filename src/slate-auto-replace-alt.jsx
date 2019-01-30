@@ -34,7 +34,6 @@ function AutoReplace() {
 
     function onKeyDown(event, change, next) {
         if (!trigger(event, change, next)) {
-            console.log('trigger returned false');
             return next();
         }
 
@@ -215,7 +214,6 @@ function AutoReplace() {
  */
 
 function normalizeTrigger(trigger) {
-    console.log('Trigger is');
     switch (typeOf(trigger)) {
         case 'function':
             console.log('function');
@@ -227,7 +225,6 @@ function normalizeTrigger(trigger) {
             };
         case 'string':
             const b = isHotkey(trigger);
-            console.log('isHotkey =', b);
             return b;
 
         default:

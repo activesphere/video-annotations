@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css?family=Consolas');
+@import url('https://fonts.googleapis.com/css?family=Source+Code+Pro');
 
 .root {
     width: 100%;
@@ -13,7 +13,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: stretch;
-    flex: 1;
+    flex: 2;
 }
 
 .left-panel {
@@ -21,6 +21,7 @@
     flex-direction: column;
     justify-content: flex-start;
     align-items: stretch;
+    flex: 1;
 }
 
 .youtube-player {
@@ -32,7 +33,7 @@
     background-color: #fafaf0;
     border: 3px #fcfaff;
     border-style: solid;
-    font-family: 'Consolas', sans-serif;
+    font-family: 'Source Code Pro', sans-serif;
     font-size: 18px;
     flex: 1;
     min-width: 100vh;
@@ -46,20 +47,27 @@
 }
 
 .editor-top-level code {
-    font-family: 'Consolas', monospace;
+    font-family: 'Source Code Pro', monospace;
     font-family: 16px;
     background-color: #f0f0ea;
 }
 
 .editor-top-level h1 {
-    font-family: 'Consolas', monospace;
-    font-family: 20px;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 20px;
     background-color: #f0f0ff;
 }
 
+.editor-top-level li {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 14px;
+    background-color: #f0faf0;
+}
+
 .editor-top-level .inline-youtube-timestamp {
-    background-color: #ff0090;
+    background-color: #090090;
     color: #f0f0f0;
+    font-style: underline;
 }
 
 .editor-top-level::selection {
@@ -88,7 +96,7 @@ blockquote[dir='rtl'] {
     color: #020209;
     font-weight: bold;
     border: 2px #0202a0;
-    font-family: 'Consolas', monospace;
+    font-family: 'Source Code Pro', monospace;
     font-size: 12px;
 }
 
@@ -100,7 +108,7 @@ blockquote[dir='rtl'] {
 }
 
 #__yt_video_id_input__ {
-    font-family: 'Consolas', sans-serif;
+    font-family: 'Source Code Pro', sans-serif;
     font-size: 16px;
     background-color: #090909;
     width: 100%;

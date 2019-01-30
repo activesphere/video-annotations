@@ -8,68 +8,32 @@ import YoutubeIframeComponent from './YoutubeIframeComponent';
 import LogComponent, { defaultInfoText } from './LogComponent';
 import EditorComponent from './EditorComponent';
 import LoadYoutubeVideoIdComponent from './LoadYoutubeVideoIdComponent';
-import axios from 'axios';
 import getYoutubeTitle from 'get-youtube-title';
+import { dummyNoteLabels, noteStorageManager } from './save_note';
 
 const YOUTUBE_API_KEY = 'AIzaSyB0Hslfl-deOx-ApFvTE0osjJCy2T_1uL0';
-
-// Muh test modal
-// import { NewbModal, SearchNotesMenuModal } from './ModalTutorial';
-
-/*
-const YT_PLAYBACK_STATE_NAMES = {
-    '-1': 'unstarted',
-    1: 'playing',
-    2: 'paused',
-    3: 'buffering',
-    5: 'cued',
-};
-*/
 
 class YoutubePlayerController {
     constructor(YT, playerApi) {
         console.assert(playerApi !== undefined);
         this.YT = YT;
         this.playerApi = playerApi;
-        // this.currentVideoId = '';
-        // this.currentVideoId = TEST_VIDEO_ID;
         this.currentVideoId = undefined;
         this.currentVideoTitle = undefined;
-
-        /* TODO(rksht) - Without going through this, it's better to just get the video name using Youtube's
-        Data API.
-        const onStateChange = e => {
-        	console.log('player state change - e.data =', e.data);
-            switch (e.data) {
-                case this.YT.PlayerState.UNSTARTED:
-                    break;
-
-                default:
-                    if (!this.currentVideoTitle) {
-                        this.currentVideoTitle = this.player.getVideoData().title;
-                        console.log('currentVideoTitle =', this.currentVideoTitle);
-                    }
-                    break;
-            }
-        };
-
-        this.playerApi.addEventListener('onStateChange', this.onStateChange);
-        */
     }
 
     setVideoTitle() {
         if (this.currentVideoId === undefined) {
-            this.currentVideoTitle = undefined;
             return;
         }
 
-        const videoTitleWhenIssued = this.currentVideoId;
-
-        // prettier-ignore
-        // const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${this.currentVideoId}&key=${YOUTUBE_API_KEY}`;
+        this.currentVideoTitle = undefined;
 
         getYoutubeTitle(this.currentVideoId, YOUTUBE_API_KEY, (err, title) => {
-        	console.log("Title = ", title, "Error =", err);
+            if (!err) {
+                this.currentVideoTitle = title;
+            }
+            console.log('Title = ', title, 'Error =', err);
         });
     }
 
@@ -84,7 +48,6 @@ class YoutubePlayerController {
         }
 
         this.currentVideoId = videoId ? videoId : this.currentVideoId;
-        // this.playerApi.cueVideoById(this.currentVideoId, 0);
 
         console.log('playVideo', this.currentVideoId);
         this.playerApi.playVideo(this.currentVideoId);
@@ -92,6 +55,7 @@ class YoutubePlayerController {
 
     loadAndPlayVideo(videoId) {
         this.currentVideoId = videoId;
+        this.currentVideoTitle = undefined;
         this.playerApi.cueVideoById(this.currentVideoId, 0);
         this.playerApi.playVideo(this.currentVideoId);
         this.setVideoTitle();
@@ -110,6 +74,10 @@ class YoutubePlayerController {
         return this.playerApi.getCurrentTime();
     }
 
+    getVideoTitle() {
+        return this.currentVideoTitle;
+    }
+
     seekTo(timeInSeconds) {
         console.log('seekTo', timeInSeconds, 'seconds');
         this.playerApi.seekTo(timeInSeconds);
@@ -122,6 +90,14 @@ const options = [
     { value: 'vanilla', label: 'Vanilla' },
 ];
 
+// Create a list of notemenu items. Each notemenu item has the video id as the value field.
+const noteMenuItems = dummyNoteLabels.map((noteLabel, i) => {
+    return {
+        value: noteLabel.videoId,
+        label: noteLabel.toString(),
+    };
+});
+
 // The commands from console are send via the App component
 export default class App extends Component {
     constructor(props) {
@@ -131,16 +107,11 @@ export default class App extends Component {
             infoText: undefined,
             infoLastTime: undefined,
             selectedOption: undefined,
+            noteMenuItems: noteStorageManager.getNoteMenuItems(),
         };
 
         // We keep a handle to the youtube player (the player API, not the dom element itself).
         this.ytPlayerController = undefined;
-
-        /*
-        setTimeout(() => {
-            this.ytPlayerController.loadAndPlayVideo(TEST_VIDEO_ID);
-        }, 3 * 1000);
-        */
     }
 
     // TODO(rksht) - perhaps break these into multiple functions instead of sending command objects,
@@ -191,6 +162,7 @@ export default class App extends Component {
         return {
             videoId: this.ytPlayerController.currentVideoId,
             videoTime: this.ytPlayerController.getCurrentTime(),
+            videoTitle: this.ytPlayerController.getVideoTitle(),
         };
     }
 
@@ -206,9 +178,33 @@ export default class App extends Component {
         }, infoDuration * 1000.0);
     }
 
-    handleChange = selectedOption => {
+    // Called by editor component. Updates current note menu items
+    updateNoteMenu = () => {
+        const noteMenuItems = noteStorageManager.getNoteMenuItems();
+        this.setState({ ...this.state, noteMenuItems });
+    };
+
+    handleNotemenuChange = selectedOption => {
         this.setState({ ...this.state, selectedOption });
         console.log(`Option selected:`, selectedOption);
+
+        // Try to load the video
+        const videoId = selectedOption.value;
+        console.log('Cueing video ', videoId);
+        this.ytPlayerController.loadAndPlayVideo(videoId);
+
+        // Tell the editor component to load the saved editor value for this video.
+
+        this.setState({
+            ...this.state,
+            editorCommand: {
+                name: 'loadNoteForVideo',
+                videoId: videoId,
+                resetCommand: () => {
+                    this.setState({ ...this.state, editorCommand: undefined });
+                },
+            },
+        });
     };
 
     render() {
@@ -261,8 +257,8 @@ export default class App extends Component {
                     <LoadYoutubeVideoIdComponent onSubmit={onVideoIdInput} />
                     <Select
                         value={this.selectedOption}
-                        onChange={this.handleChange}
-                        options={options}
+                        onChange={this.handleNotemenuChange}
+                        options={this.state.noteMenuItems}
                     />
                     <YoutubeIframeComponent getYtPlayerApiCallback={getYtPlayerApiCallback} />
                     <LogComponent infoText={this.state.infoText} />

@@ -6,7 +6,7 @@ import { makeYoutubeUrl, secondsToHhmmss } from './utils';
 import PropTypes from 'prop-types';
 import Prism from './prism_add_markdown_syntax';
 import AutoReplace from './slate-auto-replace-alt';
-import { saveVideoNote, loadVideoNote, NoteData } from './save_note';
+import { noteStorageManager, NoteData } from './save_note';
 
 /*
 const initialEditorValue = Value.fromJSON({
@@ -128,7 +128,7 @@ export default class EditorComponent extends Component {
         // Put video timestamp and play (or continue playing) video
         plugins.push(
             AutoReplace({
-                trigger: '-',
+                trigger: '.',
                 before: /[^#]?(!#)$/,
                 change: change => {
                     putTimestampMark(change, 'playVideo');
@@ -152,7 +152,7 @@ export default class EditorComponent extends Component {
         plugins.push(
             AutoReplace({
                 trigger: 's',
-                before: /[^#]?(!#(-?)([0-9]+)(s|m))$/,
+                before: /[^#]?(#(-?)([0-9]+)(s|m))$/,
                 change: (change, event, matches) => {
                     const groups = matches.before;
                     const amount = +groups[3];
@@ -226,6 +226,10 @@ export default class EditorComponent extends Component {
                     );
                 }
 
+                case 'url': {
+                    return <a {...attributes}>{children}</a>;
+                }
+
                 case 'punctuation': {
                     return (
                         <span {...attributes} style={{ opacity: 0.2 }}>
@@ -239,9 +243,8 @@ export default class EditorComponent extends Component {
                         <span
                             {...attributes}
                             style={{
-                                paddingLeft: '10px',
-                                lineHeight: '10px',
-                                fontSize: '20px',
+                                paddingLeft: '5px',
+                                lineHeight: '5px',
                             }}
                         >
                             {children}
@@ -280,13 +283,38 @@ export default class EditorComponent extends Component {
                 // TODO(rksht): load note independently of video.
             }
 
-            const jsonEditorValue = loadVideoNote(videoId);
+            const { jsonEditorValue } = noteStorageManager.loadNoteWithId(videoId);
 
             if (!jsonEditorValue) {
-                this.props.parentApp.showInfo(`No note saved for videoId = ${videoId}`);
+                this.props.parentApp.showInfo(
+                    `No note previously saved for videoId = ${videoId}`,
+                    2
+                );
+                // Load empty editor value
+                this.setState({ ...this.state, value: initialEditorValue });
             } else {
                 this.setState({ ...this.state, value: Value.fromJSON(jsonEditorValue) });
             }
+        };
+
+        // Returns a list of all marks within current selection
+        this.getTimestampMarkIfAny = editor => {
+            const marks = editor.value.marks;
+
+            const timestampMarks = [];
+
+            for (let mark of marks) {
+                if (mark.type === 'youtube_timestamp') {
+                    timestampMarks.push(
+                        makeYoutubeTimestampMark(
+                            mark.data.get('videoId'),
+                            mark.data.get('videoTime')
+                        )
+                    );
+                }
+            }
+
+            return timestampMarks;
         };
 
         this.onKeyDown = (event, editor, next) => {
@@ -399,13 +427,14 @@ export default class EditorComponent extends Component {
                 // Ctrl + s saves current state of editor
                 case 's': {
                     const jsonEditorValue = this.state.value.toJSON();
-                    const { videoId } = this.props.parentApp.currentVideoInfo();
-                    const noteData = new NoteData(videoId, jsonEditorValue);
+                    const { videoId, videoTitle } = this.props.parentApp.currentVideoInfo();
+                    const noteData = new NoteData(videoId, videoTitle, jsonEditorValue);
 
-                    saveVideoNote(noteData, 'sameNoteName');
+                    noteStorageManager.saveNoteWithId(videoId, noteData);
 
-                    const infoText = `Saved Note for video "${videoId}"`;
+                    const infoText = `Saved Note for video "${videoId}", title - "${videoTitle}"`;
                     this.props.parentApp.showInfo(infoText, 2.0);
+                    this.props.parentApp.updateNoteMenu();
 
                     handled = true;
                     break;
@@ -432,6 +461,19 @@ export default class EditorComponent extends Component {
                     console.log(valueJson);
                     handled = true;
 
+                    break;
+                }
+
+                // Toggle the timestamp at current selection
+                case '-': {
+                    const timestampMarks = this.getTimestampMarkIfAny(editor);
+
+                    for (let mark of timestampMarks) {
+                        console.log('Toggling timeStampMark');
+                        editor.toggleMark(mark);
+                    }
+
+                    handled = true;
                     break;
                 }
 

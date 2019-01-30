@@ -1,54 +1,16 @@
-// localStorage key for the full JSON object we are storing which contains *all* notes.
+// localStorage key for the full JSON object we are storing which contains *all* notes. Notes will
+// be keyed by video id.
 const VIDEO_ID_TO_NOTE_DATA = 'video_id_to_note_data';
 
 // A JSON serializable object representing a full note. Kept as values in the VIDEO_ID_TO_NOTE_DATA
 // map.
 export class NoteData {
-    constructor(videoId, jsonEditorValue) {
+    constructor(videoId, videoTitle, jsonEditorValue, noteName = '') {
         this.videoId = videoId;
         this.strJsonEditorValue = JSON.stringify(jsonEditorValue);
+        this.videoTitle = videoTitle;
+        this.noteName = noteName;
     }
-}
-
-// Initialize maps if they don't exist
-function initMap() {
-    if (!localStorage.getItem(VIDEO_ID_TO_NOTE_DATA)) {
-        localStorage.setItem(VIDEO_ID_TO_NOTE_DATA, '{}');
-    }
-}
-
-// Saves given NoteData
-export function saveVideoNote(noteData, noteName) {
-    initMap();
-
-    if (!(noteData instanceof NoteData)) {
-        console.warn('Given noteData is not a NoteData');
-        return;
-    }
-
-    // Deserialize the map and set the entry and rewrite the map.
-    let idToNoteData = JSON.parse(localStorage.getItem(VIDEO_ID_TO_NOTE_DATA));
-    const key = `saved_note_${noteData.videoId}`;
-    idToNoteData[key] = noteData;
-    localStorage.setItem(VIDEO_ID_TO_NOTE_DATA, JSON.stringify(idToNoteData));
-
-    // TODO(rksht): (De-)serializing will slow down as number of notes or large notes increases. Use
-    // localstorage itself as a key, or cache the map. This *must* be done considering we want to
-    // search notes and autosave.
-}
-
-// Returns the saved editor
-export function loadVideoNote(videoId) {
-    initMap();
-
-    let idToNoteData = JSON.parse(localStorage.getItem(VIDEO_ID_TO_NOTE_DATA));
-    const key = `saved_note_${videoId}`;
-
-    if (!(key in idToNoteData)) {
-        console.warn('No note for video Id ');
-        return undefined;
-    }
-    return JSON.parse(idToNoteData[key].strJsonEditorValue);
 }
 
 // Search results
@@ -61,23 +23,22 @@ export class SearchResult {
     }
 }
 
-class DummyNote {
+class NoteLabel {
     constructor(noteName, videoId) {
         this.noteName = noteName;
         this.videoId = videoId;
     }
 
     toString() {
-        return `${this.noteName}-${this.videoId}-dummy`;
+        return `${this.noteName}-${this.videoId}`;
     }
 }
 
 // For testing
-const dummyNotes = [
-    new DummyNote('Ode to the West Wind', 'oa98kj098'),
-    new DummyNote('Wuthering Heights', '8098njanwd'),
-    new DummyNote('Guided Missiles', '8nawd90kwf'),
-    new DummyNote('The Wanderer', '36tjcrifjrv'),
+export const dummyNoteLabels = [
+    new NoteLabel('Love is War', 'c1rnPqkZVhw'),
+    new NoteLabel('Platinum Disco', 'RQ0ymYGQNa8'),
+    new NoteLabel('Renai Circulation', 'HUjVqf0dDJo'),
 ];
 
 export function searchNotesByName(name) {
@@ -86,7 +47,7 @@ export function searchNotesByName(name) {
     }
 
     const matchedNoteIndices = [];
-    const strNoteInfos = dummyNotes.map(n => n.toString().toLowerCase());
+    const strNoteInfos = dummyNoteLabels.map(n => n.toString().toLowerCase());
     name = name.toLowerCase();
 
     for (let i = 0; i < strNoteInfos.length; ++i) {
@@ -98,9 +59,73 @@ export function searchNotesByName(name) {
 
     return matchedNoteIndices.map(i => {
         return new SearchResult(
-            dummyNotes[i].noteName,
-            dummyNotes[i].videoId,
-            dummyNotes[i].videoId
+            dummyNoteLabels[i].noteName,
+            dummyNoteLabels[i].videoId,
+            dummyNoteLabels[i].videoId
         );
     });
 }
+
+class NoteStorageManager {
+    constructor() {
+        // Map of video id to note data
+        const strMap = localStorage.getItem(VIDEO_ID_TO_NOTE_DATA);
+        if (!strMap) {
+            this.videoIdToNoteData = {};
+        } else {
+            this.videoIdToNoteData = JSON.parse(strMap);
+        }
+    }
+
+    flushToLocalStorage = () => {
+        const strJsonMap = JSON.stringify(this.videoIdToNoteData);
+        localStorage.setItem(VIDEO_ID_TO_NOTE_DATA, strJsonMap);
+    };
+
+    // Returns the editor value for the note associated with given video id, if the value exists.
+    loadNoteWithId = videoId => {
+        const key = `saved_note_${videoId}`;
+
+        if (!(key in this.videoIdToNoteData)) {
+            console.log('No note for video Id ', videoId);
+            return {};
+        }
+
+        const noteData = this.videoIdToNoteData[key];
+
+        return {
+            jsonEditorValue: JSON.parse(this.videoIdToNoteData[key].strJsonEditorValue),
+            noteName: noteData.noteName,
+            videoTitle: noteData.videoTitle,
+        };
+    };
+
+    saveNoteWithId = (videoId, noteData) => {
+        const key = `saved_note_${videoId}`;
+        this.videoIdToNoteData[key] = noteData;
+        console.log('Saved note for video', noteData.videoTitle);
+        this.flushToLocalStorage();
+    };
+
+    getNoteMenuItems = () => {
+        const keys = Object.keys(this.videoIdToNoteData);
+        const items = [];
+
+        // For each note, return the video name as the label and videoId as the value.
+        for (let i = 0; i < keys.length; ++i) {
+            const key = keys[i];
+
+            if (this.videoIdToNoteData.hasOwnProperty(key)) {
+                const noteData = this.videoIdToNoteData[key];
+                items.push({
+                    label: noteData.videoTitle,
+                    value: noteData.videoId,
+                });
+            }
+        }
+        console.log('items = ', items);
+        return items;
+    };
+}
+
+export const noteStorageManager = new NoteStorageManager();

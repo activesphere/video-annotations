@@ -4,7 +4,6 @@
     "private": true,
     "dependencies": {
         "@slate-editor/font-size-plugin": "^5.1.0",
-        "axios": "^0.18.0",
         "classnames": "^2.2.6",
         "get-youtube-title": "^1.0.0",
         "immutable": "^4.0.0-rc.12",
