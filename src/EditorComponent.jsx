@@ -1,19 +1,14 @@
 import React, { Component } from 'react';
 import { Editor } from 'slate-react';
 import { Value, Mark } from 'slate';
+import Plain from 'slate-plain-serializer';
 import { makeYoutubeUrl, secondsToHhmmss } from './utils';
 import PropTypes from 'prop-types';
+import Prism from './prism_add_markdown_syntax';
 import AutoReplace from './slate-auto-replace-alt';
 import { saveVideoNote, loadVideoNote, NoteData } from './save_note';
 
-const MARK_TYPES = {
-    YOUTUBE_TIMESTAMP: 'youtube_timestamp',
-    BOLD: 'bold',
-    ITALIC: 'italic',
-    CODE: 'code',
-    UNDERLINE: 'underline',
-};
-
+/*
 const initialEditorValue = Value.fromJSON({
     document: {
         nodes: [
@@ -34,6 +29,9 @@ const initialEditorValue = Value.fromJSON({
         ],
     },
 });
+*/
+
+const initialEditorValue = Plain.deserialize('');
 
 const TimestampMarkComponent = props => {
     const style = {
@@ -63,7 +61,7 @@ const TimestampMarkComponent = props => {
 };
 
 function makeYoutubeTimestampMark(videoId, videoTime) {
-    return Mark.create({ type: MARK_TYPES.YOUTUBE_TIMESTAMP, data: { videoId, videoTime } });
+    return Mark.create({ type: 'youtube_timestamp', data: { videoId, videoTime } });
 }
 
 const AUTOSAVE = false;
@@ -80,10 +78,14 @@ export default class EditorComponent extends Component {
     _makePlugins() {
         let plugins = [];
 
+        // The slate-auto-replace plugin checks if the trigger character we have given requires
+        // pressing mod keys like shift. If so it doesn't proceed with its replacing behavior at
+        // all. Could change that myself.
+
         // Play video key-sequence
         plugins.push(
             AutoReplace({
-                trigger: ')',
+                trigger: '.',
                 before: /[^#]?(#)$/,
                 change: change => {
                     change.insertText('');
@@ -126,8 +128,8 @@ export default class EditorComponent extends Component {
         // Put video timestamp and play (or continue playing) video
         plugins.push(
             AutoReplace({
-                trigger: ')',
-                before: /[^#]?(#t)$/,
+                trigger: '-',
+                before: /[^#]?(!#)$/,
                 change: change => {
                     putTimestampMark(change, 'playVideo');
                 },
@@ -150,7 +152,7 @@ export default class EditorComponent extends Component {
         plugins.push(
             AutoReplace({
                 trigger: 's',
-                before: /[^#]?(#(-?)([0-9]+)(s|m))$/,
+                before: /[^#]?(!#(-?)([0-9]+)(s|m))$/,
                 change: (change, event, matches) => {
                     const groups = matches.before;
                     const amount = +groups[3];
@@ -191,21 +193,80 @@ export default class EditorComponent extends Component {
         };
 
         this.renderMark = (props, editor, next) => {
+            const { attributes, children } = props;
             switch (props.mark.type) {
-                case MARK_TYPES.YOUTUBE_TIMESTAMP:
+                case 'youtube_timestamp':
                     return <TimestampMarkComponent {...props} />;
 
-                case MARK_TYPES.BOLD:
-                    return <strong {...props.attributes}>{props.children}</strong>;
+                case 'bold':
+                    return <strong {...attributes}>{props.children}</strong>;
 
-                case MARK_TYPES.ITALIC:
-                    return <em {...props.attributes}>{props.children}</em>;
+                case 'italic':
+                    return <em {...attributes}>{children}</em>;
 
-                case MARK_TYPES.UNDERLINE:
-                    return <u {...props.attributes}>{props.children}</u>;
+                case 'underline':
+                    return <u {...attributes}>{children}</u>;
 
-                default:
+                case 'code':
+                    return <code {...attributes}>{children}</code>;
+
+                case 'title': {
+                    return (
+                        <span
+                            {...attributes}
+                            style={{
+                                fontWeight: 'bold',
+                                fontSize: '20px',
+                                margin: '20px 0 10px 0',
+                                display: 'inline-block',
+                            }}
+                        >
+                            {children}
+                        </span>
+                    );
+                }
+
+                case 'punctuation': {
+                    return (
+                        <span {...attributes} style={{ opacity: 0.2 }}>
+                            {children}
+                        </span>
+                    );
+                }
+
+                case 'list': {
+                    return (
+                        <span
+                            {...attributes}
+                            style={{
+                                paddingLeft: '10px',
+                                lineHeight: '10px',
+                                fontSize: '20px',
+                            }}
+                        >
+                            {children}
+                        </span>
+                    );
+                }
+
+                case 'hr': {
+                    return (
+                        <span
+                            {...attributes}
+                            style={{
+                                borderBottom: '2px solid #000',
+                                display: 'block',
+                                opacity: 0.2,
+                            }}
+                        >
+                            {children}
+                        </span>
+                    );
+                }
+
+                default: {
                     return next();
+                }
             }
         };
 
@@ -237,7 +298,8 @@ export default class EditorComponent extends Component {
             }
 
             if (!event.ctrlKey) {
-                return this.handleNonHotkey(event, editor, next);
+                // return this.handleNonHotkey(event, editor, next);
+                return next();
             }
 
             let handled = false;
@@ -282,7 +344,7 @@ export default class EditorComponent extends Component {
                     const marks = editor.value.marks;
 
                     for (let mark of marks) {
-                        if (mark.type === MARK_TYPES.YOUTUBE_TIMESTAMP) {
+                        if (mark.type === 'youtube_timestamp') {
                             const videoCommand = {
                                 name: 'seekToTime',
                                 videoId: mark.data.get('videoId'),
@@ -385,29 +447,6 @@ export default class EditorComponent extends Component {
             return next();
         };
 
-        this.handleNonHotkey = (event, editor, next) => {
-            switch (event.key) {
-                case 'Backspace': {
-                    console.log('Backspace');
-                    return this.handleBackspaceKey(event, editor, next);
-                }
-
-                case 'Enter': {
-                    console.log('Enter');
-                    return this.handleEnterKey(event, editor, next);
-                }
-
-                case ' ': {
-                    console.log('space');
-                    return this.handleSpaceKey(event, editor, next);
-                }
-
-                default: {
-                    return next();
-                }
-            }
-        };
-
         this.blockTypeOfCharSeq = charSeq => {
             switch (charSeq) {
                 case '*':
@@ -457,113 +496,6 @@ export default class EditorComponent extends Component {
                     return next();
             }
         };
-
-        this.handleSpaceKey = (event, editor, next) => {
-            const { value } = editor;
-            const { selection } = value;
-            if (!selection.isCollapsed) {
-                return next();
-            }
-
-            const { startBlock } = value;
-            const { start } = selection;
-
-            const charSeq = startBlock.text.slice(0, start.offset).replace(/\s*/, '');
-
-            console.log('charSeq =', charSeq);
-
-            const blockType = this.blockTypeOfCharSeq(charSeq);
-
-            if (!blockType) {
-                return next();
-            }
-
-            console.log('Creating new block of type ', blockType);
-
-            if (blockType === 'list-item' && startBlock.type === 'list-item') {
-                return next();
-            }
-
-            event.preventDefault();
-
-            editor.setBlocks(blockType);
-
-            if (blockType === 'list-item') {
-                editor.wrapBlock('bulleted-list');
-                editor.moveFocusToStartOfNode(startBlock).delete();
-            } else {
-                editor.insertText(' ');
-            }
-
-            // editor.insertText(' ');
-
-            // Not removing the markdown symbols
-            // editor.moveFocusToStartOfNode(startBlock).delete();
-
-            return next();
-        };
-
-        this.handleBackspaceKey = (event, editor, next) => {
-            const { value } = editor;
-            const { selection } = value;
-
-            if (!selection.isCollapsed) {
-                return next();
-            }
-
-            if (selection.start.offset != 0) {
-                return next();
-            }
-
-            const { startBlock } = value;
-
-            if (startBlock.type === 'paragraph') {
-                return next();
-            }
-
-            event.preventDefault();
-
-            if (startBlock.type === 'list-item') {
-                editor.unwrapBlock('bulleted-list');
-            }
-
-            return next();
-        };
-
-        this.handleEnterKey = (event, editor, next) => {
-            const { value } = editor;
-            const { selection } = value;
-
-            const { start, end, isExpanded } = selection;
-
-            if (isExpanded) {
-                return next();
-            }
-
-            const { startBlock } = value;
-
-            if (start.offset === 0 && startBlock.text.length === 0) {
-                return this.handleBackspaceKey(event, editor, next);
-            }
-            if (end.offset !== startBlock.text.length) {
-                return next();
-            }
-
-            if (
-                startBlock.type !== 'heading-one' &&
-                startBlock.type !== 'heading-two' &&
-                startBlock.type !== 'heading-three' &&
-                startBlock.type !== 'heading-four' &&
-                startBlock.type !== 'heading-five' &&
-                startBlock.type !== 'heading-six' &&
-                startBlock.type !== 'block-quote'
-            ) {
-                return next();
-            }
-
-            event.preventDefault();
-            editor.splitBlock().setBlocks('paragraph');
-        };
     }
 
     componentWillReceiveProps(newProps) {
@@ -572,6 +504,76 @@ export default class EditorComponent extends Component {
             newProps.editorCommand.resetCommand();
         }
     }
+
+    decorateNode = (node, editor, next) => {
+        const others = next() || [];
+        if (node.object !== 'block') {
+            return others;
+        }
+
+        const string = node.text;
+        const texts = node.getTexts().toArray();
+        const grammar = Prism.languages.markdown;
+        const tokens = Prism.tokenize(string, grammar);
+        const decorations = [];
+        let startText = texts.shift();
+        let endText = startText;
+        let startOffset = 0;
+        let endOffset = 0;
+        let start = 0;
+
+        function getLength(token) {
+            if (typeof token == 'string') {
+                return token.length;
+            } else if (typeof token.content == 'string') {
+                return token.content.length;
+            } else {
+                return token.content.reduce((l, t) => l + getLength(t), 0);
+            }
+        }
+
+        for (const token of tokens) {
+            startText = endText;
+            startOffset = endOffset;
+
+            const length = getLength(token);
+            const end = start + length;
+
+            let available = startText.text.length - startOffset;
+            let remaining = length;
+
+            endOffset = startOffset + remaining;
+
+            while (available < remaining) {
+                endText = texts.shift();
+                remaining = length - available;
+                available = endText.text.length;
+                endOffset = remaining;
+            }
+
+            if (typeof token !== 'string') {
+                const dec = {
+                    anchor: {
+                        key: startText.key,
+                        offset: startOffset,
+                    },
+                    focus: {
+                        key: endText.key,
+                        offset: endOffset,
+                    },
+                    mark: {
+                        type: token.type,
+                    },
+                };
+
+                decorations.push(dec);
+            }
+
+            start = end;
+        }
+
+        return [...others, ...decorations];
+    };
 
     render() {
         return (
@@ -587,9 +589,11 @@ export default class EditorComponent extends Component {
                     onKeyDown={this.onKeyDown}
                     renderMark={this.renderMark}
                     renderNode={this.renderNode}
+                    decorateNode={this.decorateNode}
                     className="editor-top-level"
                     autoCorrect={false}
                     plugins={this.plugins}
+                    placeholder="Write your note here.."
                 />
             </div>
         );

@@ -4,8 +4,12 @@
     "private": true,
     "dependencies": {
         "@slate-editor/font-size-plugin": "^5.1.0",
+        "axios": "^0.18.0",
         "classnames": "^2.2.6",
+        "get-youtube-title": "^1.0.0",
         "immutable": "^4.0.0-rc.12",
+        "prismjs": "^1.15.0",
+        "querystring": "^0.2.0",
         "react": "^16.7.0",
         "react-dom": "^16.7.0",
         "react-scripts": "2.1.3",

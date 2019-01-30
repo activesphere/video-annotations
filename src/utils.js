@@ -11,9 +11,9 @@ export function secondsToHhmmss(seconds) {
 }
 
 export function makeYoutubeUrl(videoId, videoTimeInSeconds) {
-	if (!videoTimeInSeconds) {
-		return `http://www.youtube.com/watch?v=${videoId}`;
-	}
+    if (!videoTimeInSeconds) {
+        return `http://www.youtube.com/watch?v=${videoId}`;
+    }
 
     // Seconds to mmss
     let remainingSeconds = videoTimeInSeconds;

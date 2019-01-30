@@ -9,9 +9,9 @@ export const defaultInfoText = `
 Default key sequences for controlling video
 ===========================================
 
-# )                                             Play Video,
+# -                                             Play Video,
 # /                                             Pause Video,
-# t )                                           Place Timestamp and Play video
+# t -                                           Place Timestamp and Play video
 # t /                                           Place Timestamp and Pause video
 # [optional -] [some number N] [s or m] s       Seek forward or backward N seconds or minutes
 

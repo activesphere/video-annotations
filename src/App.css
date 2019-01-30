@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css?family=Roboto+Mono');
+@import url('https://fonts.googleapis.com/css?family=Consolas');
 
 .root {
     width: 100%;
@@ -12,72 +12,58 @@
     margin: 0;
     display: flex;
     flex-wrap: wrap;
-    flex-direction: row;
-
-    justify-content: flex-start;
     align-items: stretch;
-    align-content: stretch;
+    flex: 1;
 }
 
 .left-panel {
-    flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: stretch;
-    align-content: stretch;
 }
 
 .youtube-player {
-    border: 2px dotted #04fff0;
-    height: 50%;
-    width: 100%;
-    flex: 0.49;
-    justify-content: flex-start;
+    border: 2px #000000;
+    flex: 0.5;
 }
 
 .editor-top-level {
-    background-color: #404070;
-    border: 0px dashed #04fff0;
-    font-family: 'Roboto Mono', serif;
-    font-size: 16px;
+    background-color: #fafaf0;
+    border: 3px #fcfaff;
+    border-style: solid;
+    font-family: 'Consolas', sans-serif;
+    font-size: 18px;
     flex: 1;
     min-width: 100vh;
     max-width: 100vh;
     min-height: 100vh;
-    color: #04fff0;
+    color: #090920;
     overflow-y: scroll;
-    caret-color: #f0fe40;
+    caret-color: #090820;
     box-shadow: 0px 0px 1px 1px rgba(0, 0, 0, 0.5);
+    line-height: 1;
+}
+
+.editor-top-level code {
+    font-family: 'Consolas', monospace;
+    font-family: 16px;
+    background-color: #f0f0ea;
+}
+
+.editor-top-level h1 {
+    font-family: 'Consolas', monospace;
+    font-family: 20px;
+    background-color: #f0f0ff;
+}
+
+.editor-top-level .inline-youtube-timestamp {
+    background-color: #ff0090;
+    color: #f0f0f0;
 }
 
 .editor-top-level::selection {
     background-color: #020202;
-}
-
-.editor-editor {
-    border-top: 0px solid #ddd;
-    cursor: text;
-    margin-top: 2px;
-}
-
-.editor-editor {
-    min-height: 300px;
-    max-height: fit-content;
-    font-family: 'Roboto Mono', sans-serif;
-    font-size: 16px;
-}
-
-.editor-link {
-    color: '#9ebdff';
-    text-decoration: 'underline';
-    font-style: 'italic';
-}
-
-.inline-youtube-timestamp {
-    color: '#cd201f';
-    text-decoration: 'underline';
-    font-style: 'italic';
 }
 
 blockquote {
@@ -98,25 +84,23 @@ blockquote[dir='rtl'] {
 
 .info-text {
     white-space: pre-wrap;
-    background-color: #090909;
-    color: #f0fe40;
+    background-color: #fefefe;
+    color: #020209;
     font-weight: bold;
-    border: 2px dotted #04fff0;
-    font-family: 'Roboto Mono', monospace;
+    border: 2px #0202a0;
+    font-family: 'Consolas', monospace;
     font-size: 12px;
-    flex: 0.49;
 }
 
 .youtube-id-input {
     position: relative;
     transition: 0.3s all;
     width: 99%;
-    flex: 0.02;
     justify-content: flex-end;
 }
 
 #__yt_video_id_input__ {
-    font-family: 'Roboto Mono', sans-serif;
+    font-family: 'Consolas', sans-serif;
     font-size: 16px;
     background-color: #090909;
     width: 100%;
@@ -135,38 +119,4 @@ blockquote[dir='rtl'] {
     height: 100%;
     z-index: 10;
     background-color: '#f0f0d070';
-}
-
-.searchmenu-modal {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    width: auto;
-    height: auto;
-    max-width: 100%;
-    max-height: 100%;
-    min-width: 200px;
-    min-height: 200px;
-    transform: translate(50%, 50%);
-}
-
-.searchmenu-close-button = {
-    position: absolute;
-    top: 0;
-    right: 0;
-    padding: 0.5em;
-    lineheight: 1;
-    background: #f6f6f8;
-    border: 0;
-    boxshadow: 0;
-    cursor: pointer;
-}
-
-.searchmenu-modal-close-icon {
-    width: 25px;
-    height: 25px;
-    fill: transparent;
-    stroke: black;
-    strokelinecap: round;
-    strokewidth: 2;
 }

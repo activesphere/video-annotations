@@ -33,7 +33,10 @@ function AutoReplace() {
      */
 
     function onKeyDown(event, change, next) {
-        if (!trigger(event, change, next)) return next();
+        if (!trigger(event, change, next)) {
+            console.log('trigger returned false');
+            return next();
+        }
 
         var value = change.value;
         var selection = value.selection;
@@ -46,6 +49,8 @@ function AutoReplace() {
 
         var matches = getMatches(value);
         if (!matches) return next();
+
+        console.log('Matches =', matches);
 
         event.preventDefault();
 
@@ -210,15 +215,20 @@ function AutoReplace() {
  */
 
 function normalizeTrigger(trigger) {
+    console.log('Trigger is');
     switch (typeOf(trigger)) {
         case 'function':
+            console.log('function');
             return trigger;
         case 'regexp':
+            console.log('function');
             return function(event) {
                 return !!(event.key && event.key.match(trigger));
             };
         case 'string':
-            return isHotkey(trigger);
+            const b = isHotkey(trigger);
+            console.log('isHotkey =', b);
+            return b;
 
         default:
             return undefined;

@@ -8,6 +8,10 @@ import YoutubeIframeComponent from './YoutubeIframeComponent';
 import LogComponent, { defaultInfoText } from './LogComponent';
 import EditorComponent from './EditorComponent';
 import LoadYoutubeVideoIdComponent from './LoadYoutubeVideoIdComponent';
+import axios from 'axios';
+import getYoutubeTitle from 'get-youtube-title';
+
+const YOUTUBE_API_KEY = 'AIzaSyB0Hslfl-deOx-ApFvTE0osjJCy2T_1uL0';
 
 // Muh test modal
 // import { NewbModal, SearchNotesMenuModal } from './ModalTutorial';
@@ -29,8 +33,7 @@ class YoutubePlayerController {
         this.playerApi = playerApi;
         // this.currentVideoId = '';
         // this.currentVideoId = TEST_VIDEO_ID;
-        this.currentVideoId = TEST_VIDEO_ID;
-
+        this.currentVideoId = undefined;
         this.currentVideoTitle = undefined;
 
         /* TODO(rksht) - Without going through this, it's better to just get the video name using Youtube's
@@ -54,6 +57,22 @@ class YoutubePlayerController {
         */
     }
 
+    setVideoTitle() {
+        if (this.currentVideoId === undefined) {
+            this.currentVideoTitle = undefined;
+            return;
+        }
+
+        const videoTitleWhenIssued = this.currentVideoId;
+
+        // prettier-ignore
+        // const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${this.currentVideoId}&key=${YOUTUBE_API_KEY}`;
+
+        getYoutubeTitle(this.currentVideoId, YOUTUBE_API_KEY, (err, title) => {
+        	console.log("Title = ", title, "Error =", err);
+        });
+    }
+
     getPlayerState() {
         return this.playerApi.getPlayerState();
     }
@@ -75,6 +94,7 @@ class YoutubePlayerController {
         this.currentVideoId = videoId;
         this.playerApi.cueVideoById(this.currentVideoId, 0);
         this.playerApi.playVideo(this.currentVideoId);
+        this.setVideoTitle();
     }
 
     pauseVideo() {
@@ -232,7 +252,6 @@ export default class App extends Component {
         };
 
         const getEditorRef = editorDivRef => {
-            console.log('Setting div ref');
             this.editorDivRef = editorDivRef;
         };
 
