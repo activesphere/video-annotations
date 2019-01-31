@@ -7,11 +7,46 @@ import PropTypes from 'prop-types';
 import Prism from './prism_add_markdown_syntax';
 import AutoReplace from './slate-auto-replace-alt';
 import { noteStorageManager, NoteData } from './save_note';
-import MathJax from 'MathJax';
+import { Menu, Item, Separator, Submenu, MenuProvider } from 'react-contexify';
+import 'react-contexify/dist/ReactContexify.min.css';
+import MathJax from 'MathJax'; // External
 
 console.log('MathJax = ', MathJax);
 
 const initialEditorValue = Plain.deserialize('');
+
+// A menu that lists some operations on current selection.
+const EditorSelectionMenu = props => {
+    // Menu item callbacks
+
+    const addVideoTimeToStore = () => {
+        console.log(
+            `Adding time ${secondsToHhmmss(props.videoTimeDuringSpawn)} to stored timestamps`
+        );
+    };
+
+    let itemStoredTimestamps = null;
+
+    return (
+        <Menu id="editor_context_menu">
+            <Item onClick={addVideoTimeToStore}>Add current time to store</Item>
+            <Separator />
+
+            <Item disabled>Disabled menu item</Item>
+            <Separator />
+        </Menu>
+    );
+};
+
+EditorSelectionMenu.propTypes = {
+    videoTimeDuringSpawn: PropTypes.number,
+    parentEditor: PropTypes.any,
+};
+
+EditorSelectionMenu.defaultProps = {
+    videoTimeDuringSpawn: 0,
+    parentEditor: undefined,
+};
 
 const TimestampMarkComponent = props => {
     const style = {
@@ -45,6 +80,13 @@ function makeYoutubeTimestampMark(videoId, videoTime) {
 }
 
 const AUTOSAVE = false;
+
+class StoredTimestamp {
+    constructor(videoTime, text = '') {
+        this.videoTime = videoTime;
+        this.text = text;
+    }
+}
 
 export default class EditorComponent extends Component {
     static propTypes = {
@@ -162,6 +204,9 @@ export default class EditorComponent extends Component {
         this.editorDivRef = undefined;
 
         this.plugins = this._makePlugins();
+
+        // A list of stored timestamps for later use.
+        this.storedTimestamps = [];
 
         this.onChange = ({ value }) => {
             // ^ The value that onChange receives as argument is the new value of the editor.
@@ -473,31 +518,6 @@ export default class EditorComponent extends Component {
             return next();
         };
 
-        this.blockTypeOfCharSeq = charSeq => {
-            switch (charSeq) {
-                case '*':
-                case '-':
-                case '+':
-                    return 'list-item';
-                case '>':
-                    return 'block-quote';
-                case '#':
-                    return 'heading-one';
-                case '##':
-                    return 'heading-two';
-                case '###':
-                    return 'heading-three';
-                case '####':
-                    return 'heading-four';
-                case '#####':
-                    return 'heading-five';
-                case '######':
-                    return 'heading-six';
-                default:
-                    return undefined;
-            }
-        };
-
         this.renderNode = (props, editor, next) => {
             switch (props.node.type) {
                 case 'block-quote':
@@ -610,18 +630,24 @@ export default class EditorComponent extends Component {
                     this.props.getEditorRef(editorDivRef);
                 }}
             >
-                <Editor
-                    value={this.state.value}
-                    onChange={this.onChange}
-                    onKeyDown={this.onKeyDown}
-                    renderMark={this.renderMark}
-                    renderNode={this.renderNode}
-                    decorateNode={this.decorateNode}
-                    className="editor-top-level"
-                    autoCorrect={false}
-                    plugins={this.plugins}
-                    placeholder="Write your note here.."
-                />
+                <MenuProvider
+                    id="editor_context_menu"
+                    style={{ border: '1px solid purple', display: 'inline-block' }}
+                >
+                    <EditorSelectionMenu parentEditor={this} />
+                    <Editor
+                        value={this.state.value}
+                        onChange={this.onChange}
+                        onKeyDown={this.onKeyDown}
+                        renderMark={this.renderMark}
+                        renderNode={this.renderNode}
+                        decorateNode={this.decorateNode}
+                        className="editor-top-level"
+                        autoCorrect={false}
+                        plugins={this.plugins}
+                        placeholder="Write your note here.."
+                    />
+                </MenuProvider>
             </div>
         );
     }

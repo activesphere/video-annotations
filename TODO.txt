@@ -22,6 +22,10 @@ that one screen-height worth of text.
 
 * Add full markdown support
 
+* Add current time to a list of stored timestamps. Use these timestamps later.
+When doing so, pause the video, get a name for the timestamp, store it in a
+list, and continue the video.
+
 
 #### Test Video ID
 

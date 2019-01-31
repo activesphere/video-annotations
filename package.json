@@ -10,6 +10,7 @@
         "prismjs": "^1.15.0",
         "querystring": "^0.2.0",
         "react": "^16.7.0",
+        "react-contexify": "^4.0.1",
         "react-dom": "^16.7.0",
         "react-mathjax2": "0.0.2",
         "react-scripts": "2.1.3",
