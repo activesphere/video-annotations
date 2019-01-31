@@ -3,13 +3,12 @@ import './App.css';
 import React, { Component } from 'react';
 import Select from 'react-select';
 
-import { TEST_VIDEO_ID, GIGANTOR_THEME_SONG } from './utils';
 import YoutubeIframeComponent from './YoutubeIframeComponent';
 import LogComponent, { defaultInfoText } from './LogComponent';
 import EditorComponent from './EditorComponent';
 import LoadYoutubeVideoIdComponent from './LoadYoutubeVideoIdComponent';
 import getYoutubeTitle from 'get-youtube-title';
-import { dummyNoteLabels, noteStorageManager } from './save_note';
+import { noteStorageManager } from './save_note';
 
 const YOUTUBE_API_KEY = 'AIzaSyB0Hslfl-deOx-ApFvTE0osjJCy2T_1uL0';
 
@@ -83,20 +82,6 @@ class YoutubePlayerController {
         this.playerApi.seekTo(timeInSeconds);
     }
 }
-
-const options = [
-    { value: 'chocolate', label: 'Chocolate' },
-    { value: 'strawberry', label: 'Strawberry' },
-    { value: 'vanilla', label: 'Vanilla' },
-];
-
-// Create a list of notemenu items. Each notemenu item has the video id as the value field.
-const noteMenuItems = dummyNoteLabels.map((noteLabel, i) => {
-    return {
-        value: noteLabel.videoId,
-        label: noteLabel.toString(),
-    };
-});
 
 // The commands from console are send via the App component
 export default class App extends Component {

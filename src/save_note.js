@@ -1,7 +1,3 @@
-// localStorage key for the full JSON object we are storing which contains *all* notes. Notes will
-// be keyed by video id.
-const VIDEO_ID_TO_NOTE_DATA = 'video_id_to_note_data';
-
 // A JSON serializable object representing a full note. Kept as values in the VIDEO_ID_TO_NOTE_DATA
 // map.
 export class NoteData {
@@ -23,48 +19,9 @@ export class SearchResult {
     }
 }
 
-class NoteLabel {
-    constructor(noteName, videoId) {
-        this.noteName = noteName;
-        this.videoId = videoId;
-    }
-
-    toString() {
-        return `${this.noteName}-${this.videoId}`;
-    }
-}
-
-// For testing
-export const dummyNoteLabels = [
-    new NoteLabel('Love is War', 'c1rnPqkZVhw'),
-    new NoteLabel('Platinum Disco', 'RQ0ymYGQNa8'),
-    new NoteLabel('Renai Circulation', 'HUjVqf0dDJo'),
-];
-
-export function searchNotesByName(name) {
-    if (!name) {
-        return [];
-    }
-
-    const matchedNoteIndices = [];
-    const strNoteInfos = dummyNoteLabels.map(n => n.toString().toLowerCase());
-    name = name.toLowerCase();
-
-    for (let i = 0; i < strNoteInfos.length; ++i) {
-        const strInfo = strNoteInfos[i];
-        if (strInfo.includes(name)) {
-            matchedNoteIndices.push(i);
-        }
-    }
-
-    return matchedNoteIndices.map(i => {
-        return new SearchResult(
-            dummyNoteLabels[i].noteName,
-            dummyNoteLabels[i].videoId,
-            dummyNoteLabels[i].videoId
-        );
-    });
-}
+// localStorage key for the full JSON object we are storing which contains *all* notes. Notes will
+// be keyed by video id.
+const VIDEO_ID_TO_NOTE_DATA = 'video_id_to_note_data';
 
 class NoteStorageManager {
     constructor() {
@@ -117,6 +74,8 @@ class NoteStorageManager {
 
             if (this.videoIdToNoteData.hasOwnProperty(key)) {
                 const noteData = this.videoIdToNoteData[key];
+
+                // react-select requires the label will appear on the item and the associated value.
                 items.push({
                     label: noteData.videoTitle,
                     value: noteData.videoId,

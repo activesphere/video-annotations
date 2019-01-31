@@ -26,7 +26,7 @@ Ctrl + L                                        Save note for current video
 `;
 
 export default function ShowInstructionsComponent(props) {
-    const infoText = props.infoText ? props.infoText : defaultInfoText;
+    const infoText = props.infoText ? props.infoText : '';
 
     const style = {};
 

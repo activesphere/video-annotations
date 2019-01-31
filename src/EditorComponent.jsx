@@ -7,29 +7,9 @@ import PropTypes from 'prop-types';
 import Prism from './prism_add_markdown_syntax';
 import AutoReplace from './slate-auto-replace-alt';
 import { noteStorageManager, NoteData } from './save_note';
+import MathJax from 'MathJax';
 
-/*
-const initialEditorValue = Value.fromJSON({
-    document: {
-        nodes: [
-            {
-                object: 'block',
-                type: 'paragraph',
-                nodes: [
-                    {
-                        object: 'text',
-                        leaves: [
-                            {
-                                text: '',
-                            },
-                        ],
-                    },
-                ],
-            },
-        ],
-    },
-});
-*/
+console.log('MathJax = ', MathJax);
 
 const initialEditorValue = Plain.deserialize('');
 
@@ -177,7 +157,7 @@ export default class EditorComponent extends Component {
     constructor(props) {
         super(props);
 
-        this.state = { value: initialEditorValue, showWindowPortal: false };
+        this.state = { value: initialEditorValue };
 
         this.editorDivRef = undefined;
 
@@ -189,6 +169,12 @@ export default class EditorComponent extends Component {
                 const content = JSON.stringify(value.toJSON());
                 localStorage.setItem('saved_editor_state', content);
             }
+
+            // We can call mathjax to typeset the page here. TODO(rksht): don't tell it to update only
+            // when there's at least one inline math element in the block that is currently being
+            // edited?
+            MathJax.Hub.Queue(['Typeset', MathJax.Hub, '__editor_container_div__']);
+
             this.setState({ value });
         };
 
@@ -212,22 +198,18 @@ export default class EditorComponent extends Component {
 
                 case 'title': {
                     return (
-                        <span
-                            {...attributes}
-                            style={{
-                                fontWeight: 'bold',
-                                fontSize: '20px',
-                                margin: '20px 0 10px 0',
-                                display: 'inline-block',
-                            }}
-                        >
+                        <span {...attributes} className="title">
                             {children}
                         </span>
                     );
                 }
 
                 case 'url': {
-                    return <a {...attributes}>{children}</a>;
+                    return (
+                        <a {...attributes} className="url">
+                            {children}
+                        </a>
+                    );
                 }
 
                 case 'punctuation': {
@@ -240,13 +222,7 @@ export default class EditorComponent extends Component {
 
                 case 'list': {
                     return (
-                        <span
-                            {...attributes}
-                            style={{
-                                paddingLeft: '5px',
-                                lineHeight: '5px',
-                            }}
-                        >
+                        <span {...attributes} className="bulleted-list">
                             {children}
                         </span>
                     );
@@ -262,6 +238,14 @@ export default class EditorComponent extends Component {
                                 opacity: 0.2,
                             }}
                         >
+                            {children}
+                        </span>
+                    );
+                }
+
+                case 'inlinemath': {
+                    return (
+                        <span {...attributes} className="inlinemath">
                             {children}
                         </span>
                     );
@@ -450,7 +434,7 @@ export default class EditorComponent extends Component {
 
                 // Ctrl + o will open the saved notes list
                 case 'o': {
-                    this.setState({ ...this.state, showWindowPortal: true });
+                    this.setState({ ...this.state });
                     handled = true;
                     break;
                 }
@@ -620,6 +604,7 @@ export default class EditorComponent extends Component {
     render() {
         return (
             <div
+                id="__editor_container_div__"
                 ref={editorDivRef => {
                     this.editorDivRef = editorDivRef;
                     this.props.getEditorRef(editorDivRef);

@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css?family=Source+Code+Pro');
+@import url('https://fonts.googleapis.com/css?family=Noto+Sans');
+@import url('https://fonts.googleapis.com/css?family=Noto+Mono');
 
 .root {
     width: 100%;
@@ -27,14 +28,15 @@
 .youtube-player {
     border: 2px #000000;
     flex: 0.5;
+    align-self: baseline;
 }
 
 .editor-top-level {
     background-color: #fafaf0;
     border: 3px #fcfaff;
     border-style: solid;
-    font-family: 'Source Code Pro', sans-serif;
-    font-size: 18px;
+    font-family: 'Consolas', sans-serif;
+    font-size: 20px;
     flex: 1;
     min-width: 100vh;
     max-width: 100vh;
@@ -47,21 +49,38 @@
 }
 
 .editor-top-level code {
-    font-family: 'Source Code Pro', monospace;
+    font-family: 'Noto Mono', monospace;
     font-family: 16px;
     background-color: #f0f0ea;
 }
 
 .editor-top-level h1 {
-    font-family: 'Source Code Pro', monospace;
+    font-family: 'Consolas', monospace;
     font-size: 20px;
     background-color: #f0f0ff;
 }
 
-.editor-top-level li {
-    font-family: 'Source Code Pro', monospace;
+.editor-top-level .title {
+    font-weight: bold;
+    font-family: 'Noto Mono', monospace;
+    font-size: 25px;
+    color: #0f0ffa;
+    margin: 3px 0 10px 0;
+    line-height: 5px;
+    display: inline-block;
+}
+
+.editor-top-level .url {
+    font-family: 'Noto Mono', monospace;
     font-size: 14px;
-    background-color: #f0faf0;
+    background-color: #f0f0ff;
+}
+
+.editor-top-level .bulleted-list {
+    font-family: 'Consolas', monospace;
+    font-size: 14px;
+    padding-left: 10px;
+    background-color: #909090;
 }
 
 .editor-top-level .inline-youtube-timestamp {
@@ -70,8 +89,12 @@
     font-style: underline;
 }
 
-.editor-top-level::selection {
-    background-color: #020202;
+.editor-top-level .inlinemath {
+    background-color: cyan;
+}
+
+::selection {
+    background-color: #b0e0f0;
 }
 
 blockquote {
@@ -96,7 +119,7 @@ blockquote[dir='rtl'] {
     color: #020209;
     font-weight: bold;
     border: 2px #0202a0;
-    font-family: 'Source Code Pro', monospace;
+    font-family: 'Noto Mono', monospace;
     font-size: 12px;
 }
 
@@ -108,7 +131,7 @@ blockquote[dir='rtl'] {
 }
 
 #__yt_video_id_input__ {
-    font-family: 'Source Code Pro', sans-serif;
+    font-family: 'Consolas', sans-serif;
     font-size: 16px;
     background-color: #090909;
     width: 100%;
