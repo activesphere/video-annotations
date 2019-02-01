@@ -228,16 +228,10 @@ export default class App extends Component {
                     },
                 },
             });
-
-            this.editorDivRef.focus();
-        };
-
-        const getEditorRef = editorDivRef => {
-            this.editorDivRef = editorDivRef;
         };
 
         return (
-            <div className="app">
+            <div className="app" id="__app_element__">
                 <div className="left-panel">
                     <LoadYoutubeVideoIdComponent onSubmit={onVideoIdInput} />
                     <Select
@@ -249,11 +243,7 @@ export default class App extends Component {
                     <LogComponent infoText={this.state.infoText} />
                 </div>
 
-                <EditorComponent
-                    parentApp={this}
-                    editorCommand={this.state.editorCommand}
-                    getEditorRef={getEditorRef}
-                />
+                <EditorComponent parentApp={this} editorCommand={this.state.editorCommand} />
             </div>
         );
     }

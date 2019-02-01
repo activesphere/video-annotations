@@ -7,45 +7,44 @@ import PropTypes from 'prop-types';
 import Prism from './prism_add_markdown_syntax';
 import AutoReplace from './slate-auto-replace-alt';
 import { noteStorageManager, NoteData } from './save_note';
-import { Menu, Item, Separator, Submenu, MenuProvider } from 'react-contexify';
+import { Menu, contextMenu, Item, Separator, Submenu } from 'react-contexify';
 import 'react-contexify/dist/ReactContexify.min.css';
+import Modal from 'react-modal';
 import MathJax from 'MathJax'; // External
+import classnames from 'classnames';
 
 console.log('MathJax = ', MathJax);
 
+Modal.setAppElement('#root');
+
 const initialEditorValue = Plain.deserialize('');
 
-// A menu that lists some operations on current selection.
-const EditorSelectionMenu = props => {
-    // Menu item callbacks
-
-    const addVideoTimeToStore = () => {
-        console.log(
-            `Adding time ${secondsToHhmmss(props.videoTimeDuringSpawn)} to stored timestamps`
+// Context menu that is shown when user selects a range of text and right clicks.
+const EditorContextMenu = ({ storedTimestamps, parentEditor }) => {
+    const timestampItems = storedTimestamps.map(s => {
+        return (
+            <Item
+                onClick={() => {
+                    const editor = parentEditor.editorRef;
+                    const selection = editor.value.selection;
+                    const timeStampMark = makeYoutubeTimestampMark(s.videoId, s.videoTime);
+                    editor.addMarkAtRange(selection, timeStampMark);
+                }}
+                key={`${s.videoTime}_${s.videoId}`}
+            >
+                Time - {secondsToHhmmss(s.videoTime)}
+            </Item>
         );
-    };
-
-    let itemStoredTimestamps = null;
+    });
 
     return (
         <Menu id="editor_context_menu">
-            <Item onClick={addVideoTimeToStore}>Add current time to store</Item>
+            <Submenu label="Set timestamp">{timestampItems}</Submenu>
             <Separator />
-
-            <Item disabled>Disabled menu item</Item>
-            <Separator />
+            <Item> Add timestamp</Item>
+            <Item> Add current timestamp</Item>
         </Menu>
     );
-};
-
-EditorSelectionMenu.propTypes = {
-    videoTimeDuringSpawn: PropTypes.number,
-    parentEditor: PropTypes.any,
-};
-
-EditorSelectionMenu.defaultProps = {
-    videoTimeDuringSpawn: 0,
-    parentEditor: undefined,
 };
 
 const TimestampMarkComponent = props => {
@@ -82,7 +81,8 @@ function makeYoutubeTimestampMark(videoId, videoTime) {
 const AUTOSAVE = false;
 
 class StoredTimestamp {
-    constructor(videoTime, text = '') {
+    constructor(videoId, videoTime, text = '') {
+        this.videoId = videoId;
         this.videoTime = videoTime;
         this.text = text;
     }
@@ -92,7 +92,6 @@ export default class EditorComponent extends Component {
     static propTypes = {
         parentApp: PropTypes.object.isRequired,
         editorCommand: PropTypes.object,
-        getEditorRef: PropTypes.func.isRequired,
     };
 
     // Just a place to create the plugins in. The action functions of the plugins do need to use
@@ -199,9 +198,9 @@ export default class EditorComponent extends Component {
     constructor(props) {
         super(props);
 
-        this.state = { value: initialEditorValue };
+        this.state = { value: initialEditorValue, showGetTimestampTitle: false };
 
-        this.editorDivRef = undefined;
+        this.editorRef = undefined;
 
         this.plugins = this._makePlugins();
 
@@ -408,10 +407,9 @@ export default class EditorComponent extends Component {
                                 videoTime: mark.data.get('videoTime'),
                             };
 
+                            // prettier-ignore
                             console.log(
-                                `Seeking video ${videoCommand.videoId} to time ${secondsToHhmmss(
-                                    videoCommand.videoTime
-                                )}`
+                                `Seeking video ${videoCommand.videoId} to time ${secondsToHhmmss(videoCommand.videoTime)}`
                             );
 
                             this.props.parentApp.doVideoCommand(videoCommand);
@@ -426,7 +424,6 @@ export default class EditorComponent extends Component {
                 // Associate a mark at the current selected text
                 case '\\': {
                     let selection = editor.value.selection;
-                    // selection = selection.moveEndBackward(1);
 
                     console.log('Pressed Ctrl + \\');
 
@@ -447,7 +444,6 @@ export default class EditorComponent extends Component {
 
                     const timeStampMark = makeYoutubeTimestampMark(videoId, videoTime);
                     editor.addMarkAtRange(selection, timeStampMark);
-                    // ^ Could -1 from selection.end too instead of doing this?
 
                     handled = true;
                     break;
@@ -506,6 +502,14 @@ export default class EditorComponent extends Component {
                     break;
                 }
 
+                // Save current timestamp with a name for later use. Pauses the video then brings up
+                // a modal for taking the name, saves timestamp with name, and unpauses video if it
+                // was initially unpaused.
+                case 'h': {
+                    this.initSaveTimestampModal();
+                    break;
+                }
+
                 default:
                     break;
             }
@@ -515,6 +519,7 @@ export default class EditorComponent extends Component {
             if (handled) {
                 return true;
             }
+
             return next();
         };
 
@@ -542,6 +547,56 @@ export default class EditorComponent extends Component {
                     return next();
             }
         };
+
+        this.showContextMenuOnRightClick = event => {
+            // Selection collapsed? Then don't show this menu.
+            if (this.state.value.selection.isCollapsed) {
+                return false;
+            }
+
+            event.preventDefault();
+
+            contextMenu.show({
+                id: 'editor_context_menu',
+                event: event,
+                props: {
+                    value: this.state.value, // Editor value
+                    storedTimestamps: this.storedTimestamps,
+                },
+            });
+        };
+
+        this.initSaveTimestampModal = () => {
+            const videoTimeToSet = this.props.parentApp.currentVideoInfo().videoTime;
+            if (!videoTimeToSet) {
+                console.log('Error - video not playing');
+                return;
+            }
+
+            this.setState({ ...this.state, showGetTimestampTitle: true, videoTimeToSet });
+            console.log('Asking to save timestamp');
+        };
+
+        this.saveTimestamp = timestampName => {
+            const { videoId } = this.props.parentApp.currentVideoInfo();
+            const videoTime = Math.floor(this.state.videoTimeToSet);
+
+            console.log('Saving timestamp to list', videoTime);
+
+            // Add to our list if it doesn't exist.
+            for (let i = 0; i < this.storedTimestamps; ++i) {
+                if (
+                    this.storedTimestamps[i].videoTime === videoTime &&
+                    this.storedTimestamps[i].text === timestampName
+                ) {
+                    return;
+                }
+            }
+
+            this.storedTimestamps.push(new StoredTimestamp(videoId, videoTime, timestampName));
+        };
+
+        // Stored timestamps
     }
 
     componentWillReceiveProps(newProps) {
@@ -622,21 +677,19 @@ export default class EditorComponent extends Component {
     };
 
     render() {
+        const modalAfterOpen = () => {
+            console.log('Opened modal');
+        };
+
         return (
-            <div
-                id="__editor_container_div__"
-                ref={editorDivRef => {
-                    this.editorDivRef = editorDivRef;
-                    this.props.getEditorRef(editorDivRef);
-                }}
-            >
-                <MenuProvider
-                    id="editor_context_menu"
-                    style={{ border: '1px solid purple', display: 'inline-block' }}
-                >
-                    <EditorSelectionMenu parentEditor={this} />
+            <div id="__editor_container_div__">
+                <div onContextMenu={this.showContextMenuOnRightClick}>
+                    <EditorContextMenu
+                        parentEditor={this}
+                        storedTimestamps={this.storedTimestamps}
+                    />
                     <Editor
-                        value={this.state.value}
+                        defaultValue={this.state.value}
                         onChange={this.onChange}
                         onKeyDown={this.onKeyDown}
                         renderMark={this.renderMark}
@@ -644,10 +697,41 @@ export default class EditorComponent extends Component {
                         decorateNode={this.decorateNode}
                         className="editor-top-level"
                         autoCorrect={false}
+                        autoFocus={true}
                         plugins={this.plugins}
                         placeholder="Write your note here.."
+                        ref={editorRef => {
+                            console.log('editorRef =', editorRef);
+                            this.editorRef = editorRef;
+                        }}
                     />
-                </MenuProvider>
+
+                    <Modal
+                        isOpen={this.state.showGetTimestampTitle}
+                        onAfterOpen={modalAfterOpen}
+                        contentLabel="Timestamp title"
+                        className="modal"
+                        overlayClassName="overlay"
+                    >
+                        <form
+                            onSubmit={event => {
+                                this.saveTimestamp(event.target.value);
+                                this.setState({
+                                    ...this.state,
+                                    showGetTimestampTitle: false,
+                                    videoTimeToSet: undefined,
+                                });
+                                event.preventDefault();
+                            }}
+                        >
+                            <label>
+                                Timestamp name:
+                                <input type="text" name="name" />
+                            </label>
+                            <input type="submit" value="Submit" />
+                        </form>
+                    </Modal>
+                </div>
             </div>
         );
     }
