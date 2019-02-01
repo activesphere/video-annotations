@@ -32,7 +32,7 @@ const EditorContextMenu = ({ storedTimestamps, parentEditor }) => {
                 }}
                 key={`${s.videoTime}_${s.videoId}`}
             >
-                Time - {secondsToHhmmss(s.videoTime)}
+                {`${s.text}(${secondsToHhmmss(s.videoTime)})`}
             </Item>
         );
     });
@@ -310,6 +310,8 @@ export default class EditorComponent extends Component {
                 );
                 // TODO(rksht): load note independently of video.
             }
+
+            console.log('Loading note for video', videoId);
 
             const { jsonEditorValue } = noteStorageManager.loadNoteWithId(videoId);
 
@@ -690,6 +692,7 @@ export default class EditorComponent extends Component {
                     />
                     <Editor
                         defaultValue={this.state.value}
+                        value={this.state.value}
                         onChange={this.onChange}
                         onKeyDown={this.onKeyDown}
                         renderMark={this.renderMark}
@@ -701,7 +704,6 @@ export default class EditorComponent extends Component {
                         plugins={this.plugins}
                         placeholder="Write your note here.."
                         ref={editorRef => {
-                            console.log('editorRef =', editorRef);
                             this.editorRef = editorRef;
                         }}
                     />
