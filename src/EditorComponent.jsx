@@ -153,7 +153,7 @@ export default class EditorComponent extends Component {
         plugins.push(
             AutoReplace({
                 trigger: '.',
-                before: /[^#]?(!#)$/,
+                before: /[^#]?(#t)$/,
                 change: change => {
                     putTimestampMark(change, 'playVideo');
                 },
