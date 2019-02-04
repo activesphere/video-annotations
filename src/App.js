@@ -95,6 +95,9 @@ export default class App extends Component {
             noteMenuItems: noteStorageManager.getNoteMenuItems(),
         };
 
+        // Editor ref, set by the child component
+        this.editorRef = undefined;
+
         // We keep a handle to the youtube player (the player API, not the dom element itself).
         this.ytPlayerController = undefined;
     }
@@ -230,6 +233,8 @@ export default class App extends Component {
                     },
                 },
             });
+
+            this.editorRef.focus();
         };
 
         return (

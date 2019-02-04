@@ -63,16 +63,31 @@ const TimestampMarkComponent = props => {
         cursor: 'pointer',
     };
 
+    const videoId = props.mark.data.get('videoId');
+    const videoTime = props.mark.data.get('videoTime');
+
     const url = makeYoutubeUrl(props.mark.data.get('videoId'), props.mark.data.get('videoTime'));
 
+    /* Not opening in new window. Just seeking to time.
     const openUrl = () => {
         window.open(url);
+    };
+    */
+
+    const seekToTime = () => {
+        const videoCommand = {
+            name: 'seekToTime',
+            videoId,
+            videoTime
+        };
+
+        props.parentApp.doVideoCommand(videoCommand);
     };
 
     return (
         <a
             href={url}
-            onClick={openUrl}
+            onClick={seekToTime}
             className="inline-youtube-timestamp"
             {...props.attributes}
             style={style}
@@ -235,7 +250,7 @@ export default class EditorComponent extends Component {
             const { attributes, children } = props;
             switch (props.mark.type) {
                 case 'youtube_timestamp':
-                    return <TimestampMarkComponent {...props} />;
+                    return <TimestampMarkComponent {...props} parentApp={this.props.parentApp} />;
 
                 case 'bold':
                     return <strong {...attributes}>{props.children}</strong>;
@@ -604,7 +619,7 @@ export default class EditorComponent extends Component {
         };
 
         this.unsetGetTimestampTitle = () => {
-            this.setState({...this.state, showGetTimestampTitle: false, videoTimeToSet: ''});
+            this.setState({ ...this.state, showGetTimestampTitle: false, videoTimeToSet: '' });
         }
 
         // Stored timestamps
@@ -718,6 +733,7 @@ export default class EditorComponent extends Component {
                         placeholder="Write your note here.."
                         ref={editorRef => {
                             this.editorRef = editorRef;
+                            this.props.parentApp.editorRef = editorRef;
                         }}
                     />
 
@@ -739,7 +755,7 @@ export default class EditorComponent extends Component {
 class SimpleFormComponent extends Component {
     constructor(props) {
         super(props);
-        this.state = {value: undefined};
+        this.state = { value: undefined };
     }
 
     render() {

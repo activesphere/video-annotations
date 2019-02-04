@@ -3,8 +3,6 @@ import PropTypes from 'prop-types';
 
 export default class LoadYoutubeVideoIdComponent extends Component {
     static propTypes = {
-        locked: PropTypes.bool,
-        focussed: PropTypes.bool,
         value: PropTypes.string,
         error: PropTypes.string,
         label: PropTypes.string,
@@ -16,7 +14,6 @@ export default class LoadYoutubeVideoIdComponent extends Component {
         super(props);
 
         this.state = {
-            focussed: (props.locked && props.focussed) || false,
             value: props.value ? props.value : '',
             error: props.error ? props.error : '',
             label: props.label ? props.label : 'Youtube Video ID',
