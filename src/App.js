@@ -144,11 +144,13 @@ export default class App extends Component {
     }
 
     currentVideoInfo() {
-        return {
-            videoId: this.ytPlayerController.currentVideoId,
-            videoTime: this.ytPlayerController.getCurrentTime(),
-            videoTitle: this.ytPlayerController.getVideoTitle(),
-        };
+        const info = { videoId: undefined, videoTime: undefined, videoTitle: undefined };
+        if (this.ytPlayerController) {
+            info.videoId = this.ytPlayerController.currentVideoId;
+            info.videoTime = this.ytPlayerController.getCurrentTime();
+            info.videoTitle = this.ytPlayerController.getVideoTitle();
+        }
+        return info;
     }
 
     showInfo(infoText, infoDuration, logToConsole = false) {
@@ -234,7 +236,8 @@ export default class App extends Component {
             <div className="app" id="__app_element__">
                 <div className="left-panel">
                     <LoadYoutubeVideoIdComponent onSubmit={onVideoIdInput} />
-                    <Select
+                    <Select className='react-select-container'
+                            classNamePrefix='react-select'
                         value={this.selectedOption}
                         onChange={this.handleNotemenuChange}
                         options={this.state.noteMenuItems}

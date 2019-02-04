@@ -11,7 +11,6 @@ import { Menu, contextMenu, Item, Separator, Submenu } from 'react-contexify';
 import 'react-contexify/dist/ReactContexify.min.css';
 import Modal from 'react-modal';
 import MathJax from 'MathJax'; // External
-import classnames from 'classnames';
 
 console.log('MathJax = ', MathJax);
 
@@ -20,11 +19,15 @@ Modal.setAppElement('#root');
 const initialEditorValue = Plain.deserialize('');
 
 // Context menu that is shown when user selects a range of text and right clicks.
-const EditorContextMenu = ({ storedTimestamps, parentEditor }) => {
+const EditorContextMenu = ({ storedTimestamps, parentEditor, currentlyPlayingVideo }) => {
     const timestampItems = storedTimestamps.map(s => {
         return (
             <Item
                 onClick={() => {
+                    if (currentlyPlayingVideo !== s.videoId) {
+                        console.log('Attempted to put timestamp saved for different video');
+                        return;
+                    }
                     const editor = parentEditor.editorRef;
                     const selection = editor.value.selection;
                     const timeStampMark = makeYoutubeTimestampMark(s.videoId, s.videoTime);
@@ -683,12 +686,15 @@ export default class EditorComponent extends Component {
             console.log('Opened modal');
         };
 
+        const { videoId } = this.props.parentApp.currentVideoInfo();
+
         return (
             <div id="__editor_container_div__">
                 <div onContextMenu={this.showContextMenuOnRightClick}>
                     <EditorContextMenu
                         parentEditor={this}
                         storedTimestamps={this.storedTimestamps}
+                        currentlyPlayingVideo={videoId}
                     />
                     <Editor
                         defaultValue={this.state.value}
