@@ -1,3 +1,5 @@
+import testSavedMap from "./test_saved_map";
+
 // A JSON serializable object representing a full note. Kept as values in the VIDEO_ID_TO_NOTE_DATA
 // map.
 export class NoteData {
@@ -23,20 +25,45 @@ export class SearchResult {
 // be keyed by video id.
 const VIDEO_ID_TO_NOTE_DATA = 'video_id_to_note_data';
 
+// If you want to load that test note data.
+const LOAD_TEST_DATA = true;
+
+// If you want to use copy the save data and put it in a source file and use as test data.
+const LOG_SAVE_DATA_TO_CONSOLE = true;
+
 class NoteStorageManager {
     constructor() {
-        // Map of video id to note data
-        const strMap = localStorage.getItem(VIDEO_ID_TO_NOTE_DATA);
-        if (!strMap) {
-            this.videoIdToNoteData = {};
+        // Map of video id to note data.
+        this.strMap = localStorage.getItem(VIDEO_ID_TO_NOTE_DATA);
+        if (!this.strMap) {
+            if (LOAD_TEST_DATA) {
+                console.log('No previously saved data. Loading test save data.');
+                this.strMap = JSON.stringify(testSavedMap);
+                this.videoIdToNoteData = testSavedMap;
+            } else {
+                this.videoIdToNoteData = {};
+                this.strMap = '{}';
+            }
         } else {
-            this.videoIdToNoteData = JSON.parse(strMap);
+            this.videoIdToNoteData = JSON.parse(this.strMap);
+            console.log('Loaded save data.');
         }
     }
 
     flushToLocalStorage = () => {
         const strJsonMap = JSON.stringify(this.videoIdToNoteData);
-        localStorage.setItem(VIDEO_ID_TO_NOTE_DATA, strJsonMap);
+
+        // Don't write needlessly. TODO: This depends on whether stringify(json1) = stringify(json2)
+        // given json1 == json2. No reason to assume this is the case. Fix this.
+        if (this.strMap !== strJsonMap) {
+            localStorage.setItem(VIDEO_ID_TO_NOTE_DATA, strJsonMap);
+            this.strMap = strJsonMap;
+
+            if (LOG_SAVE_DATA_TO_CONSOLE) {
+                console.log('Latest strMap =\n', strJsonMap);
+                console.log(this.strMap);
+            }
+        }
     };
 
     // Returns the editor value for the note associated with given video id, if the value exists.

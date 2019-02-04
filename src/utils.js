@@ -24,23 +24,3 @@ export function makeYoutubeUrl(videoId, videoTimeInSeconds) {
 }
 
 export const TEST_VIDEO_ID = '495nCzxM9PI';
-
-export const GIGANTOR_THEME_SONG = `
-Gigantor Gigantor Gigantor
-Gigantor Gigantor Gigantor
-Gigantor the space age robot
-He's at your command
-Gigantor the space age robot
-His power is in your hands
-Gigantor the space age robot
-He's at your command
-Gigantor the space age robot
-His power is in your hands
-He's bigger than big
-Taller than tall
-Quicker than quick
-Stronger than strong
-Ready to fight for right against wrong
-Gigantor Gigantor Gigantor
-Gigantor Gigantor Gigantor
-`.trim();

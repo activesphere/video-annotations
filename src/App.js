@@ -241,6 +241,7 @@ export default class App extends Component {
                         value={this.selectedOption}
                         onChange={this.handleNotemenuChange}
                         options={this.state.noteMenuItems}
+                        placeholder="Saved notes..."
                     />
                     <YoutubeIframeComponent getYtPlayerApiCallback={getYtPlayerApiCallback} />
                     <LogComponent infoText={this.state.infoText} />

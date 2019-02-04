@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { Editor } from 'slate-react';
 import { Value, Mark } from 'slate';
 import Plain from 'slate-plain-serializer';
@@ -19,8 +19,10 @@ Modal.setAppElement('#root');
 const initialEditorValue = Plain.deserialize('');
 
 // Context menu that is shown when user selects a range of text and right clicks.
-const EditorContextMenu = ({ storedTimestamps, parentEditor, currentlyPlayingVideo }) => {
-    const timestampItems = storedTimestamps.map(s => {
+const EditorContextMenu = ({ storedTimestamps, editorValue, editorRef, currentlyPlayingVideo }) => {
+    const selection = editorValue.selection;
+
+    const timestampItems = selection.isExpanded ? storedTimestamps.map(s => {
         return (
             <Item
                 onClick={() => {
@@ -28,22 +30,25 @@ const EditorContextMenu = ({ storedTimestamps, parentEditor, currentlyPlayingVid
                         console.log('Attempted to put timestamp saved for different video');
                         return;
                     }
-                    const editor = parentEditor.editorRef;
-                    const selection = editor.value.selection;
                     const timeStampMark = makeYoutubeTimestampMark(s.videoId, s.videoTime);
-                    editor.addMarkAtRange(selection, timeStampMark);
+                    editorRef.addMarkAtRange(selection, timeStampMark);
                 }}
                 key={`${s.videoTime}_${s.videoId}`}
             >
                 {`${s.text}(${secondsToHhmmss(s.videoTime)})`}
             </Item>
         );
-    });
+    }) : null;
 
     return (
         <Menu id="editor_context_menu">
-            <Submenu label="Set timestamp">{timestampItems}</Submenu>
-            <Separator />
+            {
+                selection.isExpanded ?
+                    <Fragment><Submenu label="Set timestamp">{timestampItems}</Submenu>
+                        <Separator />
+                    </Fragment>
+                    : null
+            }
             <Item> Add timestamp</Item>
             <Item> Add current timestamp</Item>
         </Menu>
@@ -212,6 +217,7 @@ export default class EditorComponent extends Component {
 
         this.onChange = ({ value }) => {
             // ^ The value that onChange receives as argument is the new value of the editor.
+            // Main reason we are overriding is to setState with the new value.
             if (AUTOSAVE && value !== this.state.value) {
                 const content = JSON.stringify(value.toJSON());
                 localStorage.setItem('saved_editor_state', content);
@@ -554,11 +560,6 @@ export default class EditorComponent extends Component {
         };
 
         this.showContextMenuOnRightClick = event => {
-            // Selection collapsed? Then don't show this menu.
-            if (this.state.value.selection.isCollapsed) {
-                return false;
-            }
-
             event.preventDefault();
 
             contextMenu.show({
@@ -583,6 +584,7 @@ export default class EditorComponent extends Component {
         };
 
         this.saveTimestamp = timestampName => {
+            console.log('Saving timestamp with name', timestampName);
             const { videoId } = this.props.parentApp.currentVideoInfo();
             const videoTime = Math.floor(this.state.videoTimeToSet);
 
@@ -600,6 +602,10 @@ export default class EditorComponent extends Component {
 
             this.storedTimestamps.push(new StoredTimestamp(videoId, videoTime, timestampName));
         };
+
+        this.unsetGetTimestampTitle = () => {
+            this.setState({...this.state, showGetTimestampTitle: false, videoTimeToSet: ''});
+        }
 
         // Stored timestamps
     }
@@ -692,7 +698,8 @@ export default class EditorComponent extends Component {
             <div id="__editor_container_div__">
                 <div onContextMenu={this.showContextMenuOnRightClick}>
                     <EditorContextMenu
-                        parentEditor={this}
+                        editorValue={this.state.value}
+                        editorRef={this.editorRef}
                         storedTimestamps={this.storedTimestamps}
                         currentlyPlayingVideo={videoId}
                     />
@@ -721,26 +728,36 @@ export default class EditorComponent extends Component {
                         className="modal"
                         overlayClassName="overlay"
                     >
-                        <form
-                            onSubmit={event => {
-                                this.saveTimestamp(event.target.value);
-                                this.setState({
-                                    ...this.state,
-                                    showGetTimestampTitle: false,
-                                    videoTimeToSet: undefined,
-                                });
-                                event.preventDefault();
-                            }}
-                        >
-                            <label>
-                                Timestamp name:
-                                <input type="text" name="name" />
-                            </label>
-                            <input type="submit" value="Submit" />
-                        </form>
+                        <SimpleFormComponent parentEditor={this} />
                     </Modal>
                 </div>
             </div>
         );
+    }
+}
+
+class SimpleFormComponent extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {value: undefined};
+    }
+
+    render() {
+        return (<form
+            onSubmit={(event) => {
+                event.preventDefault();
+                console.log('Timestamp value =', this.state.value);
+                this.props.parentEditor.saveTimestamp(this.state.value);
+
+                this.setState({ value: '' });
+
+                this.props.parentEditor.unsetGetTimestampTitle();
+            }}
+        >
+            <label>
+                <input type="text" name="name" value={this.state.value} onChange={(e) => this.setState({ value: e.target.value })} />
+            </label>
+            <input type="submit" value="Submit" />
+        </form>);
     }
 }

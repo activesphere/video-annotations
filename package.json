@@ -5,6 +5,7 @@
     "dependencies": {
         "@slate-editor/font-size-plugin": "^5.1.0",
         "classnames": "^2.2.6",
+        "create-react-class": "^15.6.3",
         "get-youtube-title": "^1.0.0",
         "immutable": "^4.0.0-rc.12",
         "prismjs": "^1.15.0",

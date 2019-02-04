@@ -1,32 +1,20 @@
-#### Better saving (important)
+#### Better saving
 
 * Save notes with a name. Doesn't have to be per-video. Show a simple dialog
 when user wants to save.
 
-* A load menu. Show a modal menu (like Sublime text's) and enable fuzzy
-(longest subsequence)searching for notes with note-name, video-id, or video
-name
-
 
 #### CSS fixes (important)
 
-Using flexbox stretches the video player div when user starts writing more
-that one screen-height worth of text.
-
+* A better look won't hurt. Will have to up my design game.
 
 #### More edit options
 
 * Support arbitrary hyperlinks (with slate paste link plugin)
 
-* Place video data (title and id) into editor with a hotkey.
+* Add mathjax formulas in editor. Take a context input and place the formula in the editor. Directly placing
+formulas into editor as the user types is a complicated due to the way these editor libraries are designed.
 
 * Add full markdown support
 
-* Add current time to a list of stored timestamps. Use these timestamps later.
-When doing so, pause the video, get a name for the timestamp, store it in a
-list, and continue the video.
-
-
-#### Test Video ID
-
-yJDv-zdhzMY
+* Implement `Add Timestamp` and `Add current timestamp` in the context menu.
