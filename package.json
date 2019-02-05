@@ -3,6 +3,8 @@
     "version": "0.1.0",
     "private": true,
     "dependencies": {
+        "@emotion/core": "^10.0.7",
+        "@emotion/styled": "^10.0.7",
         "@slate-editor/font-size-plugin": "^5.1.0",
         "classnames": "^2.2.6",
         "create-react-class": "^15.6.3",
@@ -13,6 +15,7 @@
         "react": "^16.7.0",
         "react-contexify": "^4.0.1",
         "react-dom": "^16.7.0",
+        "react-emotion": "^10.0.0",
         "react-mathjax2": "0.0.2",
         "react-modal": "^3.8.1",
         "react-scripts": "2.1.3",

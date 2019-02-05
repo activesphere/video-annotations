@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import ReactDOM from 'react-dom';
 import { Editor } from 'slate-react';
 import { Value, Mark } from 'slate';
 import Plain from 'slate-plain-serializer';
@@ -8,6 +9,8 @@ import Prism from './prism_add_markdown_syntax';
 import AutoReplace from './slate-auto-replace-alt';
 import { noteStorageManager, NoteData } from './save_note';
 import { Menu, contextMenu, Item, Separator, Submenu } from 'react-contexify';
+import { Button, Icon, Menu as Menu_ } from './button_icon_menu';
+import styled from '@emotion/styled';
 import 'react-contexify/dist/ReactContexify.min.css';
 import Modal from 'react-modal';
 import MathJax from 'MathJax'; // External
@@ -54,6 +57,58 @@ const EditorContextMenu = ({ storedTimestamps, editorValue, editorRef, currently
         </Menu>
     );
 };
+
+class HoverMenu extends Component {
+    render() {
+        const StyledMenu = styled(Menu_)`
+  padding: 8px 7px 6px;
+  position: absolute;
+  z-index: 1;
+  top: -10000px;
+  left: -10000px;
+  margin-top: -6px;
+  opacity: 0;
+  background-color: #222;
+  border-radius: 4px;
+  transition: opacity 0.75s;
+`;
+        const { className, getRef } = this.props;
+        const root = window.document.getElementById('root');
+
+        return ReactDOM.createPortal(
+            <StyledMenu className={className} ref={m => { getRef(m); }}>
+                {this.renderMarkButton('bold', 'format_bold')}
+                {this.renderMarkButton('italic', 'format_italic')}
+                {this.renderMarkButton('underlined', 'format_underlined')}
+                {this.renderMarkButton('code', 'code')}
+            </StyledMenu>,
+            root
+        );
+    }
+
+
+    renderMarkButton(type, icon) {
+        const { editor } = this.props;
+        const { value } = editor;
+        const isActive = value.activeMarks.some(mark => mark.type === type);
+        return (
+            <Button
+                reversed
+                active={isActive}
+                onMouseDown={event => this.onClickMark(event, type)}
+            >
+                <Icon>{icon}</Icon>
+            </Button>
+        );
+    }
+
+    onClickMark(event, type) {
+        const { editor } = this.props;
+        event.preventDefault();
+        editor.toggleMark(type);
+    }
+
+}
 
 const TimestampMarkComponent = props => {
     const style = {
@@ -230,6 +285,8 @@ export default class EditorComponent extends Component {
         // A list of stored timestamps for later use.
         this.storedTimestamps = [];
 
+        this.hoverMenuRef = undefined;
+
         this.onChange = ({ value }) => {
             // ^ The value that onChange receives as argument is the new value of the editor.
             // Main reason we are overriding is to setState with the new value.
@@ -405,13 +462,9 @@ export default class EditorComponent extends Component {
                     break;
                 }
 
-                case 't': {
-                    // Test adding a youtube timestamp mark.
-                    const { videoId, videoTime } = this.props.parentApp.currentVideoInfo();
-                    const timeStampMark = makeYoutubeTimestampMark(videoId, videoTime);
-                    editor.toggleMark(timeStampMark);
-                    editor.insertText('Hello Friend');
-                    editor.toggleMark(timeStampMark);
+                case 'p': {
+                    // Toggle pause and unpause state
+                    this.props.parentApp.doVideoCommand({ name: 'togglePause' });
                     handled = true;
                     break;
                 }
@@ -622,7 +675,41 @@ export default class EditorComponent extends Component {
             this.setState({ ...this.state, showGetTimestampTitle: false, videoTimeToSet: '' });
         }
 
-        // Stored timestamps
+        this.updateHoverMenu = () => {
+            const menu = this.hoverMenuRef;
+            if (!menu) {
+                return;
+            }
+
+            console.log('menu =', menu);
+
+            const { value } = this.state;
+            const { fragment, selection } = value;
+
+            if (selection.isBlurred || selection.isCollapsed || fragment.text === '') {
+                menu.removeAttribute('style');
+                return
+            }
+
+            const native = window.getSelection();
+            const range = native.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            menu.style.opacity = 1;
+            menu.style.top = `${rect.top + window.pageYOffset - menu.offsetHeight}px`;
+
+            menu.style.left = `${rect.left +
+                window.pageXOffset -
+                menu.offsetWidth / 2 +
+                rect.width / 2}px`;
+        }
+    }
+
+    componentDidMount() {
+        this.updateHoverMenu();
+    }
+
+    componentDidUpdate() {
+        this.updateHoverMenu();
     }
 
     componentWillReceiveProps(newProps) {
@@ -631,6 +718,16 @@ export default class EditorComponent extends Component {
             newProps.editorCommand.resetCommand();
         }
     }
+
+    renderEditor = (props, editor, next) => {
+        const children = next()
+        return (
+            <React.Fragment>
+                {children}
+                <HoverMenu getRef={menu => { this.hoverMenuRef = menu; }} editor={editor} />
+            </React.Fragment>
+        );
+    };
 
     decorateNode = (node, editor, next) => {
         const others = next() || [];
@@ -725,6 +822,7 @@ export default class EditorComponent extends Component {
                         onKeyDown={this.onKeyDown}
                         renderMark={this.renderMark}
                         renderNode={this.renderNode}
+                        renderEditor={this.renderEditor}
                         decorateNode={this.decorateNode}
                         className="editor-top-level"
                         autoCorrect={false}

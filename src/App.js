@@ -12,6 +12,15 @@ import { noteStorageManager } from './save_note';
 
 const YOUTUBE_API_KEY = 'AIzaSyB0Hslfl-deOx-ApFvTE0osjJCy2T_1uL0';
 
+const yt_player_state_names = {
+    '-1': 'unstarted',
+    '0': 'ended',
+    '1': 'playing',
+    '2': 'paused',
+    '3': 'buffering',
+    '5': 'video_cued',
+};
+
 class YoutubePlayerController {
     constructor(YT, playerApi) {
         console.assert(playerApi !== undefined);
@@ -19,6 +28,7 @@ class YoutubePlayerController {
         this.playerApi = playerApi;
         this.currentVideoId = undefined;
         this.currentVideoTitle = undefined;
+        this.currentPlayerState = 'unstarted';
     }
 
     setVideoTitle() {
@@ -62,6 +72,14 @@ class YoutubePlayerController {
 
     pauseVideo() {
         this.playerApi.pauseVideo(this.currentVideoId);
+    }
+
+    togglePause() {
+        if (this.currentPlayerState === 'paused') {
+            this.playVideo();
+        } else if (this.currentPlayerState === 'playing') {
+            this.pauseVideo();
+        }
     }
 
     addToCurrentTime(seconds) {
@@ -119,6 +137,10 @@ export default class App extends Component {
 
             case 'restartVideo':
                 this.ytPlayerController.seekTo(0);
+                break;
+
+            case 'togglePause':
+                this.ytPlayerController.togglePause();
                 break;
 
             case 'addToCurrentTime':
@@ -180,8 +202,11 @@ export default class App extends Component {
 
         // Try to load the video
         const videoId = selectedOption.value;
-        console.log('Cueing video ', videoId);
-        this.ytPlayerController.loadAndPlayVideo(videoId);
+
+        if (this.ytPlayerController) {
+            console.log('Cueing video ', videoId);
+            this.ytPlayerController.loadAndPlayVideo(videoId);
+        }
 
         // Tell the editor component to load the saved editor value for this video.
 
@@ -204,7 +229,10 @@ export default class App extends Component {
                 height: '100%',
                 width: '100%',
                 events: {
-                    onStateChange: this.onPlayerStateChange,
+                    'onStateChange': (newState) => {
+                        console.log('Setting state ', yt_player_state_names[newState.data]);
+                        this.ytPlayerController.currentPlayerState = yt_player_state_names[newState.data];
+                    }
                 },
             });
             this.ytPlayerController = new YoutubePlayerController(YT, ytPlayerApi);
@@ -242,7 +270,7 @@ export default class App extends Component {
                 <div className="left-panel">
                     <LoadYoutubeVideoIdComponent onSubmit={onVideoIdInput} />
                     <Select className='react-select-container'
-                            classNamePrefix='react-select'
+                        classNamePrefix='react-select'
                         value={this.selectedOption}
                         onChange={this.handleNotemenuChange}
                         options={this.state.noteMenuItems}
