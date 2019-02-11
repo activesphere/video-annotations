@@ -10,6 +10,86 @@ import LoadYoutubeVideoIdComponent from './LoadYoutubeVideoIdComponent';
 import getYoutubeTitle from 'get-youtube-title';
 import { noteStorageManager } from './save_note';
 
+import { AppBar, Toolbar, Typography, Paper, Tabs, Tab, Popover } from "@material-ui/core";
+import { withStyles } from '@material-ui/core/styles';
+import PropTypes from 'prop-types';
+import { createFactory } from 'react';
+
+const AppHeader = (props) => {
+    return <AppBar position="static">
+        <Toolbar>
+            <Typography variant="display2" color="inherit" gutterBottom={true}>
+                Annotator
+            </Typography>
+        </Toolbar>
+    </AppBar>;
+};
+
+const FooterMenu = (props) => {
+    return <Paper>
+        <Tabs
+            value={0}
+            onChange={() => { }}
+            indicatorColor="primary"
+            textColor="primary"
+            centered
+        >
+            <Tab label="Take notes" />
+            <Tab label="Just watch video" />
+            <Tab label="Saved notes" />
+        </Tabs>
+    </Paper>;
+};
+
+// A popover component that works pretty much as a messagebox.
+class InfoPopover extends Component {
+    static propTypes = {
+        classes: PropTypes.object.isRequired,
+
+        // The text to show.
+        infoText: PropTypes.string,
+
+        // The element near which the popover will appear. If this is undefined, popover will not be shown
+        anchorElement: PropTypes.node,
+    }
+
+    static defaultProps = {
+        // For debugging. Should not be visible.
+        infoText: 'Should not be visible',
+    }
+
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        const { classes, infoText, anchorElement } = this.props;
+
+        console.log('Popover anchorElement = ', anchorElement);
+
+        return (
+            <Popover id='__info-popover__' open={!!anchorElement} anchorEl={anchorElement}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'center' }}>
+                <Typography className={classes.typography}>{infoText}</Typography>
+            </Popover>
+        );
+    }
+}
+
+const stylesForPopover = theme => {
+    return {
+        typography: { margin: theme.spacing.unit * 2 },
+        paper: {
+            padding: theme.spacing.unit
+        }
+    };
+}
+
+// Create a styled popover. withStyles will translate the css-in-js to a stylesheet and provide the `classes`
+// prop.
+const StyledPopover = withStyles(stylesForPopover)(InfoPopover);
+
 const YOUTUBE_API_KEY = 'AIzaSyB0Hslfl-deOx-ApFvTE0osjJCy2T_1uL0';
 
 const yt_player_state_names = {
@@ -115,6 +195,7 @@ export default class App extends Component {
 
         // Editor ref, set by the child component
         this.editorRef = undefined;
+        this.popoverRef = undefined;
 
         // We keep a handle to the youtube player (the player API, not the dom element itself).
         this.ytPlayerController = undefined;
@@ -179,14 +260,16 @@ export default class App extends Component {
     }
 
     showInfo(infoText, infoDuration, logToConsole = false) {
+        logToConsole = true;
         if (logToConsole) {
-            console.log(infoText);
+            console.log('infoText =', infoText, ", infoDuration =", infoDuration);
         }
 
         this.setState({ ...this.state, infoText });
 
+        // Unset the popover after given duration
         setTimeout(() => {
-            this.setState({ ...this.state, infoText: defaultInfoText });
+            this.setState({ ...this.state, infoText: undefined });
         }, infoDuration * 1000.0);
     }
 
@@ -265,8 +348,11 @@ export default class App extends Component {
             this.editorRef.focus();
         };
 
-        return (
-            <div className="app" id="__app_element__">
+        /*
+    return (
+        <div className="app" id="__app_element__">
+            <AppHeader />
+            <div className="two-panel-div">
                 <div className="left-panel">
                     <LoadYoutubeVideoIdComponent onSubmit={onVideoIdInput} />
                     <Select className='react-select-container'
@@ -282,6 +368,39 @@ export default class App extends Component {
 
                 <EditorComponent parentApp={this} editorCommand={this.state.editorCommand} />
             </div>
+            <FooterMenu />
+        </div>
+    );
+    */
+
+        console.log('Rendering with infoText =', this.state.infoText);
+
+        return (
+            <div className="app" id="__app_element__">
+                <AppHeader />
+                <div className="two-panel-div">
+                    <div className="left-panel">
+                        <LoadYoutubeVideoIdComponent onSubmit={onVideoIdInput} />
+                        <Select className='react-select-container'
+                            classNamePrefix='react-select'
+                            value={this.selectedOption}
+                            onChange={this.handleNotemenuChange}
+                            options={this.state.noteMenuItems}
+                            placeholder="Saved notes..."
+                        />
+                        <YoutubeIframeComponent getYtPlayerApiCallback={getYtPlayerApiCallback} />
+                    </div>
+
+                    <EditorComponent parentApp={this} editorCommand={this.state.editorCommand} />
+                </div>
+                <FooterMenu />
+                <StyledPopover
+                    infoText={this.state.infoText}
+                    anchorElement={this.state.infoText ? this.editorRef : undefined}
+                    ref={(r) => this.popoverRef = r}>
+                </StyledPopover>
+            </div>
         );
     }
 }
+

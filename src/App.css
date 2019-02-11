@@ -6,11 +6,7 @@ body, html {
     height: 100%;
 }
 
-.root {
-    float: left;
-}
-
-.app {
+.two-panel-div {
     height: 100%;
     width: 90%;
     height: 100%;
@@ -25,7 +21,7 @@ body, html {
     grid-column-start: 1;
     grid-column-end: 2;
 
-    grid-template-rows: 10% 10% 50% 30%;
+    grid-template-rows: 10% 10% 50% 15%;
 }
 
 .youtube-player {
@@ -49,7 +45,7 @@ body, html {
     box-shadow: 0px 0px 1px 1px purple;
     line-height: 1.2;
     border-radius: 0.2em;
-    height: 96vh;
+    height: 85vh;
     padding: 8px;
 }
 
@@ -132,6 +128,7 @@ blockquote[dir='rtl'] {
     font-family: 'Noto Mono', monospace;
     font-size: 12px;
     display: inline-block;
+    display: none;
     box-shadow: 2px 2px 1px 1px purple;
 }
 

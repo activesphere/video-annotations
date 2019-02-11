@@ -681,7 +681,7 @@ export default class EditorComponent extends Component {
                 return;
             }
 
-            console.log('menu =', menu);
+            // console.log('menu =', menu);
 
             const { value } = this.state;
             const { fragment, selection } = value;
