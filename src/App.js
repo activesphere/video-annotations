@@ -13,7 +13,6 @@ import { noteStorageManager } from './save_note';
 import { AppBar, Toolbar, Typography, Paper, Tabs, Tab, Popover } from "@material-ui/core";
 import { withStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
-import { createFactory } from 'react';
 
 const AppHeader = (props) => {
     return <AppBar position="static">
@@ -55,7 +54,7 @@ class InfoPopover extends Component {
 
     static defaultProps = {
         // For debugging. Should not be visible.
-        infoText: 'Should not be visible',
+        infoText: '',
     }
 
     constructor(props) {
@@ -69,21 +68,27 @@ class InfoPopover extends Component {
 
         return (
             <Popover id='__info-popover__' open={!!anchorElement} anchorEl={anchorElement}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-                transformOrigin={{ vertical: 'top', horizontal: 'center' }}>
+                anchorOrigin={{ vertical: 'center', horizontal: 'center' }}
+                transformOrigin={{ vertical: 'center', horizontal: 'center' }}>
                 <Typography className={classes.typography}>{infoText}</Typography>
             </Popover>
         );
     }
 }
 
+// Unlike usual JSS, material-ui styles are actually functions that can use the theme
+// object passed to them and return a final style object.
 const stylesForPopover = theme => {
     return {
-        typography: { margin: theme.spacing.unit * 2 },
+        typography: {
+            margin: theme.spacing.unit * 2, variant: 'h1',
+            fontSize: '25px', fontFamily: "'Cutive Mono', monospace"
+        },
         paper: {
-            padding: theme.spacing.unit
+            padding: theme.spacing.unit,
+            color: '#e0e0fd',
         }
-    };
+    }
 }
 
 // Create a styled popover. withStyles will translate the css-in-js to a stylesheet and provide the `classes`
@@ -168,7 +173,7 @@ class YoutubePlayerController {
     }
 
     getCurrentTime() {
-        return this.playerApi.getCurrentTime();
+        return this.playerApi ? this.playerApi.getCurrentTime() : undefined;
     }
 
     getVideoTitle() {
@@ -195,6 +200,8 @@ export default class App extends Component {
 
         // Editor ref, set by the child component
         this.editorRef = undefined;
+        this.editorContainerDiv = undefined;
+
         this.popoverRef = undefined;
 
         // We keep a handle to the youtube player (the player API, not the dom element itself).
@@ -259,29 +266,36 @@ export default class App extends Component {
         return info;
     }
 
-    showInfo(infoText, infoDuration, logToConsole = false) {
-        logToConsole = true;
+    getEditorContainerDiv = (ref) => { this.editorContainerDiv = ref; }
+
+    showInfo = (infoText, infoDuration, popoverText = undefined, logToConsole = false) => {
         if (logToConsole) {
             console.log('infoText =', infoText, ", infoDuration =", infoDuration);
         }
 
-        this.setState({ ...this.state, infoText });
+        if (popoverText) {
+            infoText = popoverText;
+        }
 
-        // Unset the popover after given duration
+        // WHY THE FUCK IS infoText NOT BEING FUCKING UPDATED???
+        this.setState({ infoText });
+
+        // Unset the popover after given duration.
         setTimeout(() => {
-            this.setState({ ...this.state, infoText: undefined });
+            console.log("SETTIMEOUT CALLED!");
+            this.setState({ infoText: undefined });
         }, infoDuration * 1000.0);
     }
 
     // Called by editor component. Updates current note menu items
     updateNoteMenu = () => {
         const noteMenuItems = noteStorageManager.getNoteMenuItems();
-        this.setState({ ...this.state, noteMenuItems });
+        // this.setState({ ...this.state, noteMenuItems });
     };
 
     handleNotemenuChange = selectedOption => {
-        this.setState({ ...this.state, selectedOption });
-        console.log(`Option selected:`, selectedOption);
+        this.setState({ selectedOption });
+        console.log("Option selected:", selectedOption);
 
         // Try to load the video
         const videoId = selectedOption.value;
@@ -335,7 +349,6 @@ export default class App extends Component {
             // Tell the editor component to load the saved editor value for this video.
 
             this.setState({
-                ...this.state,
                 editorCommand: {
                     name: 'loadNoteForVideo',
                     videoId: videoId,
@@ -345,35 +358,12 @@ export default class App extends Component {
                 },
             });
 
+            this.showInfo(`Loading video ${inputString}`, 1.5, "Loading video", true);
+
             this.editorRef.focus();
         };
 
-        /*
-    return (
-        <div className="app" id="__app_element__">
-            <AppHeader />
-            <div className="two-panel-div">
-                <div className="left-panel">
-                    <LoadYoutubeVideoIdComponent onSubmit={onVideoIdInput} />
-                    <Select className='react-select-container'
-                        classNamePrefix='react-select'
-                        value={this.selectedOption}
-                        onChange={this.handleNotemenuChange}
-                        options={this.state.noteMenuItems}
-                        placeholder="Saved notes..."
-                    />
-                    <YoutubeIframeComponent getYtPlayerApiCallback={getYtPlayerApiCallback} />
-                    <LogComponent infoText={this.state.infoText} />
-                </div>
-
-                <EditorComponent parentApp={this} editorCommand={this.state.editorCommand} />
-            </div>
-            <FooterMenu />
-        </div>
-    );
-    */
-
-        console.log('Rendering with infoText =', this.state.infoText);
+        console.log('State = ', this.state);
 
         return (
             <div className="app" id="__app_element__">
@@ -396,11 +386,10 @@ export default class App extends Component {
                 <FooterMenu />
                 <StyledPopover
                     infoText={this.state.infoText}
-                    anchorElement={this.state.infoText ? this.editorRef : undefined}
+                    anchorElement={this.state.infoText ? this.editorContainerDiv : undefined}
                     ref={(r) => this.popoverRef = r}>
                 </StyledPopover>
             </div>
         );
     }
 }
-

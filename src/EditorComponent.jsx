@@ -13,9 +13,9 @@ import { Button, Icon, Menu as Menu_ } from './button_icon_menu';
 import styled from '@emotion/styled';
 import 'react-contexify/dist/ReactContexify.min.css';
 import Modal from 'react-modal';
-import MathJax from 'MathJax'; // External
+// import MathJax from 'MathJax'; // External
 
-console.log('MathJax = ', MathJax);
+// console.log('MathJax = ', MathJax);
 
 Modal.setAppElement('#root');
 
@@ -25,33 +25,34 @@ const initialEditorValue = Plain.deserialize('');
 const EditorContextMenu = ({ storedTimestamps, editorValue, editorRef, currentlyPlayingVideo }) => {
     const selection = editorValue.selection;
 
-    const timestampItems = selection.isExpanded ? storedTimestamps.map(s => {
-        return (
-            <Item
-                onClick={() => {
-                    if (currentlyPlayingVideo !== s.videoId) {
-                        console.log('Attempted to put timestamp saved for different video');
-                        return;
-                    }
-                    const timeStampMark = makeYoutubeTimestampMark(s.videoId, s.videoTime);
-                    editorRef.addMarkAtRange(selection, timeStampMark);
-                }}
-                key={`${s.videoTime}_${s.videoId}`}
-            >
-                {`${s.text}(${secondsToHhmmss(s.videoTime)})`}
-            </Item>
-        );
-    }) : null;
+    const timestampItems = selection.isExpanded
+        ? storedTimestamps.map(s => {
+            return (
+                <Item
+                    onClick={() => {
+                        if (currentlyPlayingVideo !== s.videoId) {
+                            console.log('Attempted to put timestamp saved for different video');
+                            return;
+                        }
+                        const timeStampMark = makeYoutubeTimestampMark(s.videoId, s.videoTime);
+                        editorRef.addMarkAtRange(selection, timeStampMark);
+                    }}
+                    key={`${s.videoTime}_${s.videoId}`}
+                >
+                    {`${s.text}(${secondsToHhmmss(s.videoTime)})`}
+                </Item>
+            );
+        })
+        : null;
 
     return (
         <Menu id="editor_context_menu">
-            {
-                selection.isExpanded ?
-                    <Fragment><Submenu label="Set timestamp">{timestampItems}</Submenu>
-                        <Separator />
-                    </Fragment>
-                    : null
-            }
+            {selection.isExpanded ? (
+                <Fragment>
+                    <Submenu label="Set timestamp">{timestampItems}</Submenu>
+                    <Separator />
+                </Fragment>
+            ) : null}
             <Item> Add timestamp</Item>
             <Item> Add current timestamp</Item>
         </Menu>
@@ -61,22 +62,27 @@ const EditorContextMenu = ({ storedTimestamps, editorValue, editorRef, currently
 class HoverMenu extends Component {
     render() {
         const StyledMenu = styled(Menu_)`
-  padding: 8px 7px 6px;
-  position: absolute;
-  z-index: 1;
-  top: -10000px;
-  left: -10000px;
-  margin-top: -6px;
-  opacity: 0;
-  background-color: #222;
-  border-radius: 4px;
-  transition: opacity 0.75s;
-`;
+            padding: 8px 7px 6px;
+            position: absolute;
+            z-index: 1;
+            top: -10000px;
+            left: -10000px;
+            margin-top: -6px;
+            opacity: 0;
+            background-color: #222;
+            border-radius: 4px;
+            transition: opacity 0.75s;
+        `;
         const { className, getRef } = this.props;
         const root = window.document.getElementById('root');
 
         return ReactDOM.createPortal(
-            <StyledMenu className={className} ref={m => { getRef(m); }}>
+            <StyledMenu
+                className={className}
+                ref={m => {
+                    getRef(m);
+                }}
+            >
                 {this.renderMarkButton('bold', 'format_bold')}
                 {this.renderMarkButton('italic', 'format_italic')}
                 {this.renderMarkButton('underlined', 'format_underlined')}
@@ -86,17 +92,12 @@ class HoverMenu extends Component {
         );
     }
 
-
     renderMarkButton(type, icon) {
         const { editor } = this.props;
         const { value } = editor;
         const isActive = value.activeMarks.some(mark => mark.type === type);
         return (
-            <Button
-                reversed
-                active={isActive}
-                onMouseDown={event => this.onClickMark(event, type)}
-            >
+            <Button reversed active={isActive} onMouseDown={event => this.onClickMark(event, type)}>
                 <Icon>{icon}</Icon>
             </Button>
         );
@@ -107,7 +108,6 @@ class HoverMenu extends Component {
         event.preventDefault();
         editor.toggleMark(type);
     }
-
 }
 
 const TimestampMarkComponent = props => {
@@ -133,7 +133,7 @@ const TimestampMarkComponent = props => {
         const videoCommand = {
             name: 'seekToTime',
             videoId,
-            videoTime
+            videoTime,
         };
 
         props.parentApp.doVideoCommand(videoCommand);
@@ -298,7 +298,7 @@ export default class EditorComponent extends Component {
             // We can call mathjax to typeset the page here. TODO(rksht): don't tell it to update only
             // when there's at least one inline math element in the block that is currently being
             // edited?
-            MathJax.Hub.Queue(['Typeset', MathJax.Hub, '__editor_container_div__']);
+            // MathJax.Hub.Queue(['Typeset', MathJax.Hub, '__editor_container_div__']);
 
             this.setState({ value });
         };
@@ -537,7 +537,7 @@ export default class EditorComponent extends Component {
                     noteStorageManager.saveNoteWithId(videoId, noteData);
 
                     const infoText = `Saved Note for video "${videoId}", title - "${videoTitle}"`;
-                    this.props.parentApp.showInfo(infoText, 2.0);
+                    this.props.parentApp.showInfo(infoText, 0.5, "Saved note");
                     this.props.parentApp.updateNoteMenu();
 
                     handled = true;
@@ -673,7 +673,7 @@ export default class EditorComponent extends Component {
 
         this.unsetGetTimestampTitle = () => {
             this.setState({ ...this.state, showGetTimestampTitle: false, videoTimeToSet: '' });
-        }
+        };
 
         this.updateHoverMenu = () => {
             const menu = this.hoverMenuRef;
@@ -688,7 +688,7 @@ export default class EditorComponent extends Component {
 
             if (selection.isBlurred || selection.isCollapsed || fragment.text === '') {
                 menu.removeAttribute('style');
-                return
+                return;
             }
 
             const native = window.getSelection();
@@ -701,7 +701,7 @@ export default class EditorComponent extends Component {
                 window.pageXOffset -
                 menu.offsetWidth / 2 +
                 rect.width / 2}px`;
-        }
+        };
     }
 
     componentDidMount() {
@@ -720,11 +720,16 @@ export default class EditorComponent extends Component {
     }
 
     renderEditor = (props, editor, next) => {
-        const children = next()
+        const children = next();
         return (
             <React.Fragment>
                 {children}
-                <HoverMenu getRef={menu => { this.hoverMenuRef = menu; }} editor={editor} />
+                <HoverMenu
+                    getRef={menu => {
+                        this.hoverMenuRef = menu;
+                    }}
+                    editor={editor}
+                />
             </React.Fragment>
         );
     };
@@ -807,7 +812,7 @@ export default class EditorComponent extends Component {
         const { videoId } = this.props.parentApp.currentVideoInfo();
 
         return (
-            <div id="__editor_container_div__">
+            <div id="__editor_container_div__" ref={(r) => this.props.parentApp.getEditorContainerDiv(r)}>
                 <div onContextMenu={this.showContextMenuOnRightClick}>
                     <EditorContextMenu
                         editorValue={this.state.value}
@@ -857,21 +862,28 @@ class SimpleFormComponent extends Component {
     }
 
     render() {
-        return (<form
-            onSubmit={(event) => {
-                event.preventDefault();
-                console.log('Timestamp value =', this.state.value);
-                this.props.parentEditor.saveTimestamp(this.state.value);
+        return (
+            <form
+                onSubmit={event => {
+                    event.preventDefault();
+                    console.log('Timestamp value =', this.state.value);
+                    this.props.parentEditor.saveTimestamp(this.state.value);
 
-                this.setState({ value: '' });
+                    this.setState({ value: '' });
 
-                this.props.parentEditor.unsetGetTimestampTitle();
-            }}
-        >
-            <label>
-                <input type="text" name="name" value={this.state.value} onChange={(e) => this.setState({ value: e.target.value })} />
-            </label>
-            <input type="submit" value="Submit" />
-        </form>);
+                    this.props.parentEditor.unsetGetTimestampTitle();
+                }}
+            >
+                <label>
+                    <input
+                        type="text"
+                        name="name"
+                        value={this.state.value}
+                        onChange={e => this.setState({ value: e.target.value })}
+                    />
+                </label>
+                <input type="submit" value="Submit" />
+            </form>
+        );
     }
 }

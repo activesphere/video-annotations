@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css?family=Noto+Sans');
 @import url('https://fonts.googleapis.com/css?family=Noto+Mono');
+@import url('https://fonts.googleapis.com/css?family=Cutive+Mono');
 
 body, html {
     width: 100%;
@@ -50,7 +51,7 @@ body, html {
 }
 
 .editor-top-level code {
-    font-family: 'Noto Mono', monospace;
+    font-family: 'Cutive Mono', monospace;
     font-family: 16px;
     background-color: #f0f0ea;
 }
