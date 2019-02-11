@@ -29,7 +29,7 @@ const VIDEO_ID_TO_NOTE_DATA = 'video_id_to_note_data';
 const LOAD_TEST_DATA = true;
 
 // If you want to use copy the save data and put it in a source file and use as test data.
-const LOG_SAVE_DATA_TO_CONSOLE = true;
+const LOG_SAVE_DATA_TO_CONSOLE = false;
 
 class NoteStorageManager {
     constructor() {

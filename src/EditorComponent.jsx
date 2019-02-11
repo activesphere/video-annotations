@@ -29,22 +29,22 @@ const EditorContextMenu = ({ storedTimestamps, editorValue, editorRef, currently
 
     const timestampItems = selection.isExpanded
         ? storedTimestamps.map(s => {
-              return (
-                  <Item
-                      onClick={() => {
-                          if (currentlyPlayingVideo !== s.videoId) {
-                              console.log('Attempted to put timestamp saved for different video');
-                              return;
-                          }
-                          const timeStampMark = makeYoutubeTimestampMark(s.videoId, s.videoTime);
-                          editorRef.addMarkAtRange(selection, timeStampMark);
-                      }}
-                      key={`${s.videoTime}_${s.videoId}`}
-                  >
-                      {`${s.text}(${secondsToHhmmss(s.videoTime)})`}
-                  </Item>
-              );
-          })
+            return (
+                <Item
+                    onClick={() => {
+                        if (currentlyPlayingVideo !== s.videoId) {
+                            console.log('Attempted to put timestamp saved for different video');
+                            return;
+                        }
+                        const timeStampMark = makeYoutubeTimestampMark(s.videoId, s.videoTime);
+                        editorRef.addMarkAtRange(selection, timeStampMark);
+                    }}
+                    key={`${s.videoTime}_${s.videoId}`}
+                >
+                    {`${s.text}(${secondsToHhmmss(s.videoTime)})`}
+                </Item>
+            );
+        })
         : null;
 
     return (
@@ -539,7 +539,7 @@ export default class EditorComponent extends Component {
                     noteStorageManager.saveNoteWithId(videoId, noteData);
 
                     const infoText = `Saved Note for video "${videoId}", title - "${videoTitle}"`;
-                    this.props.parentApp.showInfo(infoText, 2.0);
+                    this.props.parentApp.showInfo(infoText, 0.5, "Saved note");
                     this.props.parentApp.updateNoteMenu();
 
                     handled = true;
@@ -683,7 +683,7 @@ export default class EditorComponent extends Component {
                 return;
             }
 
-            console.log('menu =', menu);
+            // console.log('menu =', menu);
 
             const { value } = this.state;
             const { fragment, selection } = value;
@@ -814,7 +814,7 @@ export default class EditorComponent extends Component {
         const { videoId } = this.props.parentApp.currentVideoInfo();
 
         return (
-            <div id="__editor_container_div__">
+            <div id="__editor_container_div__" ref={(r) => this.props.parentApp.getEditorContainerDiv(r)}>
                 <div onContextMenu={this.showContextMenuOnRightClick}>
                     <EditorContextMenu
                         editorValue={this.state.value}

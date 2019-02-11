@@ -9,7 +9,68 @@ import EditorComponent from './EditorComponent';
 import LoadYoutubeVideoIdComponent from './LoadYoutubeVideoIdComponent';
 import getYoutubeTitle from 'get-youtube-title';
 import { noteStorageManager } from './save_note';
+import { AppHeader, FooterMenu } from "./header_and_footer";
 
+import { Typography, Popover } from "@material-ui/core";
+import { withStyles } from '@material-ui/core/styles';
+import PropTypes from 'prop-types';
+
+// A popover component that works pretty much as a messagebox.
+class InfoPopover extends Component {
+    static propTypes = {
+        classes: PropTypes.object.isRequired,
+
+        // The text to show.
+        infoText: PropTypes.string,
+
+        // The element near which the popover will appear. If this is undefined, popover will not be shown
+        anchorElement: PropTypes.node,
+    }
+
+    static defaultProps = {
+        // For debugging. Should not be visible.
+        infoText: '',
+    }
+
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        const { classes, infoText, anchorElement } = this.props;
+
+        console.log('Popover anchorElement = ', anchorElement);
+
+        return (
+            <Popover id='__info-popover__' open={!!anchorElement} anchorEl={anchorElement}
+                anchorOrigin={{ vertical: 'center', horizontal: 'center' }}
+                transformOrigin={{ vertical: 'center', horizontal: 'center' }}>
+                <Typography className={classes.typography}>{infoText}</Typography>
+            </Popover>
+        );
+    }
+}
+
+// Unlike usual JSS, material-ui styles are actually functions that can use the theme
+// object passed to them and return a final style object.
+const stylesForPopover = theme => {
+    return {
+        typography: {
+            margin: theme.spacing.unit * 2, variant: 'h1',
+            fontSize: '25px', fontFamily: "'Cutive Mono', monospace"
+        },
+        paper: {
+            padding: theme.spacing.unit,
+            color: '#e0e0fd',
+        }
+    }
+}
+
+// Create a styled popover. withStyles will translate the css-in-js to a stylesheet and provide the `classes`
+// prop.
+const StyledPopover = withStyles(stylesForPopover)(InfoPopover);
+
+// TODO: Remove this API key from public github? Obtain from user's OS env key.
 const YOUTUBE_API_KEY = 'AIzaSyB0Hslfl-deOx-ApFvTE0osjJCy2T_1uL0';
 
 const yt_player_state_names = {
@@ -88,7 +149,7 @@ class YoutubePlayerController {
     }
 
     getCurrentTime() {
-        return this.playerApi.getCurrentTime();
+        return this.playerApi ? this.playerApi.getCurrentTime() : undefined;
     }
 
     getVideoTitle() {
@@ -103,6 +164,14 @@ class YoutubePlayerController {
 
 // The commands from console are send via the App component
 export default class App extends Component {
+    static propTypes = {
+        onTabChange: PropTypes.func,
+    }
+
+    static defaultProps = {
+        onTabChange: (e, value) => { console.log('Changed to tab ', value); }
+    }
+
     constructor(props) {
         super(props);
         this.state = {
@@ -115,6 +184,9 @@ export default class App extends Component {
 
         // Editor ref, set by the child component
         this.editorRef = undefined;
+        this.editorContainerDiv = undefined;
+
+        this.popoverRef = undefined;
 
         // We keep a handle to the youtube player (the player API, not the dom element itself).
         this.ytPlayerController = undefined;
@@ -178,27 +250,35 @@ export default class App extends Component {
         return info;
     }
 
-    showInfo(infoText, infoDuration, logToConsole = false) {
+    getEditorContainerDiv = (ref) => { this.editorContainerDiv = ref; }
+
+    showInfo = (infoText, infoDuration, popoverText = undefined, logToConsole = false) => {
         if (logToConsole) {
-            console.log(infoText);
+            console.log('infoText =', infoText, ", infoDuration =", infoDuration);
         }
 
-        this.setState({ ...this.state, infoText });
+        if (popoverText) {
+            infoText = popoverText;
+        }
 
+        this.setState({ infoText });
+
+        // Unset the popover after given duration. This is *probably* not safe. Not sure.
         setTimeout(() => {
-            this.setState({ ...this.state, infoText: defaultInfoText });
+            console.log("SETTIMEOUT CALLED!");
+            this.setState({ infoText: undefined });
         }, infoDuration * 1000.0);
     }
 
     // Called by editor component. Updates current note menu items
     updateNoteMenu = () => {
         const noteMenuItems = noteStorageManager.getNoteMenuItems();
-        this.setState({ ...this.state, noteMenuItems });
+        // this.setState({ ...this.state, noteMenuItems });
     };
 
     handleNotemenuChange = selectedOption => {
-        this.setState({ ...this.state, selectedOption });
-        console.log(`Option selected:`, selectedOption);
+        this.setState({ selectedOption });
+        console.log("Option selected:", selectedOption);
 
         // Try to load the video
         const videoId = selectedOption.value;
@@ -221,6 +301,12 @@ export default class App extends Component {
             },
         });
     };
+
+    handleTabChange = (event, value) => {
+        // We first pause the video before switching to the saved notes modal page.
+        this.ytPlayerController.pauseVideo();
+        this.props.onTabChange(event, value);
+    }
 
     render() {
         const getYtPlayerApiCallback = ({ YT, refToPlayerDiv }) => {
@@ -252,7 +338,6 @@ export default class App extends Component {
             // Tell the editor component to load the saved editor value for this video.
 
             this.setState({
-                ...this.state,
                 editorCommand: {
                     name: 'loadNoteForVideo',
                     videoId: videoId,
@@ -262,25 +347,37 @@ export default class App extends Component {
                 },
             });
 
+            this.showInfo(`Loading video ${inputString}`, 1.5, "Loading video", true);
+
             this.editorRef.focus();
         };
 
+        console.log('State = ', this.state);
+
         return (
             <div className="app" id="__app_element__">
-                <div className="left-panel">
-                    <LoadYoutubeVideoIdComponent onSubmit={onVideoIdInput} />
-                    <Select className='react-select-container'
-                        classNamePrefix='react-select'
-                        value={this.selectedOption}
-                        onChange={this.handleNotemenuChange}
-                        options={this.state.noteMenuItems}
-                        placeholder="Saved notes..."
-                    />
-                    <YoutubeIframeComponent getYtPlayerApiCallback={getYtPlayerApiCallback} />
-                    <LogComponent infoText={this.state.infoText} />
-                </div>
+                <AppHeader />
+                <div className="two-panel-div">
+                    <div className="left-panel">
+                        <LoadYoutubeVideoIdComponent onSubmit={onVideoIdInput} />
+                        <Select className='react-select-container'
+                            classNamePrefix='react-select'
+                            value={this.selectedOption}
+                            onChange={this.handleNotemenuChange}
+                            options={this.state.noteMenuItems}
+                            placeholder="Saved notes..."
+                        />
+                        <YoutubeIframeComponent getYtPlayerApiCallback={getYtPlayerApiCallback} />
+                    </div>
 
-                <EditorComponent parentApp={this} editorCommand={this.state.editorCommand} />
+                    <EditorComponent parentApp={this} editorCommand={this.state.editorCommand} />
+                </div>
+                <FooterMenu onChange={this.handleTabChange} />
+                <StyledPopover
+                    infoText={this.state.infoText}
+                    anchorElement={this.state.infoText ? this.editorContainerDiv : undefined}
+                    ref={(r) => this.popoverRef = r}>
+                </StyledPopover>
             </div>
         );
     }
