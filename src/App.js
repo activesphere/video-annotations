@@ -9,36 +9,11 @@ import EditorComponent from './EditorComponent';
 import LoadYoutubeVideoIdComponent from './LoadYoutubeVideoIdComponent';
 import getYoutubeTitle from 'get-youtube-title';
 import { noteStorageManager } from './save_note';
+import { AppHeader, FooterMenu } from "./header_and_footer";
 
-import { AppBar, Toolbar, Typography, Paper, Tabs, Tab, Popover } from "@material-ui/core";
+import { Typography, Popover } from "@material-ui/core";
 import { withStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
-
-const AppHeader = (props) => {
-    return <AppBar position="static">
-        <Toolbar>
-            <Typography variant="display2" color="inherit" gutterBottom={true}>
-                Annotator
-            </Typography>
-        </Toolbar>
-    </AppBar>;
-};
-
-const FooterMenu = (props) => {
-    return <Paper>
-        <Tabs
-            value={0}
-            onChange={() => { }}
-            indicatorColor="primary"
-            textColor="primary"
-            centered
-        >
-            <Tab label="Take notes" />
-            <Tab label="Just watch video" />
-            <Tab label="Saved notes" />
-        </Tabs>
-    </Paper>;
-};
 
 // A popover component that works pretty much as a messagebox.
 class InfoPopover extends Component {
@@ -95,6 +70,7 @@ const stylesForPopover = theme => {
 // prop.
 const StyledPopover = withStyles(stylesForPopover)(InfoPopover);
 
+// TODO: Remove this API key from public github? Obtain from user's OS env key.
 const YOUTUBE_API_KEY = 'AIzaSyB0Hslfl-deOx-ApFvTE0osjJCy2T_1uL0';
 
 const yt_player_state_names = {
@@ -188,6 +164,14 @@ class YoutubePlayerController {
 
 // The commands from console are send via the App component
 export default class App extends Component {
+    static propTypes = {
+        onTabChange: PropTypes.func,
+    }
+
+    static defaultProps = {
+        onTabChange: (e, value) => { console.log('Changed to tab ', value); }
+    }
+
     constructor(props) {
         super(props);
         this.state = {
@@ -277,10 +261,9 @@ export default class App extends Component {
             infoText = popoverText;
         }
 
-        // WHY THE FUCK IS infoText NOT BEING FUCKING UPDATED???
         this.setState({ infoText });
 
-        // Unset the popover after given duration.
+        // Unset the popover after given duration. This is *probably* not safe. Not sure.
         setTimeout(() => {
             console.log("SETTIMEOUT CALLED!");
             this.setState({ infoText: undefined });
@@ -318,6 +301,12 @@ export default class App extends Component {
             },
         });
     };
+
+    handleTabChange = (event, value) => {
+        // We first pause the video before switching to the saved notes modal page.
+        this.ytPlayerController.pauseVideo();
+        this.props.onTabChange(event, value);
+    }
 
     render() {
         const getYtPlayerApiCallback = ({ YT, refToPlayerDiv }) => {
@@ -383,7 +372,7 @@ export default class App extends Component {
 
                     <EditorComponent parentApp={this} editorCommand={this.state.editorCommand} />
                 </div>
-                <FooterMenu />
+                <FooterMenu onChange={this.handleTabChange} />
                 <StyledPopover
                     infoText={this.state.infoText}
                     anchorElement={this.state.infoText ? this.editorContainerDiv : undefined}
