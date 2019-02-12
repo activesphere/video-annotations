@@ -9,11 +9,14 @@ import EditorComponent from './EditorComponent';
 import LoadYoutubeVideoIdComponent from './LoadYoutubeVideoIdComponent';
 import getYoutubeTitle from 'get-youtube-title';
 import { noteStorageManager } from './save_note';
-import { AppHeader, FooterMenu } from "./header_and_footer";
+import { AppHeader, FooterMenu } from './header_and_footer';
 
-import { Typography, Popover } from "@material-ui/core";
+import { Typography, Popover } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
+import { MuiThemeProvider } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
+import theme from './mui_theme';
+
 
 // A popover component that works pretty much as a messagebox.
 class InfoPopover extends Component {
@@ -25,12 +28,12 @@ class InfoPopover extends Component {
 
         // The element near which the popover will appear. If this is undefined, popover will not be shown
         anchorElement: PropTypes.node,
-    }
+    };
 
     static defaultProps = {
         // For debugging. Should not be visible.
         infoText: '',
-    }
+    };
 
     constructor(props) {
         super(props);
@@ -42,9 +45,13 @@ class InfoPopover extends Component {
         console.log('Popover anchorElement = ', anchorElement);
 
         return (
-            <Popover id='__info-popover__' open={!!anchorElement} anchorEl={anchorElement}
+            <Popover
+                id="__info-popover__"
+                open={!!anchorElement}
+                anchorEl={anchorElement}
                 anchorOrigin={{ vertical: 'center', horizontal: 'center' }}
-                transformOrigin={{ vertical: 'center', horizontal: 'center' }}>
+                transformOrigin={{ vertical: 'center', horizontal: 'center' }}
+            >
                 <Typography className={classes.typography}>{infoText}</Typography>
             </Popover>
         );
@@ -56,15 +63,17 @@ class InfoPopover extends Component {
 const stylesForPopover = theme => {
     return {
         typography: {
-            margin: theme.spacing.unit * 2, variant: 'h1',
-            fontSize: '25px', fontFamily: "'Cutive Mono', monospace"
+            margin: theme.spacing.unit * 2,
+            variant: 'h1',
+            fontSize: '25px',
+            fontFamily: "'Cutive Mono', monospace",
         },
         paper: {
             padding: theme.spacing.unit,
             color: '#e0e0fd',
-        }
-    }
-}
+        },
+    };
+};
 
 // Create a styled popover. withStyles will translate the css-in-js to a stylesheet and provide the `classes`
 // prop.
@@ -166,11 +175,15 @@ class YoutubePlayerController {
 export default class App extends Component {
     static propTypes = {
         onTabChange: PropTypes.func,
-    }
+        tabNumber: PropTypes.number,
+    };
 
     static defaultProps = {
-        onTabChange: (e, value) => { console.log('Changed to tab ', value); }
-    }
+        onTabChange: (e, value) => {
+            console.log('Changed to tab ', value);
+        },
+        tabNumber: 0,
+    };
 
     constructor(props) {
         super(props);
@@ -250,11 +263,13 @@ export default class App extends Component {
         return info;
     }
 
-    getEditorContainerDiv = (ref) => { this.editorContainerDiv = ref; }
+    getEditorContainerDiv = ref => {
+        this.editorContainerDiv = ref;
+    };
 
     showInfo = (infoText, infoDuration, popoverText = undefined, logToConsole = false) => {
         if (logToConsole) {
-            console.log('infoText =', infoText, ", infoDuration =", infoDuration);
+            console.log('infoText =', infoText, ', infoDuration =', infoDuration);
         }
 
         if (popoverText) {
@@ -265,20 +280,20 @@ export default class App extends Component {
 
         // Unset the popover after given duration. This is *probably* not safe. Not sure.
         setTimeout(() => {
-            console.log("SETTIMEOUT CALLED!");
+            console.log('SETTIMEOUT CALLED!');
             this.setState({ infoText: undefined });
         }, infoDuration * 1000.0);
-    }
+    };
 
     // Called by editor component. Updates current note menu items
     updateNoteMenu = () => {
         const noteMenuItems = noteStorageManager.getNoteMenuItems();
-        // this.setState({ ...this.state, noteMenuItems });
+        this.setState({ noteMenuItems });
     };
 
     handleNotemenuChange = selectedOption => {
         this.setState({ selectedOption });
-        console.log("Option selected:", selectedOption);
+        console.log('Option selected:', selectedOption);
 
         // Try to load the video
         const videoId = selectedOption.value;
@@ -304,9 +319,11 @@ export default class App extends Component {
 
     handleTabChange = (event, value) => {
         // We first pause the video before switching to the saved notes modal page.
-        this.ytPlayerController.pauseVideo();
+        if (this.ytPlayerController) {
+            this.ytPlayerController.pauseVideo();
+        }
         this.props.onTabChange(event, value);
-    }
+    };
 
     render() {
         const getYtPlayerApiCallback = ({ YT, refToPlayerDiv }) => {
@@ -315,10 +332,11 @@ export default class App extends Component {
                 height: '100%',
                 width: '100%',
                 events: {
-                    'onStateChange': (newState) => {
+                    onStateChange: newState => {
                         console.log('Setting state ', yt_player_state_names[newState.data]);
-                        this.ytPlayerController.currentPlayerState = yt_player_state_names[newState.data];
-                    }
+                        this.ytPlayerController.currentPlayerState =
+                            yt_player_state_names[newState.data];
+                    },
                 },
             });
             this.ytPlayerController = new YoutubePlayerController(YT, ytPlayerApi);
@@ -347,7 +365,7 @@ export default class App extends Component {
                 },
             });
 
-            this.showInfo(`Loading video ${inputString}`, 1.5, "Loading video", true);
+            this.showInfo(`Loading video ${inputString}`, 1.5, 'Loading video', true);
 
             this.editorRef.focus();
         };
@@ -356,28 +374,36 @@ export default class App extends Component {
 
         return (
             <div className="app" id="__app_element__">
-                <AppHeader />
-                <div className="two-panel-div">
-                    <div className="left-panel">
-                        <LoadYoutubeVideoIdComponent onSubmit={onVideoIdInput} />
-                        <Select className='react-select-container'
-                            classNamePrefix='react-select'
-                            value={this.selectedOption}
-                            onChange={this.handleNotemenuChange}
-                            options={this.state.noteMenuItems}
-                            placeholder="Saved notes..."
-                        />
-                        <YoutubeIframeComponent getYtPlayerApiCallback={getYtPlayerApiCallback} />
-                    </div>
+                <MuiThemeProvider theme={theme}>
+                    <AppHeader />
+                    <div className="two-panel-div">
+                        <div className="left-panel">
+                            <LoadYoutubeVideoIdComponent onSubmit={onVideoIdInput} />
+                            <Select
+                                className="react-select-container"
+                                classNamePrefix="react-select"
+                                value={this.selectedOption}
+                                onChange={this.handleNotemenuChange}
+                                options={this.state.noteMenuItems}
+                                placeholder="Saved notes..."
+                            />
+                            <YoutubeIframeComponent
+                                getYtPlayerApiCallback={getYtPlayerApiCallback}
+                            />
+                        </div>
 
-                    <EditorComponent parentApp={this} editorCommand={this.state.editorCommand} />
-                </div>
-                <FooterMenu onChange={this.handleTabChange} />
-                <StyledPopover
-                    infoText={this.state.infoText}
-                    anchorElement={this.state.infoText ? this.editorContainerDiv : undefined}
-                    ref={(r) => this.popoverRef = r}>
-                </StyledPopover>
+                        <EditorComponent
+                            parentApp={this}
+                            editorCommand={this.state.editorCommand}
+                        />
+                    </div>
+                    <FooterMenu onChange={this.handleTabChange} tabIndex={this.props.tabIndex} />
+                    <StyledPopover
+                        infoText={this.state.infoText}
+                        anchorElement={this.state.infoText ? this.editorContainerDiv : undefined}
+                        ref={r => (this.popoverRef = r)}
+                    />
+                </MuiThemeProvider>
             </div>
         );
     }

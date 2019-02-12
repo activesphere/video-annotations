@@ -23,4 +23,32 @@ export function makeYoutubeUrl(videoId, videoTimeInSeconds) {
     return `http://www.youtube.com/watch?v=${videoId}&t=${mmss}`;
 }
 
+export function makeYoutubeImageUrl(videoId, imageNumber = 1) {
+    if (!videoId) {
+        return '';
+    }
+    return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+}
+
 export const TEST_VIDEO_ID = '495nCzxM9PI';
+
+/*
+export function shortenStringEllipsis(fullString, maxLength = 10) {
+    const len = fullString.length;
+
+    if (len <= maxLength) {
+        return fullString;
+    }
+    const ellipsis = ' ... ';
+    const remainingLength = len - ellipsis.length;
+
+    if (remainingLength < 0) {
+        return '';
+    }
+    const s = [];
+
+    for (let i = 0; i < (maxLength / 2); ++i) {
+
+    }
+}
+*/

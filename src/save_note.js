@@ -1,4 +1,4 @@
-import testSavedMap from "./test_saved_map";
+import testSavedMap from './test_saved_map';
 
 // A JSON serializable object representing a full note. Kept as values in the VIDEO_ID_TO_NOTE_DATA
 // map.
@@ -46,6 +46,14 @@ class NoteStorageManager {
             }
         } else {
             this.videoIdToNoteData = JSON.parse(this.strMap);
+
+            console.log('Keys of saved notes = ', Object.keys(this.videoIdToNoteData));
+
+            // This is not needed.
+            if (this.videoIdToNoteData.hasOwnProperty('saved_note_undefined')) {
+                delete this.videoIdToNoteData.saved_note_undefined;
+                this.flushToLocalStorage();
+            }
             console.log('Loaded save data.');
         }
     }
@@ -85,6 +93,11 @@ class NoteStorageManager {
     };
 
     saveNoteWithId = (videoId, noteData) => {
+        if (!videoId) {
+            console.warn('video id was undefined');
+            return;
+        }
+
         const key = `saved_note_${videoId}`;
         this.videoIdToNoteData[key] = noteData;
         console.log('Saved note for video', noteData.videoTitle);
@@ -109,8 +122,27 @@ class NoteStorageManager {
                 });
             }
         }
-        console.log('items = ', items);
         return items;
+    };
+
+    getNoteMenuItemsForCards = () => {
+        const keys = Object.keys(this.videoIdToNoteData);
+        const cardInfos = [];
+
+        for (let i = 0; i < keys.length; ++i) {
+            const key = keys[i];
+
+            if (this.videoIdToNoteData.hasOwnProperty(key)) {
+                const noteData = this.videoIdToNoteData[key];
+
+                // TODO: Send a 'shortened' text of the contents of the card too.
+                cardInfos.push({
+                    videoTitle: noteData.videoTitle,
+                    videoId: noteData.videoId,
+                });
+            }
+        }
+        return cardInfos;
     };
 }
 
