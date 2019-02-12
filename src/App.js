@@ -176,6 +176,7 @@ export default class App extends Component {
     static propTypes = {
         onTabChange: PropTypes.func,
         tabNumber: PropTypes.number,
+        startingVideoId: PropTypes.string,
     };
 
     static defaultProps = {
@@ -183,6 +184,7 @@ export default class App extends Component {
             console.log('Changed to tab ', value);
         },
         tabNumber: 0,
+        startingVideoId: undefined,
     };
 
     constructor(props) {
@@ -324,6 +326,10 @@ export default class App extends Component {
         }
         this.props.onTabChange(event, value);
     };
+
+    componentDidMount() {
+        // If startingVideoId is specified in props, load that. 
+    }
 
     render() {
         const getYtPlayerApiCallback = ({ YT, refToPlayerDiv }) => {

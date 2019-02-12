@@ -5,6 +5,11 @@ export default class YoutubeIframeComponent extends Component {
     static propTypes = {
         // (refToPlayerDiv) => void
         getYtPlayerApiCallback: PropTypes.func.isRequired,
+        startingVideoId: PropTypes.string,
+    };
+
+    static defaultProps = {
+        startingVideoId: undefined
     };
 
     constructor(props) {
@@ -47,6 +52,7 @@ export default class YoutubeIframeComponent extends Component {
                     resolve({
                         YT: window.YT,
                         refToPlayerDiv: this.refToPlayerDiv,
+                        videoId: this.props.startingVideoId,
                     });
 
                     loadedYtPlayerApi = true;

@@ -158,7 +158,7 @@ function makeYoutubeTimestampMark(videoId, videoTime) {
     return Mark.create({ type: 'youtube_timestamp', data: { videoId, videoTime } });
 }
 
-const AUTOSAVE = false;
+const AUTOSAVE = true;
 
 class StoredTimestamp {
     constructor(videoId, videoTime, text = '') {
@@ -275,6 +275,20 @@ export default class EditorComponent extends Component {
         return plugins;
     }
 
+    saveCurrentNote = () => {
+        const jsonEditorValue = this.state.value.toJSON();
+        const { videoId, videoTitle } = this.props.parentApp.currentVideoInfo();
+        const noteData = new NoteData(videoId, videoTitle, jsonEditorValue);
+        noteStorageManager.saveNoteWithId(videoId, noteData);
+        this.props.parentApp.updateNoteMenu();
+
+        const infoText = `Saved Note for video "${videoId}", title - "${videoTitle}"`;
+        console.log(infoText);
+
+        // Return the infotext so we can show it in case user saved manually.
+        return infoText;
+    };
+
     constructor(props) {
         super(props);
 
@@ -293,8 +307,7 @@ export default class EditorComponent extends Component {
             // ^ The value that onChange receives as argument is the new value of the editor.
             // Main reason we are overriding is to setState with the new value.
             if (AUTOSAVE && value !== this.state.value) {
-                const content = JSON.stringify(value.toJSON());
-                localStorage.setItem('saved_editor_state', content);
+                this.saveCurrentNote();
             }
 
             // We can call mathjax to typeset the page here. TODO(rksht): don't tell it to update only
@@ -532,16 +545,8 @@ export default class EditorComponent extends Component {
 
                 // Ctrl + s saves current state of editor
                 case 's': {
-                    const jsonEditorValue = this.state.value.toJSON();
-                    const { videoId, videoTitle } = this.props.parentApp.currentVideoInfo();
-                    const noteData = new NoteData(videoId, videoTitle, jsonEditorValue);
-
-                    noteStorageManager.saveNoteWithId(videoId, noteData);
-
-                    const infoText = `Saved Note for video "${videoId}", title - "${videoTitle}"`;
+                    const infoText = this.saveCurrentNote();
                     this.props.parentApp.showInfo(infoText, 0.5, "Saved note");
-                    this.props.parentApp.updateNoteMenu();
-
                     handled = true;
                     break;
                 }

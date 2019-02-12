@@ -3,11 +3,6 @@
 * Save notes with a name. Doesn't have to be per-video. Show a simple dialog
 when user wants to save.
 
-
-#### CSS fixes (important)
-
-* A better look won't hurt. Will have to up my design game.
-
 #### More edit options
 
 * Support arbitrary hyperlinks (with slate paste link plugin)
@@ -18,3 +13,11 @@ formulas into editor as the user types is a complicated due to the way these edi
 * Add full markdown support
 
 * Implement `Add Timestamp` and `Add current timestamp` in the context menu.
+
+
+#### Editing experience
+
+* Implement following (Important)
+
+On every change of cursor, check if the cursor is on a timestamp mark. If so, toggle away the
+timestamp mark from currently activated timestamp.
