@@ -29,22 +29,22 @@ const EditorContextMenu = ({ storedTimestamps, editorValue, editorRef, currently
 
     const timestampItems = selection.isExpanded
         ? storedTimestamps.map(s => {
-            return (
-                <Item
-                    onClick={() => {
-                        if (currentlyPlayingVideo !== s.videoId) {
-                            console.log('Attempted to put timestamp saved for different video');
-                            return;
-                        }
-                        const timeStampMark = makeYoutubeTimestampMark(s.videoId, s.videoTime);
-                        editorRef.addMarkAtRange(selection, timeStampMark);
-                    }}
-                    key={`${s.videoTime}_${s.videoId}`}
-                >
-                    {`${s.text}(${secondsToHhmmss(s.videoTime)})`}
-                </Item>
-            );
-        })
+              return (
+                  <Item
+                      onClick={() => {
+                          if (currentlyPlayingVideo !== s.videoId) {
+                              console.log('Attempted to put timestamp saved for different video');
+                              return;
+                          }
+                          const timeStampMark = makeYoutubeTimestampMark(s.videoId, s.videoTime);
+                          editorRef.addMarkAtRange(selection, timeStampMark);
+                      }}
+                      key={`${s.videoTime}_${s.videoId}`}
+                  >
+                      {`${s.text}(${secondsToHhmmss(s.videoTime)})`}
+                  </Item>
+              );
+          })
         : null;
 
     return (
@@ -289,10 +289,35 @@ export default class EditorComponent extends Component {
         return infoText;
     };
 
+    // Put timestamp into current selection in given editor state
+    _putTimestampMarkIntoEditor = editor => {
+        const { videoId, videoTime } = this.props.parentApp.currentVideoInfo();
+        if (!videoId) {
+            return false;
+        }
+        if (!videoTime && videoTime !== 0) {
+            return false;
+        }
+
+        const timeStampMark = makeYoutubeTimestampMark(videoId, videoTime);
+        editor.toggleMark(timeStampMark);
+        editor.insertText(secondsToHhmmss(videoTime));
+        editor.toggleMark(timeStampMark);
+        return true;
+    };
+
     constructor(props) {
         super(props);
 
-        this.state = { value: initialEditorValue, showGetTimestampTitle: false };
+        this.state = {
+            value: initialEditorValue,
+            showGetTimestampTitle: false,
+            /*
+            wasAtTimestampBorder: false,
+            timestampBorderMark: undefined,
+            */
+            onTimestamp: false,
+        };
 
         this.editorRef = undefined;
 
@@ -303,7 +328,9 @@ export default class EditorComponent extends Component {
 
         this.hoverMenuRef = undefined;
 
-        this.onChange = ({ value }) => {
+        this.onChange = change => {
+            let { value } = change;
+
             // ^ The value that onChange receives as argument is the new value of the editor.
             // Main reason we are overriding is to setState with the new value.
             if (AUTOSAVE && value !== this.state.value) {
@@ -314,6 +341,74 @@ export default class EditorComponent extends Component {
             // when there's at least one inline math element in the block that is currently being
             // edited?
             // MathJax.Hub.Queue(['Typeset', MathJax.Hub, '__editor_container_div__']);
+
+            // Check if we are on the boundary of a timestamp mark. If so we will toggle away that mark state.
+            const { selection } = value;
+            const marks = value.marks;
+
+            let onTimestamp = false;
+
+            for (let mark of marks) {
+                if (mark.type === 'youtube_timestamp') {
+                    onTimestamp = true;
+                }
+            }
+
+            console.log('onTimestamp = ', onTimestamp);
+
+            this.setState({ onTimestamp });
+
+            if (selection.isCollapsed) {
+                // Disabling all this temporarily. This is real finnicky. Instead what I gonna do to
+                // cue the user via background color that he is on top of a timestamp mark.
+                /*
+                if (false) {
+                    const prev = selection.moveStartBackward().moveEndBackward();
+                    const next = selection.moveEndForward().moveStartForward();
+
+                    const { document } = value;
+
+                    if (prev.start < 0 && next.end >= document.text.length) {
+                        return;
+                    }
+
+                    // Get the list of all decorations and check if we are at the boundary of a timestamp mark
+                    const marks = value.marks;
+                    console.log(marks);
+
+                    const prevMarks = document.getMarksAtRange(prev);
+                    const nextMarks = document.getMarksAtRange(next);
+                    const thisMarks = document.getMarksAtRange(selection);
+
+                    let notedMark = undefined;
+
+                    const hasTimestamp = marks => {
+                        for (let mark of marks) {
+                            if (mark.type === 'youtube_timestamp') {
+                                notedMark = mark;
+                                return true;
+                            }
+                        }
+                        return false;
+                    };
+
+                    const prevHas = hasTimestamp(prevMarks);
+                    const nextHas = hasTimestamp(nextMarks);
+                    const thisHas = hasTimestamp(thisMarks);
+                    console.log(`prevhas = ${prevHas}, nextHas = ${nextHas}, thisHas = ${thisHas}`);
+
+                    // Having timestamp mark at exactly one of previous or next position means we are at the border.
+                    if (thisHas && ((prevHas && !nextHas) || (!prevHas && nextHas))) {
+                        if (prevHas && !nextHas) {
+                            this.setState({
+                                wasAtTimestampBorder: true,
+                                timestampBorderMark: notedMark,
+                            });
+                        }
+                    }
+                }
+                */
+            }
 
             this.setState({ value });
         };
@@ -515,6 +610,13 @@ export default class EditorComponent extends Component {
                     break;
                 }
 
+                case 't': {
+                    // Simply put a timestamp
+                    this._putTimestampMarkIntoEditor(editor);
+                    handled = true;
+                    break;
+                }
+
                 // Associate a mark at the current selected text
                 case '\\': {
                     let selection = editor.value.selection;
@@ -546,7 +648,7 @@ export default class EditorComponent extends Component {
                 // Ctrl + s saves current state of editor
                 case 's': {
                     const infoText = this.saveCurrentNote();
-                    this.props.parentApp.showInfo(infoText, 0.5, "Saved note");
+                    this.props.parentApp.showInfo(infoText, 0.5, 'Saved note');
                     handled = true;
                     break;
                 }
@@ -818,8 +920,16 @@ export default class EditorComponent extends Component {
 
         const { videoId } = this.props.parentApp.currentVideoInfo();
 
+        // Pick bg color of editor based on if it's on a timestamp or not.
+        const styles = {
+            backgroundColor: this.state.onTimestamp ? '#ffeaf0' : '#fafaf0',
+        };
+
         return (
-            <div id="__editor_container_div__" ref={(r) => this.props.parentApp.getEditorContainerDiv(r)}>
+            <div
+                id="__editor_container_div__"
+                ref={r => this.props.parentApp.getEditorContainerDiv(r)}
+            >
                 <div onContextMenu={this.showContextMenuOnRightClick}>
                     <EditorContextMenu
                         editorValue={this.state.value}
@@ -841,6 +951,7 @@ export default class EditorComponent extends Component {
                         autoFocus={true}
                         plugins={this.plugins}
                         placeholder="Write your note here.."
+                        style={styles}
                         ref={editorRef => {
                             this.editorRef = editorRef;
                             this.props.parentApp.editorRef = editorRef;

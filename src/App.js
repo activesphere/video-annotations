@@ -42,8 +42,6 @@ class InfoPopover extends Component {
     render() {
         const { classes, infoText, anchorElement } = this.props;
 
-        console.log('Popover anchorElement = ', anchorElement);
-
         return (
             <Popover
                 id="__info-popover__"
