@@ -350,7 +350,7 @@ export default class EditorComponent extends Component {
 
             // ^ The value that onChange receives as argument is the new value of the editor.
             // Main reason we are overriding is to setState with the new value.
-            if (AUTOSAVE && value.documents !== this.state.value.documents) {
+            if (AUTOSAVE && value.document !== this.state.value.document) {
                 this.saveCurrentNote();
             }
 
