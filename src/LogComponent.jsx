@@ -14,12 +14,22 @@ Hotkeys
 ===========================================
 
 Ctrl + D                                        Seek to timestamp under cursor
-Select text and press Ctrl + \\                 Make timestamp at selected text
+
+Select text and press Ctrl + /                 Make timestamp at selected text
+
 Ctrl + S                                        Save note for current video
+
 Ctrl + L                                        Load note for current video
+
 Ctrl + H                                        Save timestamp in a list for later usage
+
 Ctrl + T                                        Put timestamp
+
 Ctrl + P                                        Pause Video
+
+Ctrl + -                                        Break away from timestamp mode.
+                                                Useful while editing around edges
+                                                of timestamp.
 
 `;
 

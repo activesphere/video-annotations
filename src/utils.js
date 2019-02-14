@@ -30,6 +30,14 @@ export function makeYoutubeImageUrl(videoId, imageNumber = 1) {
     return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
 }
 
+export function currentTime() {
+    return new Date().getTime() / 1000.0;
+}
+
+export function timeAfter(seconds) {
+    return currentTime() + seconds;
+}
+
 export const TEST_VIDEO_ID = '495nCzxM9PI';
 
 /*

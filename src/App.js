@@ -5,60 +5,49 @@ import Select from 'react-select';
 
 import YoutubeIframeComponent from './YoutubeIframeComponent';
 import LogComponent, { defaultInfoText } from './LogComponent';
+import { secondsToHhmmss } from './utils';
 import EditorComponent from './EditorComponent';
 import LoadYoutubeVideoIdComponent from './LoadYoutubeVideoIdComponent';
 import getYoutubeTitle from 'get-youtube-title';
 import { noteStorageManager } from './save_note';
 import { AppHeader, FooterMenu } from './header_and_footer';
 
-import { Typography, Popover } from '@material-ui/core';
+import { Typography, Popper, Fade, Paper } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 import theme from './mui_theme';
 
-
 // A popover component that works pretty much as a messagebox.
-class InfoPopover extends Component {
-    static propTypes = {
-        classes: PropTypes.object.isRequired,
-
-        // The text to show.
-        infoText: PropTypes.string,
-
-        // The element near which the popover will appear. If this is undefined, popover will not be shown
-        anchorElement: PropTypes.node,
-    };
-
-    static defaultProps = {
-        // For debugging. Should not be visible.
-        infoText: '',
-    };
-
+class InfoPopper extends Component {
     constructor(props) {
         super(props);
     }
 
     render() {
-        const { classes, infoText, anchorElement } = this.props;
+        const { classes, anchorElement } = this.props;
+        const open = !!anchorElement;
+        const id = open ? '__info_popper__' : null;
 
         return (
-            <Popover
-                id="__info-popover__"
-                open={!!anchorElement}
-                anchorEl={anchorElement}
-                anchorOrigin={{ vertical: 'center', horizontal: 'center' }}
-                transformOrigin={{ vertical: 'center', horizontal: 'center' }}
-            >
-                <Typography className={classes.typography}>{infoText}</Typography>
-            </Popover>
+            <Popper id={id} open={open} anchorEl={anchorElement} transition>
+                {({ TransitionProps }) => (
+                    <Fade {...TransitionProps} timeout={350}>
+                        <Paper className={classes.paper}>
+                            <Typography className={classes.typography}>
+                                {this.props.children}
+                            </Typography>
+                        </Paper>
+                    </Fade>
+                )}
+            </Popper>
         );
     }
 }
 
 // Unlike usual JSS, material-ui styles are actually functions that can use the theme
 // object passed to them and return a final style object.
-const stylesForPopover = theme => {
+const stylesForPopper = theme => {
     return {
         typography: {
             margin: theme.spacing.unit * 2,
@@ -73,9 +62,9 @@ const stylesForPopover = theme => {
     };
 };
 
-// Create a styled popover. withStyles will translate the css-in-js to a stylesheet and provide the `classes`
-// prop.
-const StyledPopover = withStyles(stylesForPopover)(InfoPopover);
+// Create a styled popover. withStyles will translate the css-in-js to a stylesheet and provide the
+// `classes` prop.
+const StyledPopper = withStyles(stylesForPopper)(InfoPopper);
 
 // TODO: Remove this API key from public github? Obtain from user's OS env key.
 const YOUTUBE_API_KEY = 'AIzaSyB0Hslfl-deOx-ApFvTE0osjJCy2T_1uL0';
@@ -214,14 +203,18 @@ export default class App extends Component {
         switch (command.name) {
             case 'playVideo':
                 this.ytPlayerController.playVideo();
+                this.showInfo('', 0.5, 'Playing');
+
                 break;
 
             case 'pauseVideo':
                 this.ytPlayerController.pauseVideo();
+                this.showInfo('', 0.5, 'Paused');
                 break;
 
             case 'restartVideo':
                 this.ytPlayerController.seekTo(0);
+                this.showInfo('', 0.5, 'Restart');
                 break;
 
             case 'togglePause':
@@ -243,6 +236,7 @@ export default class App extends Component {
                         this.ytPlayerController.loadAndPlayVideo(command.videoId);
                     }
                     this.ytPlayerController.seekTo(command.videoTime);
+                    // this.showInfo('', 0.5, `Seek to ${secondsToHhmmss(command.videoTime)}`);
                 }
                 break;
 
@@ -280,7 +274,6 @@ export default class App extends Component {
 
         // Unset the popover after given duration. This is *probably* not safe. Not sure.
         setTimeout(() => {
-            console.log('SETTIMEOUT CALLED!');
             this.setState({ infoText: undefined });
         }, infoDuration * 1000.0);
     };
@@ -289,6 +282,10 @@ export default class App extends Component {
     updateNoteMenu = () => {
         const noteMenuItems = noteStorageManager.getNoteMenuItems();
         this.setState({ noteMenuItems });
+    };
+
+    unsetEditorCommand = () => {
+        this.setState({ editorCommand: undefined });
     };
 
     handleNotemenuChange = selectedOption => {
@@ -310,9 +307,7 @@ export default class App extends Component {
             editorCommand: {
                 name: 'loadNoteForVideo',
                 videoId: videoId,
-                resetCommand: () => {
-                    this.setState({ ...this.state, editorCommand: undefined });
-                },
+                resetCommand: this.unsetEditorCommand,
             },
         });
     };
@@ -324,10 +319,6 @@ export default class App extends Component {
         }
         this.props.onTabChange(event, value);
     };
-
-    componentDidMount() {
-        // If startingVideoId is specified in props, load that. 
-    }
 
     render() {
         const getYtPlayerApiCallback = ({ YT, refToPlayerDiv }) => {
@@ -402,11 +393,12 @@ export default class App extends Component {
                         />
                     </div>
                     <FooterMenu onChange={this.handleTabChange} tabIndex={this.props.tabIndex} />
-                    <StyledPopover
-                        infoText={this.state.infoText}
+                    <StyledPopper
                         anchorElement={this.state.infoText ? this.editorContainerDiv : undefined}
                         ref={r => (this.popoverRef = r)}
-                    />
+                    >
+                        {this.state.infoText}
+                    </StyledPopper>
                 </MuiThemeProvider>
             </div>
         );

@@ -14,9 +14,6 @@ html/pdf converter or another text editor.
 You can place timestamp links in the document and seek to that time in the
 corresponding video.
 
-Run the app to see the key sequences that control the video and place
-timestamps into the editor.
-
 #### Saved notes
 
 Notes are saved per video.

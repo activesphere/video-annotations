@@ -174,6 +174,20 @@ export default class EditorComponent extends Component {
         editorCommand: PropTypes.object,
     };
 
+    shouldComponentUpdate(newProps, newState) {
+        const { editorCommand: ec1 } = newProps;
+        const { editorCommand: ec2 } = this.props;
+        if (ec1 && ec2) {
+            return !(
+                ec1.name === ec2.name &&
+                ec1.videoId === ec2.videoId &&
+                ec1.resetCommand === ec2.resetCommand
+            );
+        }
+
+        return true;
+    }
+
     // Just a place to create the plugins in. The action functions of the plugins do need to use
     // `this`. So this is a method rather than a free function.
     _makePlugins() {
@@ -618,7 +632,7 @@ export default class EditorComponent extends Component {
                 }
 
                 // Associate a mark at the current selected text
-                case '\\': {
+                case '/': {
                     let selection = editor.value.selection;
 
                     console.log('Pressed Ctrl + \\');
@@ -922,7 +936,7 @@ export default class EditorComponent extends Component {
 
         // Pick bg color of editor based on if it's on a timestamp or not.
         const styles = {
-            backgroundColor: this.state.onTimestamp ? '#ffeaf0' : '#fafaf0',
+            backgroundColor: this.state.onTimestamp ? '#fff4f7' : '#fafaf0',
         };
 
         return (
