@@ -11,60 +11,10 @@ import LoadYoutubeVideoIdComponent from './LoadYoutubeVideoIdComponent';
 import getYoutubeTitle from 'get-youtube-title';
 import { noteStorageManager } from './save_note';
 import { AppHeader, FooterMenu } from './header_and_footer';
-
-import { Typography, Popper, Fade, Paper } from '@material-ui/core';
-import { withStyles } from '@material-ui/core/styles';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
+import StyledPopper from './InfoPopper';
 import theme from './mui_theme';
-
-// A popover component that works pretty much as a messagebox.
-class InfoPopper extends Component {
-    constructor(props) {
-        super(props);
-    }
-
-    render() {
-        const { classes, anchorElement } = this.props;
-        const open = !!anchorElement;
-        const id = open ? '__info_popper__' : null;
-
-        return (
-            <Popper id={id} open={open} anchorEl={anchorElement} transition>
-                {({ TransitionProps }) => (
-                    <Fade {...TransitionProps} timeout={350}>
-                        <Paper className={classes.paper}>
-                            <Typography className={classes.typography}>
-                                {this.props.children}
-                            </Typography>
-                        </Paper>
-                    </Fade>
-                )}
-            </Popper>
-        );
-    }
-}
-
-// Unlike usual JSS, material-ui styles are actually functions that can use the theme
-// object passed to them and return a final style object.
-const stylesForPopper = theme => {
-    return {
-        typography: {
-            margin: theme.spacing.unit * 2,
-            variant: 'h1',
-            fontSize: '25px',
-            fontFamily: "'Cutive Mono', monospace",
-        },
-        paper: {
-            padding: theme.spacing.unit,
-            color: '#e0e0fd',
-        },
-    };
-};
-
-// Create a styled popover. withStyles will translate the css-in-js to a stylesheet and provide the
-// `classes` prop.
-const StyledPopper = withStyles(stylesForPopper)(InfoPopper);
 
 // TODO: Remove this API key from public github? Obtain from user's OS env key.
 const YOUTUBE_API_KEY = 'AIzaSyB0Hslfl-deOx-ApFvTE0osjJCy2T_1uL0';
@@ -203,18 +153,14 @@ export default class App extends Component {
         switch (command.name) {
             case 'playVideo':
                 this.ytPlayerController.playVideo();
-                this.showInfo('', 0.5, 'Playing');
-
                 break;
 
             case 'pauseVideo':
                 this.ytPlayerController.pauseVideo();
-                this.showInfo('', 0.5, 'Paused');
                 break;
 
             case 'restartVideo':
                 this.ytPlayerController.seekTo(0);
-                this.showInfo('', 0.5, 'Restart');
                 break;
 
             case 'togglePause':
@@ -236,7 +182,6 @@ export default class App extends Component {
                         this.ytPlayerController.loadAndPlayVideo(command.videoId);
                     }
                     this.ytPlayerController.seekTo(command.videoTime);
-                    // this.showInfo('', 0.5, `Seek to ${secondsToHhmmss(command.videoTime)}`);
                 }
                 break;
 
@@ -384,6 +329,7 @@ export default class App extends Component {
                             />
                             <YoutubeIframeComponent
                                 getYtPlayerApiCallback={getYtPlayerApiCallback}
+                                parentApp={this}
                             />
                         </div>
 

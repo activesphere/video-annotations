@@ -10,6 +10,7 @@ import AutoReplace from './slate-auto-replace-alt';
 import { noteStorageManager, NoteData } from './save_note';
 import { Menu, contextMenu, Item, Separator, Submenu } from 'react-contexify';
 import { Button, Icon, Menu as Menu_ } from './button_icon_menu';
+import StyledPopper from './InfoPopper';
 import styled from '@emotion/styled';
 import 'react-contexify/dist/ReactContexify.min.css';
 import Modal from 'react-modal';
@@ -125,12 +126,6 @@ const TimestampMarkComponent = props => {
 
     const url = makeYoutubeUrl(props.mark.data.get('videoId'), props.mark.data.get('videoTime'));
 
-    /* Not opening in new window. Just seeking to time.
-    const openUrl = () => {
-        window.open(url);
-    };
-    */
-
     const seekToTime = () => {
         const videoCommand = {
             name: 'seekToTime',
@@ -168,25 +163,13 @@ class StoredTimestamp {
     }
 }
 
+let g_popperMessage = undefined;
+
 export default class EditorComponent extends Component {
     static propTypes = {
         parentApp: PropTypes.object.isRequired,
         editorCommand: PropTypes.object,
     };
-
-    shouldComponentUpdate(newProps, newState) {
-        const { editorCommand: ec1 } = newProps;
-        const { editorCommand: ec2 } = this.props;
-        if (ec1 && ec2) {
-            return !(
-                ec1.name === ec2.name &&
-                ec1.videoId === ec2.videoId &&
-                ec1.resetCommand === ec2.resetCommand
-            );
-        }
-
-        return true;
-    }
 
     // Just a place to create the plugins in. The action functions of the plugins do need to use
     // `this`. So this is a method rather than a free function.
@@ -205,6 +188,8 @@ export default class EditorComponent extends Component {
                 change: change => {
                     change.insertText('');
                     this.props.parentApp.doVideoCommand({ name: 'playVideo' });
+
+                    g_popperMessage = 'Playing video';
                 },
             })
         );
@@ -217,6 +202,8 @@ export default class EditorComponent extends Component {
                 change: change => {
                     change.insertText('');
                     this.props.parentApp.doVideoCommand({ name: 'pauseVideo' });
+
+                    g_popperMessage = 'Paused video';
                 },
             })
         );
@@ -289,6 +276,22 @@ export default class EditorComponent extends Component {
         return plugins;
     }
 
+    // TODO: This is an exact duplicate of App component's show info.
+    showInfo = (infoText, infoDuration, popperMessage = undefined, logToConsole = false) => {
+        if (logToConsole) {
+            console.log('infoText =', infoText, ', infoDuration =', infoDuration);
+        }
+
+        if (popperMessage) {
+            infoText = popperMessage;
+            this.setState({ popperMessage });
+            // Unset the popover after given duration. This is *probably* not safe. Not sure.
+            setTimeout(() => {
+                this.setState({ popperMessage: undefined });
+            }, infoDuration * 1000.0);
+        }
+    };
+
     saveCurrentNote = () => {
         const jsonEditorValue = this.state.value.toJSON();
         const { videoId, videoTitle } = this.props.parentApp.currentVideoInfo();
@@ -347,7 +350,7 @@ export default class EditorComponent extends Component {
 
             // ^ The value that onChange receives as argument is the new value of the editor.
             // Main reason we are overriding is to setState with the new value.
-            if (AUTOSAVE && value !== this.state.value) {
+            if (AUTOSAVE && value.documents !== this.state.value.documents) {
                 this.saveCurrentNote();
             }
 
@@ -833,6 +836,13 @@ export default class EditorComponent extends Component {
 
     componentDidUpdate() {
         this.updateHoverMenu();
+
+        if (g_popperMessage) {
+            console.log('g_popperMessage =', g_popperMessage);
+            // this.setState({ popperMessage: g_popperMessage });
+            this.showInfo('', 1.0, g_popperMessage, true);
+            g_popperMessage = undefined;
+        }
     }
 
     componentWillReceiveProps(newProps) {
@@ -942,7 +952,10 @@ export default class EditorComponent extends Component {
         return (
             <div
                 id="__editor_container_div__"
-                ref={r => this.props.parentApp.getEditorContainerDiv(r)}
+                ref={r => {
+                    this.props.parentApp.getEditorContainerDiv(r);
+                    this.editorContainerDiv = r;
+                }}
             >
                 <div onContextMenu={this.showContextMenuOnRightClick}>
                     <EditorContextMenu
@@ -981,6 +994,14 @@ export default class EditorComponent extends Component {
                     >
                         <SimpleFormComponent parentEditor={this} />
                     </Modal>
+                    <StyledPopper
+                        anchorElement={
+                            this.state.popperMessage ? this.editorContainerDiv : undefined
+                        }
+                        ref={r => (this.popoverRef = r)}
+                    >
+                        {this.state.popperMessage}
+                    </StyledPopper>
                 </div>
             </div>
         );

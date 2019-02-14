@@ -6,10 +6,11 @@ export default class YoutubeIframeComponent extends Component {
         // (refToPlayerDiv) => void
         getYtPlayerApiCallback: PropTypes.func.isRequired,
         startingVideoId: PropTypes.string,
+        parentApp: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
-        startingVideoId: undefined
+        startingVideoId: undefined,
     };
 
     constructor(props) {
@@ -66,9 +67,13 @@ export default class YoutubeIframeComponent extends Component {
                 const timeoutSeconds = 10;
                 setTimeout(() => {
                     if (!loadedYtPlayerApi) {
-                        console.assert(
-                            false,
-                            `Failed to load youtube player api in ${timeoutSeconds} seconds`
+                        const msg = `Failed to load youtube player api in ${timeoutSeconds} seconds`;
+                        console.assert(false, msg);
+
+                        this.props.parentApp.showInfo(
+                            '',
+                            3600.0,
+                            'Timeout. Failed to load youtube api. Reload page and try again.'
                         );
                     }
                 }, timeoutSeconds * 1000);
