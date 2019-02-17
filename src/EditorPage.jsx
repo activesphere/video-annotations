@@ -6,7 +6,7 @@ import Select from 'react-select';
 import LogComponent, { defaultInfoText } from './LogComponent';
 import { secondsToHhmmss } from './utils';
 import EditorComponent from './EditorComponent';
-import LoadYoutubeVideoIdComponent from './LoadYoutubeVideoIdComponent';
+import VideoPathInput from './VideoPathInput';
 import getYoutubeTitle from 'get-youtube-title';
 import { noteStorageManager } from './save_note';
 import { AppHeader, FooterMenu } from './header_and_footer';
@@ -337,7 +337,7 @@ export default class EditorPage extends Component {
                     <AppHeader />
                     <div className="two-panel-div">
                         <div className="left-panel">
-                            <LoadYoutubeVideoIdComponent />
+                            <VideoPathInput />
                             <Select
                                 className="react-select-container"
                                 classNamePrefix="react-select"
