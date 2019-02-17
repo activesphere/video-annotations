@@ -3,7 +3,6 @@ import './Main.css';
 import React, { Component } from 'react';
 import Select from 'react-select';
 
-import YoutubeIframeComponent from './YoutubeIframeComponent';
 import LogComponent, { defaultInfoText } from './LogComponent';
 import { secondsToHhmmss } from './utils';
 import EditorComponent from './EditorComponent';
@@ -150,6 +149,8 @@ export default class EditorPage extends Component {
 
         // We keep a handle to the youtube player (the player API, not the dom element itself).
         this.ytPlayerController = undefined;
+
+        this.iframeRef = React.createRef();
     }
 
     // TODO(rksht) - perhaps break these into multiple functions instead of sending command objects,
@@ -296,18 +297,9 @@ export default class EditorPage extends Component {
     };
 
     componentDidMount() {
-        if (this.state.startingPopperMessage) {
-            console.log('Showing starting popper message');
-            this.showInfo('', 1.0, this.state.startingPopperMessage);
-            setTimeout(() => {
-                this.setState({ startingPopperMessage: undefined });
-            });
-        }
-    }
-
-    render() {
-        const getYtPlayerApiCallback = ({ YT, refToPlayerDiv }) => {
-            const ytPlayerApi = new YT.Player(refToPlayerDiv, {
+        const { ytAPI } = this.props;
+        if (this.iframeRef.current) {
+            const ytPlayerApi = new ytAPI.Player(this.iframeRef.current, {
                 videoId: this.props.startingVideoId,
                 height: '100%',
                 width: '100%',
@@ -319,15 +311,26 @@ export default class EditorPage extends Component {
                     },
                 },
             });
-            this.ytPlayerController = new YoutubePlayerController(YT, ytPlayerApi);
+
+            this.ytPlayerController = new YoutubePlayerController(ytAPI, ytPlayerApi);
 
             if (this.props.startingVideoId) {
                 console.log('Loading video and note for ', this.props.startingVideoId);
                 const videoId = this.props.startingVideoId;
                 this.tellEditorToLoadNote(videoId);
             }
-        };
+        }
 
+        if (this.state.startingPopperMessage) {
+            console.log('Showing starting popper message');
+            this.showInfo('', 1.0, this.state.startingPopperMessage);
+            setTimeout(() => {
+                this.setState({ startingPopperMessage: undefined });
+            });
+        }
+    }
+
+    render() {
         const onVideoIdInput = inputString => {
             console.log('onVideoIdInput called with videoId', inputString);
 
@@ -361,10 +364,10 @@ export default class EditorPage extends Component {
                                 options={this.state.noteMenuItems}
                                 placeholder="Saved notes..."
                             />
-                            <YoutubeIframeComponent
-                                getYtPlayerApiCallback={getYtPlayerApiCallback}
-                                parentApp={this}
-                            />
+
+                            <div className="youtube-player">
+                                <div ref={this.iframeRef} />
+                            </div>
                         </div>
 
                         <EditorComponent

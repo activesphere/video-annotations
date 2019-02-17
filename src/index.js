@@ -5,6 +5,7 @@ import { useLocation } from 'react-use';
 import './index.css';
 import EditorPage from './EditorPage';
 import NotesPage from './NotesPage';
+import LoadYouTubeIFrameAPI from './LoadYouTubeIFrameAPI';
 
 const regexEditorPage = new RegExp('^/editor(/([^/]*))?/?$');
 const regexSavedNotesPage = new RegExp('^/saved_notes/?$');
@@ -17,12 +18,14 @@ function saveLastEditorPageState(videoId) {
     editorPageStateBeforeRoutingAway.videoId = videoId;
 }
 
-const App = () => {
+const App = ({ ytAPI }) => {
     const location = useLocation();
 
     const path = location.pathname;
 
     let match = regexEditorPage.exec(path);
+
+    if (!ytAPI) return null;
 
     if (match) {
         console.log('Matched editor page path');
@@ -36,6 +39,7 @@ const App = () => {
 
         return (
             <EditorPage
+                ytAPI={ytAPI}
                 tabIndex={0}
                 startingVideoId={videoId}
                 saveLastEditorPageState={saveLastEditorPageState}
@@ -51,6 +55,7 @@ const App = () => {
 
     return (
         <EditorPage
+            ytAPI={ytAPI}
             tabIndex={0}
             saveLastEditorPageState={saveLastEditorPageState}
             startingPopperMessage={'No route matched, opened editor page'}
@@ -58,4 +63,7 @@ const App = () => {
     );
 };
 
-ReactDOM.render(<App />, document.getElementById('root'));
+ReactDOM.render(
+    <LoadYouTubeIFrameAPI>{({ ytAPI }) => <App ytAPI={ytAPI} />}</LoadYouTubeIFrameAPI>,
+    document.getElementById('root')
+);
