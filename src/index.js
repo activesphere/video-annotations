@@ -5,8 +5,6 @@ import EditorPage from './EditorPage';
 import NotesPage from './NotesPage';
 import historyPushListener from './historyPushListener';
 
-import * as serviceWorker from './serviceWorker';
-
 const regexEditorPage = new RegExp('^/editor(/([^/]*))?/?$');
 const regexSavedNotesPage = new RegExp('^/saved_notes/?$');
 
@@ -29,7 +27,7 @@ function renderPageBasedOnLocation() {
     if (match) {
         console.log('Matched editor page path');
         let videoId = undefined;
-        
+
         if (match[0] && match[2]) {
             // We have a video id
             videoId = match[2];
@@ -72,5 +70,3 @@ function renderPageBasedOnLocation() {
 }
 
 renderPageBasedOnLocation();
-
-serviceWorker.unregister();
