@@ -69,13 +69,11 @@ const App = () => (
     <MuiThemeProvider theme={theme}>
         <LoadYouTubeIFrameAPI>
             {({ ytAPI }) => (
-                <>
-                    <div className="app" id="__app_element__">
-                        <AppHeader />
-                        <MainContent ytAPI={ytAPI} />
-                        <FooterMenu />
-                    </div>
-                </>
+                <div className="app">
+                    <AppHeader />
+                    <MainContent ytAPI={ytAPI} />
+                    <FooterMenu />
+                </div>
             )}
         </LoadYouTubeIFrameAPI>
     </MuiThemeProvider>

@@ -1,9 +1,18 @@
 import React from 'react';
 import getYouTubeID from 'get-youtube-id';
+import { withStyles } from '@material-ui/core/styles';
+import TextField from '@material-ui/core/TextField';
 
 const isYouTubeID = str => str && str.length === 11;
 
-const VideoPathInput = () => {
+const styles = {
+    root: {
+        marginLeft: 8,
+        flex: 1,
+    },
+};
+
+const VideoPathInput = ({ classes }) => {
     const onChange = e => {
         const { value } = e.target;
 
@@ -17,16 +26,14 @@ const VideoPathInput = () => {
     };
 
     return (
-        <div className="youtube-id-input">
-            <input
-                id="youtube_video_input"
-                type="text"
-                placeholder="Paste video id or path here"
-                onChange={onChange}
-                spellCheck="false"
-            />
-        </div>
+        <TextField
+            id="youtube_video_input"
+            className={classes.root}
+            placeholder="Paste video id or path here"
+            onChange={onChange}
+            spellCheck="false"
+        />
     );
 };
 
-export default VideoPathInput;
+export default withStyles(styles)(VideoPathInput);
