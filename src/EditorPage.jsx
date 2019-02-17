@@ -1,4 +1,4 @@
-import './App.css';
+import './Main.css';
 
 import React, { Component } from 'react';
 import Select from 'react-select';
@@ -15,11 +15,12 @@ import { MuiThemeProvider } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 import StyledPopper from './InfoPopper';
 import theme from './mui_theme';
+import TabIndicator from '@material-ui/core/Tabs/TabIndicator';
 
 // TODO: Remove this API key from public github? Obtain from user's OS env key.
 const YOUTUBE_API_KEY = 'AIzaSyB0Hslfl-deOx-ApFvTE0osjJCy2T_1uL0';
 
-const yt_player_state_names = {
+const ytNameOfPlayerState = {
     '-1': 'unstarted',
     '0': 'ended',
     '1': 'playing',
@@ -48,6 +49,8 @@ class YoutubePlayerController {
         getYoutubeTitle(this.currentVideoId, YOUTUBE_API_KEY, (err, title) => {
             if (!err) {
                 this.currentVideoTitle = title;
+            } else {
+                return new Error(`Failed to retrive title of video - ${this.currentVideoId}`);
             }
             console.log('Title = ', title, 'Error =', err);
         });
@@ -72,6 +75,8 @@ class YoutubePlayerController {
     loadAndPlayVideo(videoId) {
         this.currentVideoId = videoId;
         this.currentVideoTitle = undefined;
+        console.log('this.playerApi =', this.playerApi);
+        console.log('playVideo =', this.playerApi.playVideo);
         this.playerApi.cueVideoById(this.currentVideoId, 0);
         this.playerApi.playVideo(this.currentVideoId);
         this.setVideoTitle();
@@ -95,7 +100,9 @@ class YoutubePlayerController {
     }
 
     getCurrentTime() {
-        return this.playerApi ? this.playerApi.getCurrentTime() : undefined;
+        return this.playerApi && this.playerApi.getCurrentTime
+            ? this.playerApi.getCurrentTime()
+            : undefined;
     }
 
     getVideoTitle() {
@@ -109,19 +116,20 @@ class YoutubePlayerController {
 }
 
 // The commands from console are send via the App component
-export default class App extends Component {
+export default class EditorPage extends Component {
     static propTypes = {
-        onTabChange: PropTypes.func,
+        afterHistoryPushState: PropTypes.func.isRequired,
+        saveLastEditorPageState: PropTypes.func.isRequired,
+
         tabNumber: PropTypes.number,
         startingVideoId: PropTypes.string,
+        startingPopperMessage: PropTypes.string,
     };
 
     static defaultProps = {
-        onTabChange: (e, value) => {
-            console.log('Changed to tab ', value);
-        },
         tabNumber: 0,
         startingVideoId: undefined,
+        startingPopperMessage: undefined,
     };
 
     constructor(props) {
@@ -132,6 +140,7 @@ export default class App extends Component {
             infoLastTime: undefined,
             selectedOption: undefined,
             noteMenuItems: noteStorageManager.getNoteMenuItems(),
+            startingPopperMessage: this.props.startingPopperMessage,
         };
 
         // Editor ref, set by the child component
@@ -199,6 +208,7 @@ export default class App extends Component {
             info.videoTime = this.ytPlayerController.getCurrentTime();
             info.videoTitle = this.ytPlayerController.getVideoTitle();
         }
+        // console.log('Current video info =', info);
         return info;
     }
 
@@ -229,8 +239,19 @@ export default class App extends Component {
         this.setState({ noteMenuItems });
     };
 
-    unsetEditorCommand = () => {
-        this.setState({ editorCommand: undefined });
+    tellEditorToLoadNote = videoId => {
+        this.setState({
+            editorCommand: {
+                name: 'loadNoteForVideo',
+                videoId: videoId,
+                resetCommand: () => {
+                    this.setState({ editorCommand: undefined });
+                    window.history.pushState({ videoId }, '', `/editor/${videoId}`);
+                },
+            },
+        });
+
+        this.showInfo(`Loading video ${videoId}`, 1.5, 'Loading video', true);
     };
 
     handleNotemenuChange = selectedOption => {
@@ -246,40 +267,67 @@ export default class App extends Component {
         }
 
         // Tell the editor component to load the saved editor value for this video.
-
-        this.setState({
-            ...this.state,
-            editorCommand: {
-                name: 'loadNoteForVideo',
-                videoId: videoId,
-                resetCommand: this.unsetEditorCommand,
-            },
-        });
+        this.tellEditorToLoadNote(videoId);
     };
 
-    handleTabChange = (event, value) => {
+    routeOnTabChange = (event, tabIndex) => {
+        event.preventDefault();
+
+        if (tabIndex == this.props.tabIndex) {
+            console.warn('Tab index equal to mine??');
+            return;
+        }
+
         // We first pause the video before switching to the saved notes modal page.
         if (this.ytPlayerController) {
             this.ytPlayerController.pauseVideo();
         }
-        this.props.onTabChange(event, value);
+
+        const { videoId, videoTime } = this.currentVideoInfo();
+
+        //
+        // Using listener based routing is overkill here.
+        // window.history.pushState(editorPageRestoreInfo, 'ignored', '/saved_notes');
+        // this.props.onTabChange(event, tabIndex);
+        //
+
+        console.log('Saving current video ID and routing to other page');
+        this.props.saveLastEditorPageState(this.currentVideoInfo.videoId);
+        window.history.pushState(null, '', '/saved_notes');
+        this.props.afterHistoryPushState();
     };
+
+    componentDidMount() {
+        if (this.state.startingPopperMessage) {
+            console.log('Showing starting popper message');
+            this.showInfo('', 1.0, this.state.startingPopperMessage);
+            setTimeout(() => {
+                this.setState({ startingPopperMessage: undefined });
+            });
+        }
+    }
 
     render() {
         const getYtPlayerApiCallback = ({ YT, refToPlayerDiv }) => {
             const ytPlayerApi = new YT.Player(refToPlayerDiv, {
-                videoId: undefined,
+                videoId: this.props.startingVideoId,
                 height: '100%',
                 width: '100%',
                 events: {
                     onStateChange: newState => {
-                        console.log('Setting state ', yt_player_state_names[newState.data]);
+                        console.log('Setting state ', ytNameOfPlayerState[newState.data]);
                         this.ytPlayerController.currentPlayerState =
-                            yt_player_state_names[newState.data];
+                            ytNameOfPlayerState[newState.data];
                     },
                 },
             });
             this.ytPlayerController = new YoutubePlayerController(YT, ytPlayerApi);
+
+            if (this.props.startingVideoId) {
+                console.log('Loading video and note for ', this.props.startingVideoId);
+                const videoId = this.props.startingVideoId;
+                this.tellEditorToLoadNote(videoId);
+            }
         };
 
         const onVideoIdInput = inputString => {
@@ -290,27 +338,15 @@ export default class App extends Component {
             }
 
             const videoId = inputString.trim();
-            console.log('Cueing video ', videoId);
-            this.ytPlayerController.loadAndPlayVideo(videoId);
+
+            if (this.ytPlayerController) {
+                this.ytPlayerController.loadAndPlayVideo(videoId);
+            }
 
             // Tell the editor component to load the saved editor value for this video.
-
-            this.setState({
-                editorCommand: {
-                    name: 'loadNoteForVideo',
-                    videoId: videoId,
-                    resetCommand: () => {
-                        this.setState({ ...this.state, editorCommand: undefined });
-                    },
-                },
-            });
-
-            this.showInfo(`Loading video ${inputString}`, 1.5, 'Loading video', true);
-
+            this.tellEditorToLoadNote(videoId);
             this.editorRef.focus();
         };
-
-        console.log('State = ', this.state);
 
         return (
             <div className="app" id="__app_element__">
@@ -338,7 +374,7 @@ export default class App extends Component {
                             editorCommand={this.state.editorCommand}
                         />
                     </div>
-                    <FooterMenu onChange={this.handleTabChange} tabIndex={this.props.tabIndex} />
+                    <FooterMenu onChange={this.routeOnTabChange} tabIndex={this.props.tabIndex} />
                     <StyledPopper
                         anchorElement={this.state.infoText ? this.editorContainerDiv : undefined}
                         ref={r => (this.popoverRef = r)}

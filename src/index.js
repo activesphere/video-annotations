@@ -1,82 +1,76 @@
-import React from 'react';
+import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App';
+import EditorPage from './EditorPage';
 import NotesPage from './NotesPage';
+import historyPushListener from './historyPushListener';
+
 import * as serviceWorker from './serviceWorker';
 
-const STARTING_TAB_VALUE = 0;
+const regexEditorPage = new RegExp('^/editor(/([^/]*))?/?$');
+const regexSavedNotesPage = new RegExp('^/saved_notes/?$');
 
-class PageType {
-    static EDITOR_PAGE = 0;
-    static SAVED_NOTES_PAGE = 1;
+const editorPageStateBeforeRoutingAway = {
+    videoId: undefined,
+};
 
-    constructor(type, extraState = undefined) {
-        this.type = type;
-        this.extraState = extraState;
-    }
+function saveLastEditorPageState(videoId) {
+    editorPageStateBeforeRoutingAway.videoId = videoId;
 }
 
-function renderTab(selectedTabIndex) {
-    switch (selectedTabIndex) {
-        case 0:
-            ReactDOM.render(
-                <App tabIndex={0} onTabChange={onTabChange} />,
-                document.getElementById('root')
-            );
-            break;
-        case 1:
-            ReactDOM.render(
-                <NotesPage tabIndex={1} onTabChange={onTabChange} />,
-                document.getElementById('root')
-            );
-            break;
-        default:
-            throw new Error('Unexpected tab value - ', selectedTabIndex);
-    }
-}
+function renderPageBasedOnLocation() {
+    const path = window.location.pathname;
+    // Match the path and see which page to open
 
-function onTabChange(event, selectedTabIndex) {
-    renderTab(selectedTabIndex);
-}
+    console.log('new location.pathname = ', path);
 
-renderTab(STARTING_TAB_VALUE);
+    let match = regexEditorPage.exec(path);
 
-/*
-
-const editorPageWithNote_regex = /notepage_video=(.+)/.compile();
-const savedNotesPage_regex = /saved_notes/.compile();
-
-function renderComponentBasedOnHash() {
-    const stringAfterHash = window.location.hash;
-
-    let matchObj = editorPageWithNote_regex.exec(stringAfterHash);
-
-    if (matchObj) {
-        const videoId = matchObj[1];
+    if (match) {
+        console.log('Matched editor page path');
+        let videoId = undefined;
+        
+        if (match[0] && match[2]) {
+            // We have a video id
+            videoId = match[2];
+            console.log('videoId = ', videoId);
+        }
 
         ReactDOM.render(
-            <App tabIndex={0} onTabChange={onTabChange} startingVideoId={videoId} />,
+            <EditorPage
+                tabIndex={0}
+                afterHistoryPushState={renderPageBasedOnLocation}
+                startingVideoId={videoId}
+                saveLastEditorPageState={saveLastEditorPageState}
+            />,
             document.getElementById('root')
         );
         return;
     }
 
-    matchObj = savedNotesPage_regex.exec(stringAfterHash);
+    match = regexSavedNotesPage.exec(path);
 
-    if (matchObj) {
+    if (match) {
         ReactDOM.render(
-            <NotesPage tabIndex={1} onTabChange={onTabChange} />,
+            <NotesPage tabIndex={1} afterHistoryPushState={renderPageBasedOnLocation} />,
             document.getElementById('root')
         );
+
         return;
     }
 
-    console.log('Did not match any hash url');
+    console.log('No match, opening editor page...');
+    ReactDOM.render(
+        <EditorPage
+            tabIndex={0}
+            afterHistoryPushState={renderPageBasedOnLocation}
+            saveLastEditorPageState={saveLastEditorPageState}
+            startingPopperMessage={'No route matched, opened editor page'}
+        />,
+        document.getElementById('root')
+    );
 }
 
-window.addEventListener('hashchange', renderComponentBasedOnHash, false);
-
-*/
+renderPageBasedOnLocation();
 
 serviceWorker.unregister();

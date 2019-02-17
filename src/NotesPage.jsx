@@ -25,16 +25,13 @@ import theme from './mui_theme';
 const cards = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 class NotesPage extends Component {
     static propTypes = {
-        onTabChange: PropTypes.func,
+        afterHistoryPushState: PropTypes.func.isRequired,
         tabNumber: PropTypes.number,
         classes: PropTypes.object.isRequired,
         cards: PropTypes.array,
     };
 
     static defaultProps = {
-        onTabChange: (e, value) => {
-            console.log('Changed to tab ', value);
-        },
         tabNumber: 0,
         cards: undefined,
     };
@@ -42,6 +39,21 @@ class NotesPage extends Component {
     constructor(props) {
         super(props);
     }
+
+    routeOnTabChange = (event, tabIndex) => {
+        event.preventDefault();
+
+        if (tabIndex == this.props.tabIndex) {
+            console.warn('Tab index equal to mine??');
+            return;
+        }
+
+        console.log('Going to editor page from saved notes page');
+
+        // No extra data since this page is pretty stateless (or rather, the state doesn't make sense reconstructing)
+        window.history.pushState(null, '', '/editor');
+        this.props.afterHistoryPushState();
+    };
 
     render() {
         let { cards, classes } = this.props;
@@ -124,7 +136,7 @@ class NotesPage extends Component {
                         </div>
                     </main>
                 </React.Fragment>
-                <FooterMenu onChange={this.props.onTabChange} tabIndex={this.props.tabIndex} />
+                <FooterMenu onChange={this.routeOnTabChange} tabIndex={this.props.tabIndex} />
             </MuiThemeProvider>
         );
     }

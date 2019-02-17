@@ -13,7 +13,7 @@ export const AppHeader = props => {
     );
 };
 
-export const FooterMenu = ({ tabIndex = 0, onChange = () => {} }) => {
+export const FooterMenu = ({ tabIndex, onChange }) => {
     return (
         <Paper>
             <Tabs
@@ -23,7 +23,7 @@ export const FooterMenu = ({ tabIndex = 0, onChange = () => {} }) => {
                 textColor="primary"
                 centered
             >
-                <Tab label="Take notes" />
+                <Tab label="Editor" />
                 <Tab label="Saved notes" />
             </Tabs>
         </Paper>

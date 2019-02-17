@@ -137,15 +137,14 @@ const TimestampMarkComponent = props => {
     };
 
     return (
-        <a
-            href={url}
+        <span
             onClick={seekToTime}
             className="inline-youtube-timestamp"
             {...props.attributes}
             style={style}
         >
             {props.children}
-        </a>
+        </span>
     );
 };
 
@@ -301,7 +300,6 @@ export default class EditorComponent extends Component {
 
         const infoText = `Saved Note for video "${videoId}", title - "${videoTitle}"`;
         console.log(infoText);
-
         // Return the infotext so we can show it in case user saved manually.
         return infoText;
     };
@@ -371,7 +369,7 @@ export default class EditorComponent extends Component {
                 }
             }
 
-            console.log('onTimestamp = ', onTimestamp);
+            // console.log('onTimestamp = ', onTimestamp);
 
             this.setState({ onTimestamp });
 

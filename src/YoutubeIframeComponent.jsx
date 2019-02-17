@@ -1,22 +1,19 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
+let ytPlayerApiLoadedPromise = undefined;
+let ytPlayerApiLoaded = false;
+
 export default class YoutubeIframeComponent extends Component {
     static propTypes = {
         // (refToPlayerDiv) => void
         getYtPlayerApiCallback: PropTypes.func.isRequired,
-        startingVideoId: PropTypes.string,
         parentApp: PropTypes.object.isRequired,
-    };
-
-    static defaultProps = {
-        startingVideoId: undefined,
     };
 
     constructor(props) {
         super(props);
         this.refToPlayerDiv = undefined;
-        this.ytPlayerApiLoadedPromise = undefined;
     }
 
     shouldComponentUpdate(newProps, newState) {
@@ -37,10 +34,35 @@ export default class YoutubeIframeComponent extends Component {
 
     // In cDM we load the youtube api.
     componentDidMount() {
-        if (!this.ytPlayerApiLoadedPromise) {
-            let loadedYtPlayerApi = false;
+        if (ytPlayerApiLoadedPromise) {
+            if (ytPlayerApiLoaded) {
+                console.log('Youtube IFrame API loaded already.');
+                console.assert(!!window.YT, `window.YT = ${window.YT}`);
+                // Loaded the iframe api already. Simply call the parent callback.
+                this.props.getYtPlayerApiCallback({
+                    YT: window.YT,
+                    refToPlayerDiv: this.refToPlayerDiv,
+                });
+                return;
+            } else {
+                console.log('Youtube Iframe loading in progress');
+                return;
+            }
+        }
 
-            this.ytPlayerApiLoadedPromise = new Promise((resolve, reject) => {
+        if (!ytPlayerApiLoadedPromise) {
+            // First time loading the iframe api..
+
+            console.log('Mounted youtube iframe component. Youtube API not loaded. Loading...');
+
+            if (this.props.startingVideoId) {
+                console.log('... Also loading a starting videoId =', this.props.startingVideoId);
+            }
+
+            // If timeout is expired this is set to true. Even if the player API loads after this is set, we tell the user to reload.
+            let timeoutExpired = false;
+
+            ytPlayerApiLoadedPromise = new Promise((resolve, reject) => {
                 // Create the element for Youtube API script and attach it to the HTML.
                 const apiScriptElement = document.createElement('script');
                 apiScriptElement.src = 'https://www.youtube.com/iframe_api';
@@ -50,23 +72,32 @@ export default class YoutubeIframeComponent extends Component {
 
                 // Pass the YT object as the result of the promise
                 window.onYouTubeIframeAPIReady = () => {
+                    if (timeoutExpired) {
+                        reject(
+                            new Error('Loaded youtube player api but timeout expired before load')
+                        );
+                        return;
+                    }
+
+                    console.log('Youtube IFrame API Loaded...');
+
+                    console.log('... YT.playVideo =', window.YT.playVideo);
                     resolve({
                         YT: window.YT,
                         refToPlayerDiv: this.refToPlayerDiv,
-                        videoId: this.props.startingVideoId,
                     });
 
-                    loadedYtPlayerApi = true;
+                    ytPlayerApiLoaded = true;
                 };
             });
 
-            this.ytPlayerApiLoadedPromise.then(this.props.getYtPlayerApiCallback);
+            ytPlayerApiLoadedPromise.then(this.props.getYtPlayerApiCallback);
 
-            // If youtube api doesn't load within 4 seconds, we freaking crash x_). For now.
+            // If youtube api doesn't load within 4 seconds, we show a message and tell user to reload.
             const timeoutPromise = new Promise((resolve, reject) => {
                 const timeoutSeconds = 10;
                 setTimeout(() => {
-                    if (!loadedYtPlayerApi) {
+                    if (!ytPlayerApiLoaded) {
                         const msg = `Failed to load youtube player api in ${timeoutSeconds} seconds`;
                         console.assert(false, msg);
 
@@ -79,7 +110,7 @@ export default class YoutubeIframeComponent extends Component {
                 }, timeoutSeconds * 1000);
             });
 
-            Promise.race([timeoutPromise, this.ytPlayerApiLoadedPromise]);
+            Promise.race([timeoutPromise, ytPlayerApiLoadedPromise]);
         }
     }
 }
