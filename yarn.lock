@@ -5133,6 +5133,11 @@ get-window@^1.1.1:
   dependencies:
     get-document "1"
 
+get-youtube-id@1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/get-youtube-id/-/get-youtube-id-1.0.1.tgz#adb6f475e292d98f98ed5bfb530887656193e157"
+  integrity sha512-5yidLzoLXbtw82a/Wb7LrajkGn29BM6JuLWeHyNfzOGp1weGyW4+7eMz6cP23+etqj27VlOFtq8fFFDMLq/FXQ==
+
 get-youtube-title@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/get-youtube-title/-/get-youtube-title-1.0.0.tgz#9c5c976f3faa1bfd0904597b3b03a626615ce8c1"
