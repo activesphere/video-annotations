@@ -25,7 +25,6 @@ import theme from './mui_theme';
 const cards = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 class NotesPage extends Component {
     static propTypes = {
-        afterHistoryPushState: PropTypes.func.isRequired,
         tabNumber: PropTypes.number,
         classes: PropTypes.object.isRequired,
         cards: PropTypes.array,
@@ -52,7 +51,6 @@ class NotesPage extends Component {
 
         // No extra data since this page is pretty stateless (or rather, the state doesn't make sense reconstructing)
         window.history.pushState(null, '', '/editor');
-        this.props.afterHistoryPushState();
     };
 
     render() {
@@ -91,7 +89,11 @@ class NotesPage extends Component {
                             >
                                 Edit note
                             </Button>
-                            <Button size="small" color="primary" onClick={() => window.open(makeYoutubeUrl(videoId))}>
+                            <Button
+                                size="small"
+                                color="primary"
+                                onClick={() => window.open(makeYoutubeUrl(videoId))}
+                            >
                                 Open Video
                             </Button>
                         </CardActions>

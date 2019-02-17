@@ -118,7 +118,6 @@ class YoutubePlayerController {
 // The commands from console are send via the App component
 export default class EditorPage extends Component {
     static propTypes = {
-        afterHistoryPushState: PropTypes.func.isRequired,
         saveLastEditorPageState: PropTypes.func.isRequired,
 
         tabNumber: PropTypes.number,
@@ -294,7 +293,6 @@ export default class EditorPage extends Component {
         console.log('Saving current video ID and routing to other page');
         this.props.saveLastEditorPageState(this.currentVideoInfo.videoId);
         window.history.pushState(null, '', '/saved_notes');
-        this.props.afterHistoryPushState();
     };
 
     componentDidMount() {

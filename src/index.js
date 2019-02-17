@@ -1,9 +1,10 @@
-import React, { Component } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
+import { useLocation } from 'react-use';
+
 import './index.css';
 import EditorPage from './EditorPage';
 import NotesPage from './NotesPage';
-import historyPushListener from './historyPushListener';
 
 const regexEditorPage = new RegExp('^/editor(/([^/]*))?/?$');
 const regexSavedNotesPage = new RegExp('^/saved_notes/?$');
@@ -16,11 +17,10 @@ function saveLastEditorPageState(videoId) {
     editorPageStateBeforeRoutingAway.videoId = videoId;
 }
 
-function renderPageBasedOnLocation() {
-    const path = window.location.pathname;
-    // Match the path and see which page to open
+const App = () => {
+    const location = useLocation();
 
-    console.log('new location.pathname = ', path);
+    const path = location.pathname;
 
     let match = regexEditorPage.exec(path);
 
@@ -34,39 +34,28 @@ function renderPageBasedOnLocation() {
             console.log('videoId = ', videoId);
         }
 
-        ReactDOM.render(
+        return (
             <EditorPage
                 tabIndex={0}
-                afterHistoryPushState={renderPageBasedOnLocation}
                 startingVideoId={videoId}
                 saveLastEditorPageState={saveLastEditorPageState}
-            />,
-            document.getElementById('root')
+            />
         );
-        return;
     }
 
     match = regexSavedNotesPage.exec(path);
 
     if (match) {
-        ReactDOM.render(
-            <NotesPage tabIndex={1} afterHistoryPushState={renderPageBasedOnLocation} />,
-            document.getElementById('root')
-        );
-
-        return;
+        return <NotesPage tabIndex={1} />;
     }
 
-    console.log('No match, opening editor page...');
-    ReactDOM.render(
+    return (
         <EditorPage
             tabIndex={0}
-            afterHistoryPushState={renderPageBasedOnLocation}
             saveLastEditorPageState={saveLastEditorPageState}
             startingPopperMessage={'No route matched, opened editor page'}
-        />,
-        document.getElementById('root')
+        />
     );
-}
+};
 
-renderPageBasedOnLocation();
+ReactDOM.render(<App />, document.getElementById('root'));
