@@ -22,82 +22,77 @@ const cards = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
 const toEditor = id => window.history.pushState({ id }, '', `/editor/${id}`);
 
-class NotesPage extends Component {
-    render() {
-        let { cards, classes } = this.props;
-
-        if (!cards) {
-            cards = noteStorageManager.getNoteMenuItemsForCards();
-        }
-
-        // Creating an array of card elements from the note info
-        const cardElements = cards.map(({ videoId, videoTitle }) => {
-            return (
-                <Grid item key={videoId} sm={6} md={4} lg={3}>
-                    <Card className={classes.card}>
-                        <CardMedia
-                            className={classes.cardMedia}
-                            image={makeYoutubeImageUrl(videoId)}
-                            title={videoTitle}
-                        />
-                        <CardContent className={classes.cardContent}>
-                            <Typography gutterBottom variant="h5" component="h2">
-                                {videoTitle}
-                            </Typography>
-                            <Typography>
-                                This is a media card. You can use this section to describe the
-                                content.
-                            </Typography>
-                        </CardContent>
-                        <CardActions>
-                            <Button size="small" color="primary" onClick={() => toEditor(videoId)}>
-                                Edit note
-                            </Button>
-                            <Button
-                                size="small"
-                                color="primary"
-                                onClick={() => window.open(makeYoutubeUrl(videoId))}
-                            >
-                                Open Video
-                            </Button>
-                        </CardActions>
-                    </Card>
-                </Grid>
-            );
-        });
-
-        return (
-            <>
-                <CssBaseline />
-                <main>
-                    {/* Hero unit */}
-                    <div className={classes.heroUnit}>
-                        <div className={classes.heroContent}>
-                            <Typography
-                                component="h1"
-                                variant="h2"
-                                align="center"
-                                color="textPrimary"
-                                gutterBottom
-                            >
-                                Saved Notes
-                            </Typography>
-                            <Typography variant="h6" align="center" color="textSecondary" paragraph>
-                                All the videos you saved notes for.
-                            </Typography>
-                        </div>
-                    </div>
-                    <div className={classNames(classes.layout, classes.cardGrid)}>
-                        {/* End hero unit */}
-                        <Grid container spacing={40}>
-                            {cardElements}
-                        </Grid>
-                    </div>
-                </main>
-            </>
-        );
+const NotesPage = ({ cards, classes }) => {
+    if (!cards) {
+        cards = noteStorageManager.getNoteMenuItemsForCards();
     }
-}
+
+    // Creating an array of card elements from the note info
+    const cardElements = cards.map(({ videoId, videoTitle }) => {
+        return (
+            <Grid item key={videoId} sm={6} md={4} lg={3}>
+                <Card className={classes.card}>
+                    <CardMedia
+                        className={classes.cardMedia}
+                        image={makeYoutubeImageUrl(videoId)}
+                        title={videoTitle}
+                    />
+                    <CardContent className={classes.cardContent}>
+                        <Typography gutterBottom variant="h5" component="h2">
+                            {videoTitle}
+                        </Typography>
+                        <Typography>
+                            This is a media card. You can use this section to describe the content.
+                        </Typography>
+                    </CardContent>
+                    <CardActions>
+                        <Button size="small" color="primary" onClick={() => toEditor(videoId)}>
+                            Edit note
+                        </Button>
+                        <Button
+                            size="small"
+                            color="primary"
+                            onClick={() => window.open(makeYoutubeUrl(videoId))}
+                        >
+                            Open Video
+                        </Button>
+                    </CardActions>
+                </Card>
+            </Grid>
+        );
+    });
+
+    return (
+        <>
+            <CssBaseline />
+            <main>
+                {/* Hero unit */}
+                <div className={classes.heroUnit}>
+                    <div className={classes.heroContent}>
+                        <Typography
+                            component="h1"
+                            variant="h2"
+                            align="center"
+                            color="textPrimary"
+                            gutterBottom
+                        >
+                            Saved Notes
+                        </Typography>
+                        <Typography variant="h6" align="center" color="textSecondary" paragraph>
+                            All the videos you saved notes for.
+                        </Typography>
+                    </div>
+                </div>
+                <div className={classNames(classes.layout, classes.cardGrid)}>
+                    {/* End hero unit */}
+                    <Grid container spacing={40}>
+                        {cardElements}
+                    </Grid>
+                </div>
+            </main>
+        </>
+    );
+};
 
 const styles = theme => ({
     appBar: {
