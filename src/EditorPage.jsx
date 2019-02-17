@@ -9,11 +9,8 @@ import EditorComponent from './EditorComponent';
 import VideoPathInput from './VideoPathInput';
 import getYoutubeTitle from 'get-youtube-title';
 import { noteStorageManager } from './save_note';
-import { AppHeader, FooterMenu } from './header_and_footer';
-import { MuiThemeProvider } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 import StyledPopper from './InfoPopper';
-import theme from './mui_theme';
 import TabIndicator from '@material-ui/core/Tabs/TabIndicator';
 
 // TODO: Remove this API key from public github? Obtain from user's OS env key.
@@ -270,32 +267,6 @@ export default class EditorPage extends Component {
         this.tellEditorToLoadNote(videoId);
     };
 
-    routeOnTabChange = (event, tabIndex) => {
-        event.preventDefault();
-
-        if (tabIndex == this.props.tabIndex) {
-            console.warn('Tab index equal to mine??');
-            return;
-        }
-
-        // We first pause the video before switching to the saved notes modal page.
-        if (this.ytPlayerController) {
-            this.ytPlayerController.pauseVideo();
-        }
-
-        const { videoId, videoTime } = this.currentVideoInfo();
-
-        //
-        // Using listener based routing is overkill here.
-        // window.history.pushState(editorPageRestoreInfo, 'ignored', '/saved_notes');
-        // this.props.onTabChange(event, tabIndex);
-        //
-
-        console.log('Saving current video ID and routing to other page');
-        this.props.saveLastEditorPageState(this.currentVideoInfo.videoId);
-        window.history.pushState(null, '', '/saved_notes');
-    };
-
     componentDidMount() {
         const { ytAPI } = this.props;
         if (this.iframeRef.current) {
@@ -330,42 +301,39 @@ export default class EditorPage extends Component {
         }
     }
 
+    componentWillUnmount() {
+        if (this.ytPlayerController) this.ytPlayerController.pauseVideo();
+    }
+
     render() {
         return (
-            <div className="app" id="__app_element__">
-                <MuiThemeProvider theme={theme}>
-                    <AppHeader />
-                    <div className="two-panel-div">
-                        <div className="left-panel">
-                            <VideoPathInput />
-                            <Select
-                                className="react-select-container"
-                                classNamePrefix="react-select"
-                                value={this.selectedOption}
-                                onChange={this.handleNotemenuChange}
-                                options={this.state.noteMenuItems}
-                                placeholder="Saved notes..."
-                            />
-
-                            <div className="youtube-player">
-                                <div ref={this.iframeRef} />
-                            </div>
-                        </div>
-
-                        <EditorComponent
-                            parentApp={this}
-                            editorCommand={this.state.editorCommand}
+            <>
+                <div className="two-panel-div">
+                    <div className="left-panel">
+                        <VideoPathInput />
+                        <Select
+                            className="react-select-container"
+                            classNamePrefix="react-select"
+                            value={this.selectedOption}
+                            onChange={this.handleNotemenuChange}
+                            options={this.state.noteMenuItems}
+                            placeholder="Saved notes..."
                         />
+
+                        <div className="youtube-player">
+                            <div ref={this.iframeRef} />
+                        </div>
                     </div>
-                    <FooterMenu onChange={this.routeOnTabChange} tabIndex={this.props.tabIndex} />
-                    <StyledPopper
-                        anchorElement={this.state.infoText ? this.editorContainerDiv : undefined}
-                        ref={r => (this.popoverRef = r)}
-                    >
-                        {this.state.infoText}
-                    </StyledPopper>
-                </MuiThemeProvider>
-            </div>
+
+                    <EditorComponent parentApp={this} editorCommand={this.state.editorCommand} />
+                </div>
+                <StyledPopper
+                    anchorElement={this.state.infoText ? this.editorContainerDiv : undefined}
+                    ref={r => (this.popoverRef = r)}
+                >
+                    {this.state.infoText}
+                </StyledPopper>
+            </>
         );
     }
 }

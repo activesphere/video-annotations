@@ -6,6 +6,9 @@ import './index.css';
 import EditorPage from './EditorPage';
 import NotesPage from './NotesPage';
 import LoadYouTubeIFrameAPI from './LoadYouTubeIFrameAPI';
+import { AppHeader, FooterMenu } from './header_and_footer';
+import { MuiThemeProvider } from '@material-ui/core/styles';
+import theme from './mui_theme';
 
 const regexEditorPage = new RegExp('^/editor(/([^/]*))?/?$');
 const regexSavedNotesPage = new RegExp('^/saved_notes/?$');
@@ -18,7 +21,7 @@ function saveLastEditorPageState(videoId) {
     editorPageStateBeforeRoutingAway.videoId = videoId;
 }
 
-const App = ({ ytAPI }) => {
+const MainContent = ({ ytAPI }) => {
     const location = useLocation();
 
     const path = location.pathname;
@@ -41,7 +44,6 @@ const App = ({ ytAPI }) => {
             <EditorPage
                 key={videoId}
                 ytAPI={ytAPI}
-                tabIndex={0}
                 startingVideoId={videoId}
                 saveLastEditorPageState={saveLastEditorPageState}
             />
@@ -51,20 +53,32 @@ const App = ({ ytAPI }) => {
     match = regexSavedNotesPage.exec(path);
 
     if (match) {
-        return <NotesPage tabIndex={1} />;
+        return <NotesPage />;
     }
 
     return (
         <EditorPage
             ytAPI={ytAPI}
-            tabIndex={0}
             saveLastEditorPageState={saveLastEditorPageState}
             startingPopperMessage={'No route matched, opened editor page'}
         />
     );
 };
 
-ReactDOM.render(
-    <LoadYouTubeIFrameAPI>{({ ytAPI }) => <App ytAPI={ytAPI} />}</LoadYouTubeIFrameAPI>,
-    document.getElementById('root')
+const App = () => (
+    <MuiThemeProvider theme={theme}>
+        <LoadYouTubeIFrameAPI>
+            {({ ytAPI }) => (
+                <>
+                    <div className="app" id="__app_element__">
+                        <AppHeader />
+                        <MainContent ytAPI={ytAPI} />
+                        <FooterMenu />
+                    </div>
+                </>
+            )}
+        </LoadYouTubeIFrameAPI>
+    </MuiThemeProvider>
 );
+
+ReactDOM.render(<App />, document.getElementById('root'));

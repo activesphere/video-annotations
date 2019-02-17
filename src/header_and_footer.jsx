@@ -13,18 +13,16 @@ export const AppHeader = props => {
     );
 };
 
-export const FooterMenu = ({ tabIndex, onChange }) => {
+export const FooterMenu = () => {
+    const onChange = (_e, value) => {
+        window.history.pushState(null, '', value);
+    };
+
     return (
         <Paper>
-            <Tabs
-                value={tabIndex}
-                onChange={onChange}
-                indicatorColor="primary"
-                textColor="primary"
-                centered
-            >
-                <Tab label="Editor" />
-                <Tab label="Saved notes" />
+            <Tabs onChange={onChange} indicatorColor="primary" textColor="primary" centered>
+                <Tab value="/editor" label="Editor" />
+                <Tab value="/saved_notes" label="Saved notes" />
             </Tabs>
         </Paper>
     );

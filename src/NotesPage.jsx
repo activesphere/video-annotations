@@ -10,14 +10,11 @@ import {
     CssBaseline,
     Grid,
 } from '@material-ui/core';
-import { withStyles } from '@material-ui/core/styles';
-import { MuiThemeProvider } from '@material-ui/core/styles';
 import classNames from 'classnames';
+import { withStyles } from '@material-ui/core/styles';
 
-import { AppHeader, FooterMenu } from './header_and_footer';
 import { noteStorageManager } from './save_note.js';
 import { makeYoutubeUrl, makeYoutubeImageUrl } from './utils';
-import theme from './mui_theme';
 
 // This 'NotesPage' is a full page currently. But I will switch to using it as a modal after I've
 // designed it well enough.
@@ -38,20 +35,6 @@ class NotesPage extends Component {
     constructor(props) {
         super(props);
     }
-
-    routeOnTabChange = (event, tabIndex) => {
-        event.preventDefault();
-
-        if (tabIndex == this.props.tabIndex) {
-            console.warn('Tab index equal to mine??');
-            return;
-        }
-
-        console.log('Going to editor page from saved notes page');
-
-        // No extra data since this page is pretty stateless (or rather, the state doesn't make sense reconstructing)
-        window.history.pushState(null, '', '/editor');
-    };
 
     render() {
         let { cards, classes } = this.props;
@@ -103,43 +86,34 @@ class NotesPage extends Component {
         });
 
         return (
-            <MuiThemeProvider theme={theme}>
-                <AppHeader />
-                <React.Fragment>
-                    <CssBaseline />
-                    <main>
-                        {/* Hero unit */}
-                        <div className={classes.heroUnit}>
-                            <div className={classes.heroContent}>
-                                <Typography
-                                    component="h1"
-                                    variant="h2"
-                                    align="center"
-                                    color="textPrimary"
-                                    gutterBottom
-                                >
-                                    Saved Notes
-                                </Typography>
-                                <Typography
-                                    variant="h6"
-                                    align="center"
-                                    color="textSecondary"
-                                    paragraph
-                                >
-                                    All the videos you saved notes for.
-                                </Typography>
-                            </div>
+            <>
+                <CssBaseline />
+                <main>
+                    {/* Hero unit */}
+                    <div className={classes.heroUnit}>
+                        <div className={classes.heroContent}>
+                            <Typography
+                                component="h1"
+                                variant="h2"
+                                align="center"
+                                color="textPrimary"
+                                gutterBottom
+                            >
+                                Saved Notes
+                            </Typography>
+                            <Typography variant="h6" align="center" color="textSecondary" paragraph>
+                                All the videos you saved notes for.
+                            </Typography>
                         </div>
-                        <div className={classNames(classes.layout, classes.cardGrid)}>
-                            {/* End hero unit */}
-                            <Grid container spacing={40}>
-                                {cardElements}
-                            </Grid>
-                        </div>
-                    </main>
-                </React.Fragment>
-                <FooterMenu onChange={this.routeOnTabChange} tabIndex={this.props.tabIndex} />
-            </MuiThemeProvider>
+                    </div>
+                    <div className={classNames(classes.layout, classes.cardGrid)}>
+                        {/* End hero unit */}
+                        <Grid container spacing={40}>
+                            {cardElements}
+                        </Grid>
+                    </div>
+                </main>
+            </>
         );
     }
 }
