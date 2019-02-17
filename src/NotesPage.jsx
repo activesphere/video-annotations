@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import {
     Button,
     Card,
@@ -20,22 +19,10 @@ import { makeYoutubeUrl, makeYoutubeImageUrl } from './utils';
 // designed it well enough.
 
 const cards = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+
+const toEditor = id => window.history.pushState({ id }, '', `/editor/${id}`);
+
 class NotesPage extends Component {
-    static propTypes = {
-        tabNumber: PropTypes.number,
-        classes: PropTypes.object.isRequired,
-        cards: PropTypes.array,
-    };
-
-    static defaultProps = {
-        tabNumber: 0,
-        cards: undefined,
-    };
-
-    constructor(props) {
-        super(props);
-    }
-
     render() {
         let { cards, classes } = this.props;
 
@@ -63,13 +50,7 @@ class NotesPage extends Component {
                             </Typography>
                         </CardContent>
                         <CardActions>
-                            <Button
-                                size="small"
-                                color="primary"
-                                onClick={() => {
-                                    console.log(`Will open videoId ${videoId}`);
-                                }}
-                            >
+                            <Button size="small" color="primary" onClick={() => toEditor(videoId)}>
                                 Edit note
                             </Button>
                             <Button
