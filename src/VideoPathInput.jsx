@@ -1,10 +1,10 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import getYouTubeID from 'get-youtube-id';
 
 const isYouTubeID = str => str && str.length === 11;
 
 const VideoPathInput = () => {
-    const onChange = useCallback(e => {
+    const onChange = e => {
         const { value } = e.target;
 
         const videoId = isYouTubeID(value) ? value : getYouTubeID(value);
@@ -14,7 +14,7 @@ const VideoPathInput = () => {
         }
 
         window.history.pushState({ videoId }, '', `/editor/${videoId}`);
-    });
+    };
 
     return (
         <div className="youtube-id-input">
