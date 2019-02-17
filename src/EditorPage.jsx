@@ -331,31 +331,13 @@ export default class EditorPage extends Component {
     }
 
     render() {
-        const onVideoIdInput = inputString => {
-            console.log('onVideoIdInput called with videoId', inputString);
-
-            if (!inputString) {
-                return;
-            }
-
-            const videoId = inputString.trim();
-
-            if (this.ytPlayerController) {
-                this.ytPlayerController.loadAndPlayVideo(videoId);
-            }
-
-            // Tell the editor component to load the saved editor value for this video.
-            this.tellEditorToLoadNote(videoId);
-            this.editorRef.focus();
-        };
-
         return (
             <div className="app" id="__app_element__">
                 <MuiThemeProvider theme={theme}>
                     <AppHeader />
                     <div className="two-panel-div">
                         <div className="left-panel">
-                            <LoadYoutubeVideoIdComponent onSubmit={onVideoIdInput} />
+                            <LoadYoutubeVideoIdComponent />
                             <Select
                                 className="react-select-container"
                                 classNamePrefix="react-select"

@@ -1,56 +1,32 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, { useCallback } from 'react';
+import getYouTubeID from 'get-youtube-id';
 
-export default class LoadYoutubeVideoIdComponent extends Component {
-    static propTypes = {
-        value: PropTypes.string,
-        error: PropTypes.string,
-        label: PropTypes.string,
-        onChange: PropTypes.func,
-        onSubmit: PropTypes.func.isRequired,
-    };
+const isYouTubeID = str => str && str.length === 11;
 
-    constructor(props) {
-        super(props);
+const VideoPathInput = () => {
+    const onChange = useCallback(e => {
+        const { value } = e.target;
 
-        this.state = {
-            value: props.value ? props.value : '',
-            error: props.error ? props.error : '',
-            label: props.label ? props.label : 'Youtube Video ID',
-        };
+        const videoId = isYouTubeID(value) ? value : getYouTubeID(value);
 
-        this.handleChange = event => {
-            const value = event.target.value;
-            this.setState({ ...this.state, value, error: '' });
+        if (!videoId) {
+            return;
+        }
 
-            if (this.props.onChange) {
-                return this.props.onChange(value);
-            }
-        };
+        window.history.pushState({ videoId }, '', `/editor/${videoId}`);
+    });
 
-        this.handleSubmit = event => {
-            event.preventDefault();
-            // this.setState({ ...this.state, value, error: '' });
-            return this.props.onSubmit(this.state.value);
-        };
-    }
+    return (
+        <div className="youtube-id-input">
+            <input
+                id="youtube_video_input"
+                type="text"
+                placeholder="Paste video id or path here"
+                onChange={onChange}
+                spellCheck="false"
+            />
+        </div>
+    );
+};
 
-    render() {
-        const { value, label } = this.state;
-
-        return (
-            <div className="youtube-id-input">
-                <form onSubmit={this.handleSubmit}>
-                    <input
-                        id="__yt_video_id_input__"
-                        type="text"
-                        value={value}
-                        placeholder={label}
-                        onChange={this.handleChange}
-                        spellCheck="false"
-                    />
-                </form>
-            </div>
-        );
-    }
-}
+export default VideoPathInput;

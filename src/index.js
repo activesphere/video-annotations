@@ -39,6 +39,7 @@ const App = ({ ytAPI }) => {
 
         return (
             <EditorPage
+                key={videoId}
                 ytAPI={ytAPI}
                 tabIndex={0}
                 startingVideoId={videoId}
