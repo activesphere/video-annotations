@@ -127,13 +127,10 @@ const TimestampMarkComponent = props => {
     const url = makeYoutubeUrl(props.mark.data.get('videoId'), props.mark.data.get('videoTime'));
 
     const seekToTime = () => {
-        const videoCommand = {
-            name: 'seekToTime',
+        props.parentApp.doVideoCommand('seekToTime', {
             videoId,
             videoTime,
-        };
-
-        props.parentApp.doVideoCommand(videoCommand);
+        });
     };
 
     return (
@@ -186,7 +183,7 @@ export default class EditorComponent extends Component {
                 before: /[^#]?(#)$/,
                 change: change => {
                     change.insertText('');
-                    this.props.parentApp.doVideoCommand({ name: 'playVideo' });
+                    this.props.parentApp.doVideoCommand('playVideo');
 
                     g_popperMessage = 'Playing video';
                 },
@@ -200,7 +197,7 @@ export default class EditorComponent extends Component {
                 before: /[^#]?(#)$/,
                 change: change => {
                     change.insertText('');
-                    this.props.parentApp.doVideoCommand({ name: 'pauseVideo' });
+                    this.props.parentApp.doVideoCommand('pauseVideo');
 
                     g_popperMessage = 'Paused video';
                 },
@@ -221,7 +218,7 @@ export default class EditorComponent extends Component {
             change.toggleMark(timeStampMark);
             change.insertText(secondsToHhmmss(videoTime));
             change.toggleMark(timeStampMark);
-            this.props.parentApp.doVideoCommand({ name: videoCommandName });
+            this.props.parentApp.doVideoCommand(videoCommandName);
 
             console.log(change);
         };
@@ -263,8 +260,7 @@ export default class EditorComponent extends Component {
 
                     console.log('addToCurrentTime', deltaTimeInSeconds, ' seconds');
 
-                    this.props.parentApp.doVideoCommand({
-                        name: 'addToCurrentTime',
+                    this.props.parentApp.doVideoCommand('addToCurrentTime', {
                         secondsToAdd: deltaTimeInSeconds,
                     });
                     change.insertText('');
@@ -589,7 +585,7 @@ export default class EditorComponent extends Component {
 
                 case 'p': {
                     // Toggle pause and unpause state
-                    this.props.parentApp.doVideoCommand({ name: 'togglePause' });
+                    this.props.parentApp.doVideoCommand('togglePause');
                     handled = true;
                     break;
                 }
@@ -605,18 +601,17 @@ export default class EditorComponent extends Component {
 
                     for (let mark of marks) {
                         if (mark.type === 'youtube_timestamp') {
-                            const videoCommand = {
-                                name: 'seekToTime',
+                            const params = {
                                 videoId: mark.data.get('videoId'),
                                 videoTime: mark.data.get('videoTime'),
                             };
 
                             // prettier-ignore
                             console.log(
-                                `Seeking video ${videoCommand.videoId} to time ${secondsToHhmmss(videoCommand.videoTime)}`
+                                `Seeking video ${params.videoId} to time ${secondsToHhmmss(params.videoTime)}`
                             );
 
-                            this.props.parentApp.doVideoCommand(videoCommand);
+                            this.props.parentApp.doVideoCommand('seekToTime', params);
                         }
                     }
 
@@ -710,6 +705,23 @@ export default class EditorComponent extends Component {
                 // was initially unpaused.
                 case 'h': {
                     this.initSaveTimestampModal();
+                    break;
+                }
+
+                case 'ArrowRight': {
+                    this.props.parentApp.doVideoCommand('addToCurrentTime', {
+                        secondsToAdd: 10,
+                    });
+                    handled = true;
+
+                    break;
+                }
+                case 'ArrowLeft': {
+                    this.props.parentApp.doVideoCommand('addToCurrentTime', {
+                        secondsToAdd: -10,
+                    });
+                    handled = true;
+
                     break;
                 }
 
