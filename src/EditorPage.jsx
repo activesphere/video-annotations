@@ -152,11 +152,11 @@ export default class EditorPage extends Component {
 
     // TODO(rksht) - perhaps break these into multiple functions instead of sending command objects,
     // which is a leftover from the previous style.
-    doVideoCommand(command) {
+    doVideoCommand(commandName, params) {
         console.assert(this.ytPlayerController !== undefined);
         const currentTime = this.ytPlayerController.getCurrentTime();
 
-        switch (command.name) {
+        switch (commandName) {
             case 'playVideo':
                 this.ytPlayerController.playVideo();
                 break;
@@ -174,25 +174,25 @@ export default class EditorPage extends Component {
                 break;
 
             case 'addToCurrentTime':
-                this.ytPlayerController.addToCurrentTime(command.secondsToAdd);
+                this.ytPlayerController.addToCurrentTime(params.secondsToAdd);
                 break;
 
             case 'seekToTime':
                 if (
-                    !command.videoId ||
-                    (!command.videoTime !== undefined && command.videoTime !== 0)
+                    !params.videoId ||
+                    (!params.videoTime !== undefined && params.videoTime !== 0)
                 ) {
-                    // Check if currently playing videoId is the same as sent as command, if not we
+                    // Check if currently playing videoId is the same as sent as params, if not we
                     // will load the given video
-                    if (this.ytPlayerController.currentVideoId !== command.videoId) {
-                        this.ytPlayerController.loadAndPlayVideo(command.videoId);
+                    if (this.ytPlayerController.currentVideoId !== params.videoId) {
+                        this.ytPlayerController.loadAndPlayVideo(params.videoId);
                     }
-                    this.ytPlayerController.seekTo(command.videoTime);
+                    this.ytPlayerController.seekTo(params.videoTime);
                 }
                 break;
 
             default:
-                console.warn('Received unknown command from editor', command);
+                console.warn('Received unknown command from editor', commandName, params);
         }
 
         return currentTime;
