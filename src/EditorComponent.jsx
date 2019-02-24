@@ -713,6 +713,25 @@ export default class EditorComponent extends Component {
                     break;
                 }
 
+                case 'ArrowRight': {
+                    this.props.parentApp.doVideoCommand({
+                        name: 'addToCurrentTime',
+                        secondsToAdd: 10,
+                    });
+                    handled = true;
+
+                    break;
+                }
+                case 'ArrowLeft': {
+                    this.props.parentApp.doVideoCommand({
+                        name: 'addToCurrentTime',
+                        secondsToAdd: -10,
+                    });
+                    handled = true;
+
+                    break;
+                }
+
                 default:
                     break;
             }
