@@ -330,7 +330,11 @@ export default class EditorPage extends Component {
                         </div>
                     </div>
 
-                    <EditorComponent parentApp={this} editorCommand={this.state.editorCommand} />
+                    <EditorComponent
+                        parentApp={this}
+                        dispatch={this.doVideoCommand}
+                        editorCommand={this.state.editorCommand}
+                    />
                 </div>
                 <StyledPopper
                     anchorElement={this.state.infoText ? this.editorContainerDiv : undefined}

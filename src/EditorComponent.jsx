@@ -14,6 +14,8 @@ import StyledPopper from './InfoPopper';
 import styled from '@emotion/styled';
 import 'react-contexify/dist/ReactContexify.min.css';
 import Modal from 'react-modal';
+import isHotKey from 'is-hotkey';
+import keyMap from './keycodeMap';
 
 // Removing mathjax for now.
 // import MathJax from 'MathJax'; // External
@@ -555,6 +557,45 @@ export default class EditorComponent extends Component {
                 return true;
             }
 
+            const actionKey = Object.keys(keyMap).find(k => isHotKey(k, event));
+            const action = keyMap[actionKey];
+
+            if (action) {
+                event.preventDefault();
+                switch (action) {
+                    case 'togglePause': {
+                        this.props.dispatch('togglePause');
+                        break;
+                    }
+                    case 'putTimestamp': {
+                        this._putTimestampMarkIntoEditor(editor);
+                        break;
+                    }
+                    case 'saveNote': {
+                        const infoText = this.saveCurrentNote();
+                        this.props.parentApp.showInfo(infoText, 0.5, 'Saved note');
+                        break;
+                    }
+                    case 'videoForward': {
+                        this.props.dispatch('addToCurrentTime', {
+                            secondsToAdd: 10,
+                        });
+                        break;
+                    }
+                    case 'videoBackward': {
+                        this.props.dispatch('addToCurrentTime', {
+                            secondsToAdd: -10,
+                        });
+                        break;
+                    }
+                    default:
+                        console.error('Key map error', keyMap, action);
+                        break;
+                }
+
+                return true;
+            }
+
             if (!event.ctrlKey) {
                 // return this.handleNonHotkey(event, editor, next);
                 return next();
@@ -577,13 +618,6 @@ export default class EditorComponent extends Component {
 
                 case 'u': {
                     editor.toggleMark('underline');
-                    handled = true;
-                    break;
-                }
-
-                case 'p': {
-                    // Toggle pause and unpause state
-                    this.props.parentApp.doVideoCommand('togglePause');
                     handled = true;
                     break;
                 }
@@ -618,13 +652,6 @@ export default class EditorComponent extends Component {
                     break;
                 }
 
-                case 't': {
-                    // Simply put a timestamp
-                    this._putTimestampMarkIntoEditor(editor);
-                    handled = true;
-                    break;
-                }
-
                 // Associate a mark at the current selected text
                 case '/': {
                     let selection = editor.value.selection;
@@ -649,14 +676,6 @@ export default class EditorComponent extends Component {
                     const timeStampMark = makeYoutubeTimestampMark(videoId, videoTime);
                     editor.addMarkAtRange(selection, timeStampMark);
 
-                    handled = true;
-                    break;
-                }
-
-                // Ctrl + s saves current state of editor
-                case 's': {
-                    const infoText = this.saveCurrentNote();
-                    this.props.parentApp.showInfo(infoText, 0.5, 'Saved note');
                     handled = true;
                     break;
                 }
@@ -703,27 +722,6 @@ export default class EditorComponent extends Component {
                 // was initially unpaused.
                 case 'h': {
                     this.initSaveTimestampModal();
-                    break;
-                }
-
-                case 'ArrowRight': {
-                    this.props.parentApp.doVideoCommand('addToCurrentTime', {
-                        secondsToAdd: 10,
-                    });
-                    handled = true;
-
-                    this.showInfo(undefined, 1.0, "Forward 10 seconds", false);
-
-                    break;
-                }
-                case 'ArrowLeft': {
-                    this.props.parentApp.doVideoCommand('addToCurrentTime', {
-                        secondsToAdd: -10,
-                    });
-                    handled = true;
-
-                    this.showInfo(undefined, 1.0, "Backward 10 seconds", false);
-
                     break;
                 }
 
