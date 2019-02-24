@@ -714,6 +714,8 @@ export default class EditorComponent extends Component {
                     });
                     handled = true;
 
+                    this.showInfo(undefined, 1.0, "Forward 10 seconds", false);
+
                     break;
                 }
                 case 'ArrowLeft': {
@@ -721,6 +723,8 @@ export default class EditorComponent extends Component {
                         secondsToAdd: -10,
                     });
                     handled = true;
+
+                    this.showInfo(undefined, 1.0, "Backward 10 seconds", false);
 
                     break;
                 }

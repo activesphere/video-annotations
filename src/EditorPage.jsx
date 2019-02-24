@@ -152,11 +152,11 @@ export default class EditorPage extends Component {
 
     // TODO(rksht) - perhaps break these into multiple functions instead of sending command objects,
     // which is a leftover from the previous style.
-    doVideoCommand(commandName, params) {
+    doVideoCommand(command) {
         console.assert(this.ytPlayerController !== undefined);
         const currentTime = this.ytPlayerController.getCurrentTime();
 
-        switch (commandName) {
+        switch (command.name) {
             case 'playVideo':
                 this.ytPlayerController.playVideo();
                 break;
@@ -174,25 +174,25 @@ export default class EditorPage extends Component {
                 break;
 
             case 'addToCurrentTime':
-                this.ytPlayerController.addToCurrentTime(params.secondsToAdd);
+                this.ytPlayerController.addToCurrentTime(command.secondsToAdd);
                 break;
 
             case 'seekToTime':
                 if (
-                    !params.videoId ||
-                    (!params.videoTime !== undefined && params.videoTime !== 0)
+                    !command.videoId ||
+                    (!command.videoTime !== undefined && command.videoTime !== 0)
                 ) {
-                    // Check if currently playing videoId is the same as sent as params, if not we
+                    // Check if currently playing videoId is the same as sent as command, if not we
                     // will load the given video
-                    if (this.ytPlayerController.currentVideoId !== params.videoId) {
-                        this.ytPlayerController.loadAndPlayVideo(params.videoId);
+                    if (this.ytPlayerController.currentVideoId !== command.videoId) {
+                        this.ytPlayerController.loadAndPlayVideo(command.videoId);
                     }
-                    this.ytPlayerController.seekTo(params.videoTime);
+                    this.ytPlayerController.seekTo(command.videoTime);
                 }
                 break;
 
             default:
-                console.warn('Received unknown command from editor', commandName, params);
+                console.warn('Received unknown command from editor', command);
         }
 
         return currentTime;
@@ -270,8 +270,11 @@ export default class EditorPage extends Component {
     componentDidMount() {
         const { ytAPI } = this.props;
         if (this.iframeRef.current) {
-            const ytPlayerApi = new ytAPI.Player(this.iframeRef.current, {
-                videoId: this.props.startingVideoId,
+            let ytPlayerApi = undefined;
+
+            const startingVideoId = this.props.startingVideoId;
+
+            ytPlayerApi = new ytAPI.Player(this.iframeRef.current, {
                 height: '100%',
                 width: '100%',
                 events: {
@@ -280,23 +283,19 @@ export default class EditorPage extends Component {
                         this.ytPlayerController.currentPlayerState =
                             ytNameOfPlayerState[newState.data];
                     },
+
+                    onReady: () => {
+                        this.ytPlayerController = new YoutubePlayerController(ytAPI, ytPlayerApi);
+                        if (startingVideoId) {
+                            this.ytPlayerController.loadAndPlayVideo(startingVideoId);
+                            console.log('Loading video and note for ', this.props.startingVideoId);
+                            console.log('Loading video and note for ', this.props.startingVideoId);
+                            const videoId = this.props.startingVideoId;
+                            this.tellEditorToLoadNote(videoId);
+                        }
+                    },
                 },
             });
-
-            this.ytPlayerController = new YoutubePlayerController(ytAPI, ytPlayerApi);
-
-            if (this.props.startingVideoId) {
-                console.log('Loading video and note for ', this.props.startingVideoId);
-                const videoId = this.props.startingVideoId;
-                this.tellEditorToLoadNote(videoId);
-
-                // For some reason api functions like `playVideo`, etc. are not "available" if we immediately
-                // call it. This shouldn't be happening afaict. Will have to look into this. Starting the video
-                // after 1.5 secs in the meantime.
-                setTimeout(() => this.ytPlayerController.loadAndPlayVideo(this.props.startingVideoId), 1.5 * 1000);
-            } else {
-                console.log('No starting video ID given');
-            }
         }
 
         if (this.state.startingPopperMessage) {
