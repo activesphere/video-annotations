@@ -289,6 +289,13 @@ export default class EditorPage extends Component {
                 console.log('Loading video and note for ', this.props.startingVideoId);
                 const videoId = this.props.startingVideoId;
                 this.tellEditorToLoadNote(videoId);
+
+                // For some reason api functions like `playVideo`, etc. are not "available" if we immediately
+                // call it. This shouldn't be happening afaict. Will have to look into this. Starting the video
+                // after 1.5 secs in the meantime.
+                setTimeout(() => this.ytPlayerController.loadAndPlayVideo(this.props.startingVideoId), 1.5 * 1000);
+            } else {
+                console.log('No starting video ID given');
             }
         }
 
