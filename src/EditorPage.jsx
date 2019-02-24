@@ -3,15 +3,12 @@ import './Main.css';
 import React, { Component } from 'react';
 import Select from 'react-select';
 
-import LogComponent, { defaultInfoText } from './LogComponent';
-import { secondsToHhmmss } from './utils';
 import EditorComponent from './EditorComponent';
 import VideoPathInput from './VideoPathInput';
 import getYoutubeTitle from 'get-youtube-title';
 import { noteStorageManager } from './save_note';
 import PropTypes from 'prop-types';
 import StyledPopper from './InfoPopper';
-import TabIndicator from '@material-ui/core/Tabs/TabIndicator';
 
 // TODO: Remove this API key from public github? Obtain from user's OS env key.
 const YOUTUBE_API_KEY = 'AIzaSyB0Hslfl-deOx-ApFvTE0osjJCy2T_1uL0';

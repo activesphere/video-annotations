@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { Editor } from 'slate-react';
 import { Value, Mark } from 'slate';
 import Plain from 'slate-plain-serializer';
-import { makeYoutubeUrl, secondsToHhmmss } from './utils';
+import { secondsToHhmmss } from './utils';
 import PropTypes from 'prop-types';
 import Prism from './prism_add_markdown_syntax';
 import AutoReplace from './slate-auto-replace-alt';
@@ -123,8 +123,6 @@ const TimestampMarkComponent = props => {
 
     const videoId = props.mark.data.get('videoId');
     const videoTime = props.mark.data.get('videoTime');
-
-    const url = makeYoutubeUrl(props.mark.data.get('videoId'), props.mark.data.get('videoTime'));
 
     const seekToTime = () => {
         props.parentApp.doVideoCommand('seekToTime', {

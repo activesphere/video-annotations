@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import {
     Button,
     Card,
@@ -14,11 +14,6 @@ import { withStyles } from '@material-ui/core/styles';
 
 import { noteStorageManager } from './save_note.js';
 import { makeYoutubeUrl, makeYoutubeImageUrl } from './utils';
-
-// This 'NotesPage' is a full page currently. But I will switch to using it as a modal after I've
-// designed it well enough.
-
-const cards = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
 const toEditor = id => window.history.pushState({ id }, '', `/editor/${id}`);
 
