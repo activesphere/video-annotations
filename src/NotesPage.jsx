@@ -14,6 +14,7 @@ import { withStyles } from '@material-ui/core/styles';
 
 import { noteStorageManager } from './save_note.js';
 import { makeYoutubeUrl, makeYoutubeImageUrl } from './utils';
+import { Link } from 'react-router-dom';
 
 const toEditor = id => window.history.pushState({ id }, '', `/editor/${id}`);
 
@@ -41,7 +42,12 @@ const NotesPage = ({ cards, classes }) => {
                         </Typography>
                     </CardContent>
                     <CardActions>
-                        <Button size="small" color="primary" onClick={() => toEditor(videoId)}>
+                        <Button
+                            size="small"
+                            color="primary"
+                            component={Link}
+                            to={`/editor/${videoId}`}
+                        >
                             Edit note
                         </Button>
                         <Button

@@ -111,15 +111,11 @@ class YoutubePlayerController {
 // The commands from console are send via the App component
 export default class EditorPage extends Component {
     static propTypes = {
-        saveLastEditorPageState: PropTypes.func.isRequired,
-
-        tabNumber: PropTypes.number,
         startingVideoId: PropTypes.string,
         startingPopperMessage: PropTypes.string,
     };
 
     static defaultProps = {
-        tabNumber: 0,
         startingVideoId: undefined,
         startingPopperMessage: undefined,
     };

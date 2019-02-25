@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Redirect } from 'react-router-dom';
 import getYouTubeID from 'get-youtube-id';
 import { withStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
@@ -12,18 +13,29 @@ const styles = {
     },
 };
 
-const VideoPathInput = ({ classes }) => {
+const VideoPathInput = ({ classes, currentVideoId = undefined }) => {
+    const [text, setText] = useState(currentVideoId || '');
+    const [loadVideo, setLoadVideo] = useState(false);
+
     const onChange = e => {
         const { value } = e.target;
-
         const videoId = isYouTubeID(value) ? value : getYouTubeID(value);
+
+        setText(value);
 
         if (!videoId) {
             return;
         }
-
-        window.history.pushState({ videoId }, '', `/editor/${videoId}`);
+        setLoadVideo(true);
     };
+
+    if (loadVideo) {
+        setTimeout(() => {
+            setLoadVideo(false);
+            setText(text);
+        });
+        return <Redirect to={`/editor/${text}`} />;
+    }
 
     return (
         <TextField
