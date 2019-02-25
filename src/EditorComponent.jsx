@@ -159,8 +159,6 @@ class StoredTimestamp {
     }
 }
 
-let g_popperMessage = undefined;
-
 export default class EditorComponent extends Component {
     static propTypes = {
         parentApp: PropTypes.object.isRequired,
@@ -185,7 +183,7 @@ export default class EditorComponent extends Component {
                     change.insertText('');
                     this.props.parentApp.doVideoCommand('playVideo');
 
-                    g_popperMessage = 'Playing video';
+                    setTimeout(() => {this.showInfo('', 1.0, 'Playing', true);})
                 },
             })
         );
@@ -198,8 +196,7 @@ export default class EditorComponent extends Component {
                 change: change => {
                     change.insertText('');
                     this.props.parentApp.doVideoCommand('pauseVideo');
-
-                    g_popperMessage = 'Paused video';
+                    setTimeout(() => { this.showInfo('', 1.0, 'Paused', true); });
                 },
             })
         );
@@ -365,62 +362,7 @@ export default class EditorComponent extends Component {
                 }
             }
 
-            // console.log('onTimestamp = ', onTimestamp);
-
             this.setState({ onTimestamp });
-
-            if (selection.isCollapsed) {
-                // Disabling all this temporarily. This is real finnicky. Instead what I gonna do to
-                // cue the user via background color that he is on top of a timestamp mark.
-                /*
-                if (false) {
-                    const prev = selection.moveStartBackward().moveEndBackward();
-                    const next = selection.moveEndForward().moveStartForward();
-
-                    const { document } = value;
-
-                    if (prev.start < 0 && next.end >= document.text.length) {
-                        return;
-                    }
-
-                    // Get the list of all decorations and check if we are at the boundary of a timestamp mark
-                    const marks = value.marks;
-                    console.log(marks);
-
-                    const prevMarks = document.getMarksAtRange(prev);
-                    const nextMarks = document.getMarksAtRange(next);
-                    const thisMarks = document.getMarksAtRange(selection);
-
-                    let notedMark = undefined;
-
-                    const hasTimestamp = marks => {
-                        for (let mark of marks) {
-                            if (mark.type === 'youtube_timestamp') {
-                                notedMark = mark;
-                                return true;
-                            }
-                        }
-                        return false;
-                    };
-
-                    const prevHas = hasTimestamp(prevMarks);
-                    const nextHas = hasTimestamp(nextMarks);
-                    const thisHas = hasTimestamp(thisMarks);
-                    console.log(`prevhas = ${prevHas}, nextHas = ${nextHas}, thisHas = ${thisHas}`);
-
-                    // Having timestamp mark at exactly one of previous or next position means we are at the border.
-                    if (thisHas && ((prevHas && !nextHas) || (!prevHas && nextHas))) {
-                        if (prevHas && !nextHas) {
-                            this.setState({
-                                wasAtTimestampBorder: true,
-                                timestampBorderMark: notedMark,
-                            });
-                        }
-                    }
-                }
-                */
-            }
-
             this.setState({ value });
         };
 
@@ -846,13 +788,6 @@ export default class EditorComponent extends Component {
 
     componentDidUpdate() {
         this.updateHoverMenu();
-
-        if (g_popperMessage) {
-            console.log('g_popperMessage =', g_popperMessage);
-            // this.setState({ popperMessage: g_popperMessage });
-            this.showInfo('', 1.0, g_popperMessage, true);
-            g_popperMessage = undefined;
-        }
     }
 
     componentWillReceiveProps(newProps) {
