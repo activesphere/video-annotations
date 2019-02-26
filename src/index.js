@@ -5,10 +5,9 @@ import './index.css';
 import EditorPage from './EditorPage';
 import NotesPage from './NotesPage';
 import LoadYouTubeIFrameAPI from './LoadYouTubeIFrameAPI';
-import { AppBar, Toolbar, Typography, Paper, Tabs, Tab } from '@material-ui/core';
+import { Paper, Tabs, Tab } from '@material-ui/core';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import { BrowserRouter, Switch, Route, Link } from 'react-router-dom';
-import { Transition, TransitionGroup, CSSTransition } from 'react-transition-group';
 
 import theme from './mui_theme';
 

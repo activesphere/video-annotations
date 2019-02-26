@@ -16,7 +16,7 @@ import 'react-contexify/dist/ReactContexify.min.css';
 import Modal from 'react-modal';
 import isHotKey from 'is-hotkey';
 import keyMap from './keycodeMap';
-import { Paper, Slide } from '@material-ui/core';
+import { Slide } from '@material-ui/core';
 
 // Removing mathjax for now.
 // import MathJax from 'MathJax'; // External
@@ -356,7 +356,6 @@ export default class EditorComponent extends Component {
             // MathJax.Hub.Queue(['Typeset', MathJax.Hub, '__editor_container_div__']);
 
             // Check if we are on the boundary of a timestamp mark. If so we will toggle away that mark state.
-            const { selection } = value;
             const marks = value.marks;
 
             let onTimestamp = false;

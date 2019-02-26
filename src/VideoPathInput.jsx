@@ -3,7 +3,6 @@ import { Redirect } from 'react-router-dom';
 import getYouTubeID from 'get-youtube-id';
 import { withStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
-import { isValid } from 'ipaddr.js';
 
 const isYouTubeID = str => str && str.length === 11;
 
