@@ -104,6 +104,22 @@ class NoteStorageManager {
         this.flushToLocalStorage();
     };
 
+    deleteNoteWithId = videoId => {
+        if (!videoId) {
+            console.warn('video id was undefined');
+            return;
+        }
+
+        const key = `saved_note_${videoId}`;
+        if (this.videoIdToNoteData[key]) {
+            delete this.videoIdToNoteData[key];
+            this.flushToLocalStorage();
+            console.log('Deleted note for video', videoId);
+        } else {
+            console.log('No note for video ', videoId);
+        }
+    };
+
     getNoteMenuItems = () => {
         const keys = Object.keys(this.videoIdToNoteData);
         const items = [];

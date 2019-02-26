@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     Button,
     Card,
@@ -23,6 +23,8 @@ const NotesPage = ({ cards, classes }) => {
         cards = noteStorageManager.getNoteMenuItemsForCards();
     }
 
+    const [numCards, setNumCards] = useState(cards.length);
+
     const rng = seedrandom(`${cards.length}`);
 
     // Generate random slide-in directions for each card
@@ -36,8 +38,8 @@ const NotesPage = ({ cards, classes }) => {
     // Creating an array of card elements from the note info
     const cardElements = cards.map(({ videoId, videoTitle }, index) => {
         return (
-            <Slide direction={directions[index]} in={true} mountOnEnter unmountOnExit>
-                <Grid item key={videoId} sm={6} md={4} lg={3}>
+            <Slide key={videoId} direction={directions[index]} in={true} mountOnEnter unmountOnExit>
+                <Grid item sm={6} md={4} lg={3}>
                     <Card className={classes.card}>
                         <CardMedia
                             className={classes.cardMedia}
@@ -68,6 +70,16 @@ const NotesPage = ({ cards, classes }) => {
                                 onClick={() => window.open(makeYoutubeUrl(videoId))}
                             >
                                 Open Video
+                            </Button>
+                            <Button
+                                size="small"
+                                color="primary"
+                                onClick={() => {
+                                    noteStorageManager.deleteNoteWithId(videoId);
+                                    setNumCards(numCards - 1);
+                                }}
+                            >
+                                Delete note
                             </Button>
                         </CardActions>
                     </Card>
