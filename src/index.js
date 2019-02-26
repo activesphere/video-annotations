@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 
 import './index.css';
@@ -7,116 +7,74 @@ import NotesPage from './NotesPage';
 import LoadYouTubeIFrameAPI from './LoadYouTubeIFrameAPI';
 import { Paper, Tabs, Tab } from '@material-ui/core';
 import { MuiThemeProvider } from '@material-ui/core/styles';
-import { BrowserRouter, Switch, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Switch, Route, Link, Redirect } from 'react-router-dom';
 
 import theme from './mui_theme';
 
-const editorPageStateBeforeRoutingAway = {
-    videoId: undefined,
-    videoTime: undefined,
+const getTabValue = path => {
+    if (path.indexOf('/editor') === 0) return 'editor';
+    if (path.indexOf('/saved_notes') === 0) return 'notes';
+    return null;
 };
-
-function saveLastEditorPageState(videoId, videoTime) {
-    console.log('Saving last editor page state with id = ', videoId, 'time = ', videoTime);
-    editorPageStateBeforeRoutingAway.videoId = videoId;
-    editorPageStateBeforeRoutingAway.videoTime = videoTime;
-}
-
-function pathToLastEditorPage() {
-    const lastVideoId = editorPageStateBeforeRoutingAway.videoId || '';
-    const lastVideoTime = editorPageStateBeforeRoutingAway.videoTime;
-    const path =
-        lastVideoId && lastVideoId
-            ? `/editor/${lastVideoId}/${Math.floor(lastVideoTime)}`
-            : `/editor/${lastVideoId}`;
-
-    console.log('Editor path =', path);
-    return path;
-}
-
-function makeEditorPageWithYtApi(ytAPI) {
-    const component = props => {
-        const { match } = props;
-        console.assert(!!match, 'Editor page not being rendered via a Route component?');
-
-        let { videoId, videoTime } = match.params;
-        console.log('Match.params = ', match.params);
-
-        videoTime = parseInt(videoTime);
-        if (isNaN(videoTime)) {
-            videoTime = 0;
-        }
-
-        console.log('makeEditorPageWithYtApi - videoTime =', videoTime, 'videoId =', videoId);
-
-        return (
-            <EditorPage
-                key={match.params.videoId}
-                ytAPI={ytAPI}
-                startingVideoId={videoId}
-                startingVideoTime={videoTime}
-                saveLastEditorPageState={saveLastEditorPageState}
-            />
-        );
-    };
-    return component;
-}
-
-const TabBar = ({ classes, activeIndex }) => {
-    return (
-        <Paper elevation={0}>
-            <Tabs indicatorColor="primary" textColor="primary" value={activeIndex} centered>
-                <Tab label="Editor" component={Link} to={pathToLastEditorPage()} />
-                <Tab label="Saved notes" component={Link} to={'/saved_notes'} />
-            </Tabs>
-        </Paper>
-    );
-};
-
-const withTabBar = (WrappedPageComponent, indexOfThisPage) => {
-    return propsForWrappedPage => (
-        <Fragment>
-            <TabBar activeIndex={indexOfThisPage} />
-            <WrappedPageComponent {...propsForWrappedPage} />
-        </Fragment>
-    );
-};
-
-class PageIndices {
-    static EDITOR_PAGE = 0;
-    static SAVED_NOTES_PAGE = 1;
-}
 
 const Main = ({ ytAPI }) => {
-    if (!ytAPI) {
-        return null;
-    }
-
-    // Wrapping editor page in a function component that will save the editor page's video id
-    // before creating the page component itself.
-    const withSaveVideoId = EditorPageToWrap => {
-        const Wrapped = routeProps => {
-            return <EditorPageToWrap {...routeProps} />;
-        };
-        Wrapped.displayName = `withSaveVideoId_${EditorPage.displayName || 'unnamed'}`;
-        return Wrapped;
-    };
-
-    const WrappedEditorPage = withSaveVideoId(
-        withTabBar(makeEditorPageWithYtApi(ytAPI), PageIndices.EDITOR_PAGE)
-    );
-
-    const NotesPageWithFooter = withTabBar(NotesPage, PageIndices.SAVED_NOTES_PAGE);
+    const [lastVideoId, setLastVideoId] = useState(null);
 
     return (
         <BrowserRouter>
-            <Switch>
-                <Route path="/editor/:videoId/:videoTime" component={WrappedEditorPage} />
-                <Route path="/editor/:videoId" component={WrappedEditorPage} />
-                <Route path="/editor" component={WrappedEditorPage} />
-                <Route path="/saved_notes" component={NotesPageWithFooter} />
-                <Route path="/" component={NotesPageWithFooter} />
-            </Switch>
+            <Route
+                path="/"
+                render={({ location }) => (
+                    <>
+                        <Paper>
+                            <Tabs
+                                indicatorColor="primary"
+                                textColor="primary"
+                                value={getTabValue(location.pathname)}
+                                centered
+                            >
+                                <Tab value="editor" label="Editor" component={Link} to="/editor" />
+                                <Tab
+                                    value="notes"
+                                    label="Saved notes"
+                                    component={Link}
+                                    to="/saved_notes"
+                                />
+                            </Tabs>
+                        </Paper>
+                        <Switch>
+                            <Route path="/saved_notes" component={NotesPage} />
+                            <Route
+                                path="/editor/:videoId"
+                                render={({ match }) => {
+                                    const { videoId } = match.params;
+                                    if (videoId) {
+                                        setLastVideoId(videoId);
+                                    }
+
+                                    return (
+                                        <EditorPage
+                                            key={videoId}
+                                            ytAPI={ytAPI}
+                                            startingVideoId={videoId}
+                                        />
+                                    );
+                                }}
+                            />
+                            <Route
+                                path="/editor"
+                                render={() => {
+                                    if (lastVideoId)
+                                        return <Redirect to={`/editor/${lastVideoId}`} />;
+
+                                    return <EditorPage ytAPI={ytAPI} />;
+                                }}
+                            />
+                            <Route path="/" render={() => <Redirect to="/editor" />} />
+                        </Switch>
+                    </>
+                )}
+            />
         </BrowserRouter>
     );
 };
@@ -124,11 +82,15 @@ const Main = ({ ytAPI }) => {
 const App = () => (
     <MuiThemeProvider theme={theme}>
         <LoadYouTubeIFrameAPI>
-            {({ ytAPI }) => (
-                <div className="app">
-                    <Main ytAPI={ytAPI} />
-                </div>
-            )}
+            {({ ytAPI }) =>
+                ytAPI ? (
+                    <div className="app">
+                        <Main ytAPI={ytAPI} />
+                    </div>
+                ) : (
+                    <div>Couldn't load YouTube API</div>
+                )
+            }
         </LoadYouTubeIFrameAPI>
     </MuiThemeProvider>
 );

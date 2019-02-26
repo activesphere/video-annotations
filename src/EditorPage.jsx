@@ -1,7 +1,9 @@
 import './Main.css';
 
 import React, { Component } from 'react';
-import Select from 'react-select';
+import { withRouter } from 'react-router-dom';
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
 
 import EditorComponent from './EditorComponent';
 import VideoPathInput from './VideoPathInput';
@@ -110,7 +112,7 @@ class YoutubePlayerController {
 }
 
 // The commands from console are send via the App component
-export default class EditorPage extends Component {
+class EditorPage extends Component {
     static propTypes = {
         startingVideoId: PropTypes.string,
         startingVideoTime: PropTypes.number,
@@ -241,7 +243,8 @@ export default class EditorPage extends Component {
                 videoId: videoId,
                 resetCommand: () => {
                     this.setState({ editorCommand: undefined });
-                    window.history.pushState({ videoId }, '', `/editor/${videoId}`);
+                    const { history } = this.props;
+                    history.push(`/editor/${videoId}`);
                 },
             },
         });
@@ -249,20 +252,11 @@ export default class EditorPage extends Component {
         this.showInfo(`Loading video ${videoId}`, 1.5, 'Loading video', true);
     };
 
-    handleNotemenuChange = selectedOption => {
-        this.setState({ selectedOption });
-        console.log('Option selected:', selectedOption);
+    handleNotemenuChange = e => {
+        const videoId = e.target.value;
 
-        // Try to load the video
-        const videoId = selectedOption.value;
-
-        if (this.ytPlayerController) {
-            console.log('Cueing video ', videoId);
-            this.ytPlayerController.loadAndPlayVideo(videoId);
-        }
-
-        // Tell the editor component to load the saved editor value for this video.
-        this.tellEditorToLoadNote(videoId);
+        const { history } = this.props;
+        history.push(`/editor/${videoId}`);
     };
 
     _saveEditorPageState = () => {
@@ -327,19 +321,25 @@ export default class EditorPage extends Component {
     }
 
     render() {
+        const { match } = this.props;
+        const videoId = match.params.videoId;
+        const { noteMenuItems } = this.state;
+        console.log('noteMenuItems', videoId, this.state.noteMenuItems);
+
         return (
             <>
                 <div className="two-panel-div">
                     <div className="left-panel">
                         <VideoPathInput />
                         <Select
-                            className="react-select-container"
-                            classNamePrefix="react-select"
-                            value={this.selectedOption}
+                            value={videoId}
                             onChange={this.handleNotemenuChange}
-                            options={this.state.noteMenuItems}
                             placeholder="Saved notes..."
-                        />
+                        >
+                            {noteMenuItems.map(item => (
+                                <MenuItem value={item.value}>{item.label}</MenuItem>
+                            ))}
+                        </Select>
 
                         <IFrameStyleWrapper>
                             <div ref={this.iframeRef} />
@@ -362,3 +362,5 @@ export default class EditorPage extends Component {
         );
     }
 }
+
+export default withRouter(EditorPage);
