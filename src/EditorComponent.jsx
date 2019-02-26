@@ -297,7 +297,7 @@ export default class EditorComponent extends Component {
         this.props.parentApp.updateNoteMenu();
 
         const infoText = `Saved Note for video "${videoId}", title - "${videoTitle}"`;
-        console.log(infoText);
+        // console.log(infoText);
         // Return the infotext so we can show it in case user saved manually.
         return infoText;
     };
@@ -663,14 +663,6 @@ export default class EditorComponent extends Component {
                     break;
                 }
 
-                // Save current timestamp with a name for later use. Pauses the video then brings up
-                // a modal for taking the name, saves timestamp with name, and unpauses video if it
-                // was initially unpaused.
-                case 'h': {
-                    this.initSaveTimestampModal();
-                    break;
-                }
-
                 default:
                     break;
             }
@@ -722,17 +714,6 @@ export default class EditorComponent extends Component {
             });
         };
 
-        this.initSaveTimestampModal = () => {
-            const videoTimeToSet = this.props.parentApp.currentVideoInfo().videoTime;
-            if (!videoTimeToSet) {
-                console.log('Error - video not playing');
-                return;
-            }
-
-            this.setState({ ...this.state, showGetTimestampTitle: true, videoTimeToSet });
-            console.log('Asking to save timestamp');
-        };
-
         this.saveTimestamp = timestampName => {
             console.log('Saving timestamp with name', timestampName);
             const { videoId } = this.props.parentApp.currentVideoInfo();
@@ -751,10 +732,6 @@ export default class EditorComponent extends Component {
             }
 
             this.storedTimestamps.push(new StoredTimestamp(videoId, videoTime, timestampName));
-        };
-
-        this.unsetGetTimestampTitle = () => {
-            this.setState({ ...this.state, showGetTimestampTitle: false, videoTimeToSet: '' });
         };
 
         this.updateHoverMenu = () => {
@@ -934,16 +911,7 @@ export default class EditorComponent extends Component {
                                 this.props.parentApp.editorRef = editorRef;
                             }}
                         />
-
-                        <Modal
-                            isOpen={this.state.showGetTimestampTitle}
-                            onAfterOpen={modalAfterOpen}
-                            contentLabel="Timestamp title"
-                            className="modal"
-                            overlayClassName="overlay"
-                        >
-                            <SimpleFormComponent parentEditor={this} />
-                        </Modal>
+                        
                         <StyledPopper
                             anchorElement={
                                 this.state.popperMessage ? this.editorContainerDiv : undefined
