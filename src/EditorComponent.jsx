@@ -864,10 +864,6 @@ export default class EditorComponent extends Component {
     };
 
     render() {
-        const modalAfterOpen = () => {
-            console.log('Opened modal');
-        };
-
         const { videoId } = this.props.parentApp.currentVideoInfo();
 
         // Pick bg color of editor based on if it's on a timestamp or not.
@@ -911,7 +907,7 @@ export default class EditorComponent extends Component {
                                 this.props.parentApp.editorRef = editorRef;
                             }}
                         />
-                        
+
                         <StyledPopper
                             anchorElement={
                                 this.state.popperMessage ? this.editorContainerDiv : undefined
@@ -923,39 +919,6 @@ export default class EditorComponent extends Component {
                     </div>
                 </div>
             </Slide>
-        );
-    }
-}
-
-class SimpleFormComponent extends Component {
-    constructor(props) {
-        super(props);
-        this.state = { value: undefined };
-    }
-
-    render() {
-        return (
-            <form
-                onSubmit={event => {
-                    event.preventDefault();
-                    console.log('Timestamp value =', this.state.value);
-                    this.props.parentEditor.saveTimestamp(this.state.value);
-
-                    this.setState({ value: '' });
-
-                    this.props.parentEditor.unsetGetTimestampTitle();
-                }}
-            >
-                <label>
-                    <input
-                        type="text"
-                        name="name"
-                        value={this.state.value}
-                        onChange={e => this.setState({ value: e.target.value })}
-                    />
-                </label>
-                <input type="submit" value="Submit" />
-            </form>
         );
     }
 }
