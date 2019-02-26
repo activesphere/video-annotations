@@ -16,6 +16,7 @@ import 'react-contexify/dist/ReactContexify.min.css';
 import Modal from 'react-modal';
 import isHotKey from 'is-hotkey';
 import keyMap from './keycodeMap';
+import { Paper, Slide } from '@material-ui/core';
 
 // Removing mathjax for now.
 // import MathJax from 'MathJax'; // External
@@ -183,7 +184,9 @@ export default class EditorComponent extends Component {
                     change.insertText('');
                     this.props.parentApp.doVideoCommand('playVideo');
 
-                    setTimeout(() => {this.showInfo('', 1.0, 'Playing', true);})
+                    setTimeout(() => {
+                        this.showInfo('', 1.0, 'Playing', true);
+                    });
                 },
             })
         );
@@ -196,7 +199,9 @@ export default class EditorComponent extends Component {
                 change: change => {
                     change.insertText('');
                     this.props.parentApp.doVideoCommand('pauseVideo');
-                    setTimeout(() => { this.showInfo('', 1.0, 'Paused', true); });
+                    setTimeout(() => {
+                        this.showInfo('', 1.0, 'Paused', true);
+                    });
                 },
             })
         );
@@ -895,60 +900,62 @@ export default class EditorComponent extends Component {
         };
 
         return (
-            <div
-                id="__editor_container_div__"
-                ref={r => {
-                    this.props.parentApp.getEditorContainerDiv(r);
-                    this.editorContainerDiv = r;
-                }}
-            >
-                <div onContextMenu={this.showContextMenuOnRightClick}>
-                    <EditorContextMenu
-                        editorValue={this.state.value}
-                        editorRef={this.editorRef}
-                        storedTimestamps={this.storedTimestamps}
-                        currentlyPlayingVideo={videoId}
-                    />
-                    <Editor
-                        defaultValue={this.state.value}
-                        value={this.state.value}
-                        onChange={this.onChange}
-                        onKeyDown={this.onKeyDown}
-                        renderMark={this.renderMark}
-                        renderNode={this.renderNode}
-                        renderEditor={this.renderEditor}
-                        decorateNode={this.decorateNode}
-                        className="editor-top-level"
-                        autoCorrect={false}
-                        autoFocus={true}
-                        plugins={this.plugins}
-                        placeholder="Write your note here.."
-                        style={styles}
-                        ref={editorRef => {
-                            this.editorRef = editorRef;
-                            this.props.parentApp.editorRef = editorRef;
-                        }}
-                    />
+            <Slide direction={'left'} in={true} mountOnEnter unmountOnExit>
+                <div
+                    id="__editor_container_div__"
+                    ref={r => {
+                        this.props.parentApp.getEditorContainerDiv(r);
+                        this.editorContainerDiv = r;
+                    }}
+                >
+                    <div onContextMenu={this.showContextMenuOnRightClick}>
+                        <EditorContextMenu
+                            editorValue={this.state.value}
+                            editorRef={this.editorRef}
+                            storedTimestamps={this.storedTimestamps}
+                            currentlyPlayingVideo={videoId}
+                        />
+                        <Editor
+                            defaultValue={this.state.value}
+                            value={this.state.value}
+                            onChange={this.onChange}
+                            onKeyDown={this.onKeyDown}
+                            renderMark={this.renderMark}
+                            renderNode={this.renderNode}
+                            renderEditor={this.renderEditor}
+                            decorateNode={this.decorateNode}
+                            className="editor-top-level"
+                            autoCorrect={false}
+                            autoFocus={true}
+                            plugins={this.plugins}
+                            placeholder="Write your note here.."
+                            style={styles}
+                            ref={editorRef => {
+                                this.editorRef = editorRef;
+                                this.props.parentApp.editorRef = editorRef;
+                            }}
+                        />
 
-                    <Modal
-                        isOpen={this.state.showGetTimestampTitle}
-                        onAfterOpen={modalAfterOpen}
-                        contentLabel="Timestamp title"
-                        className="modal"
-                        overlayClassName="overlay"
-                    >
-                        <SimpleFormComponent parentEditor={this} />
-                    </Modal>
-                    <StyledPopper
-                        anchorElement={
-                            this.state.popperMessage ? this.editorContainerDiv : undefined
-                        }
-                        ref={r => (this.popoverRef = r)}
-                    >
-                        {this.state.popperMessage}
-                    </StyledPopper>
+                        <Modal
+                            isOpen={this.state.showGetTimestampTitle}
+                            onAfterOpen={modalAfterOpen}
+                            contentLabel="Timestamp title"
+                            className="modal"
+                            overlayClassName="overlay"
+                        >
+                            <SimpleFormComponent parentEditor={this} />
+                        </Modal>
+                        <StyledPopper
+                            anchorElement={
+                                this.state.popperMessage ? this.editorContainerDiv : undefined
+                            }
+                            ref={r => (this.popoverRef = r)}
+                        >
+                            {this.state.popperMessage}
+                        </StyledPopper>
+                    </div>
                 </div>
-            </div>
+            </Slide>
         );
     }
 }

@@ -9,6 +9,7 @@ import getYoutubeTitle from 'get-youtube-title';
 import { noteStorageManager } from './save_note';
 import PropTypes from 'prop-types';
 import StyledPopper from './InfoPopper';
+import YoutubeIframe from './YoutubeIframe';
 
 // TODO: Remove this API key from public github? Obtain from user's OS env key.
 const YOUTUBE_API_KEY = 'AIzaSyB0Hslfl-deOx-ApFvTE0osjJCy2T_1uL0';
@@ -142,7 +143,7 @@ export default class EditorPage extends Component {
 
         this.doVideoCommand = this.doVideoCommand.bind(this);
 
-        this.iframeRef = React.createRef();
+        this.iframeRef = undefined;
     }
 
     // TODO(rksht) - perhaps break these into multiple functions instead of sending command objects,
@@ -264,12 +265,12 @@ export default class EditorPage extends Component {
 
     componentDidMount() {
         const { ytAPI } = this.props;
-        if (this.iframeRef.current) {
+        if (this.iframeRef) {
             let ytPlayerApi = undefined;
 
             const startingVideoId = this.props.startingVideoId;
 
-            ytPlayerApi = new ytAPI.Player(this.iframeRef.current, {
+            ytPlayerApi = new ytAPI.Player(this.iframeRef, {
                 height: '100%',
                 width: '100%',
                 events: {
@@ -321,9 +322,11 @@ export default class EditorPage extends Component {
                             placeholder="Saved notes..."
                         />
 
-                        <div className="youtube-player">
-                            <div ref={this.iframeRef} />
-                        </div>
+                        <YoutubeIframe
+                            getRefCallback={r => {
+                                this.iframeRef = r;
+                            }}
+                        />
                     </div>
 
                     <EditorComponent

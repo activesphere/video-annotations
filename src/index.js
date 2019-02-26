@@ -8,6 +8,7 @@ import LoadYouTubeIFrameAPI from './LoadYouTubeIFrameAPI';
 import { AppBar, Toolbar, Typography, Paper, Tabs, Tab } from '@material-ui/core';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import { BrowserRouter, Switch, Route, Link } from 'react-router-dom';
+import { Transition, TransitionGroup, CSSTransition } from 'react-transition-group';
 
 import theme from './mui_theme';
 
@@ -24,13 +25,12 @@ function pathToLastEditorPage() {
     return `/editor/${lastVideoId}`;
 }
 
-// Associates given ytAPI with the EditorPage component since EditorPage is created via react router
-// and we can't send it the ytAPI while using react router's `component={EditorPage}`. Pretty sure I can use the
-// `render=` prop instead, but just commiting it before I use it since this approach works too.
 function makeEditorPageWithYtApi(ytAPI) {
     const component = props => {
-        const { match } = props;
-        console.assert(!!match, 'Component');
+        const { match, location } = props;
+        console.assert(!!match, 'Editor page not being rendered via a Route component?');
+        console.assert(!!location, 'Editor page not being rendered via a Route component?');
+        console.log('location =', location);
         return (
             <EditorPage
                 key={match.params.videoId}
@@ -105,10 +105,10 @@ const Main = ({ ytAPI }) => {
     return (
         <BrowserRouter>
             <Switch>
-                <Route exact path="/" component={WrappedEditorPage} />
-                <Route exact path="/editor" component={WrappedEditorPage} />
-                <Route path="/editor/:videoId" component={WrappedEditorPage} />
-                <Route path="/saved_notes" component={NotesPageWithFooter} />
+                <Route exact path="/" render={WrappedEditorPage} />
+                <Route exact path="/editor" render={WrappedEditorPage} />
+                <Route path="/editor/:videoId" render={WrappedEditorPage} />
+                <Route path="/saved_notes" render={NotesPageWithFooter} />
             </Switch>
         </BrowserRouter>
     );
