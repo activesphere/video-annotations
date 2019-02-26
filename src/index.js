@@ -43,19 +43,7 @@ function makeEditorPageWithYtApi(ytAPI) {
     return component;
 }
 
-export const AppHeader = props => {
-    return (
-        <AppBar position="static">
-            <Toolbar>
-                <Typography variant="display1" color="inherit" gutterBottom={true}>
-                    Annotator
-                </Typography>
-            </Toolbar>
-        </AppBar>
-    );
-};
-
-const FooterMenu = ({ activeIndex }) => {
+const TabBar = ({ activeIndex }) => {
     return (
         <Paper>
             <Tabs indicatorColor="primary" textColor="primary" value={activeIndex} centered>
@@ -69,8 +57,8 @@ const FooterMenu = ({ activeIndex }) => {
 const withFooter = (WrappedPageComponent, indexOfThisPage) => {
     return propsForWrappedPage => (
         <Fragment>
+            <TabBar activeIndex={indexOfThisPage} />
             <WrappedPageComponent {...propsForWrappedPage} />
-            <FooterMenu activeIndex={indexOfThisPage} />
         </Fragment>
     );
 };
@@ -119,7 +107,6 @@ const App = () => (
         <LoadYouTubeIFrameAPI>
             {({ ytAPI }) => (
                 <div className="app">
-                    <AppHeader />
                     <Main ytAPI={ytAPI} />
                 </div>
             )}
