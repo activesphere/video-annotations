@@ -116,7 +116,7 @@ class HoverMenu extends Component {
     }
 }
 
-const TimestampMarkComponent = props => {
+const TimestampMark = props => {
     const style = {
         color: '#9ebdff',
         textDecoration: 'underline',
@@ -374,7 +374,7 @@ export default class EditorComponent extends Component {
             const { attributes, children } = props;
             switch (props.mark.type) {
                 case 'youtube_timestamp':
-                    return <TimestampMarkComponent {...props} parentApp={this.props.parentApp} />;
+                    return <TimestampMark {...props} parentApp={this.props.parentApp} />;
 
                 case 'bold':
                     return <strong {...attributes}>{props.children}</strong>;

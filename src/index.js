@@ -13,28 +13,48 @@ import theme from './mui_theme';
 
 const editorPageStateBeforeRoutingAway = {
     videoId: undefined,
+    videoTime: undefined,
 };
 
-function saveLastEditorPageState(videoId) {
+function saveLastEditorPageState(videoId, videoTime) {
+    console.log('Saving last editor page state with id = ', videoId, 'time = ', videoTime);
     editorPageStateBeforeRoutingAway.videoId = videoId;
+    editorPageStateBeforeRoutingAway.videoTime = videoTime;
 }
 
 function pathToLastEditorPage() {
     const lastVideoId = editorPageStateBeforeRoutingAway.videoId || '';
-    return `/editor/${lastVideoId}`;
+    const lastVideoTime = editorPageStateBeforeRoutingAway.videoTime;
+    const path =
+        lastVideoId && lastVideoId
+            ? `/editor/${lastVideoId}/${Math.floor(lastVideoTime)}`
+            : `/editor/${lastVideoId}`;
+
+    console.log('Editor path =', path);
+    return path;
 }
 
 function makeEditorPageWithYtApi(ytAPI) {
     const component = props => {
-        const { match, location } = props;
+        const { match } = props;
         console.assert(!!match, 'Editor page not being rendered via a Route component?');
-        console.assert(!!location, 'Editor page not being rendered via a Route component?');
-        console.log('location =', location);
+
+        let { videoId, videoTime } = match.params;
+        console.log('Match.params = ', match.params);
+
+        videoTime = parseInt(videoTime);
+        if (isNaN(videoTime)) {
+            videoTime = 0;
+        }
+
+        console.log('makeEditorPageWithYtApi - videoTime =', videoTime, 'videoId =', videoId);
+
         return (
             <EditorPage
                 key={match.params.videoId}
                 ytAPI={ytAPI}
-                startingVideoId={match.params.videoId}
+                startingVideoId={videoId}
+                startingVideoTime={videoTime}
                 saveLastEditorPageState={saveLastEditorPageState}
             />
         );
@@ -42,9 +62,9 @@ function makeEditorPageWithYtApi(ytAPI) {
     return component;
 }
 
-const TabBar = ({ activeIndex }) => {
+const TabBar = ({ classes, activeIndex }) => {
     return (
-        <Paper>
+        <Paper elevation={0}>
             <Tabs indicatorColor="primary" textColor="primary" value={activeIndex} centered>
                 <Tab label="Editor" component={Link} to={pathToLastEditorPage()} />
                 <Tab label="Saved notes" component={Link} to={'/saved_notes'} />
@@ -53,7 +73,7 @@ const TabBar = ({ activeIndex }) => {
     );
 };
 
-const withFooter = (WrappedPageComponent, indexOfThisPage) => {
+const withTabBar = (WrappedPageComponent, indexOfThisPage) => {
     return propsForWrappedPage => (
         <Fragment>
             <TabBar activeIndex={indexOfThisPage} />
@@ -76,7 +96,6 @@ const Main = ({ ytAPI }) => {
     // before creating the page component itself.
     const withSaveVideoId = EditorPageToWrap => {
         const Wrapped = routeProps => {
-            editorPageStateBeforeRoutingAway.videoId = routeProps.match.params.videoId;
             return <EditorPageToWrap {...routeProps} />;
         };
         Wrapped.displayName = `withSaveVideoId_${EditorPage.displayName || 'unnamed'}`;
@@ -84,18 +103,19 @@ const Main = ({ ytAPI }) => {
     };
 
     const WrappedEditorPage = withSaveVideoId(
-        withFooter(makeEditorPageWithYtApi(ytAPI), PageIndices.EDITOR_PAGE)
+        withTabBar(makeEditorPageWithYtApi(ytAPI), PageIndices.EDITOR_PAGE)
     );
 
-    const NotesPageWithFooter = withFooter(NotesPage, PageIndices.SAVED_NOTES_PAGE);
+    const NotesPageWithFooter = withTabBar(NotesPage, PageIndices.SAVED_NOTES_PAGE);
 
     return (
         <BrowserRouter>
             <Switch>
-                <Route exact path="/" render={WrappedEditorPage} />
-                <Route exact path="/editor" render={WrappedEditorPage} />
-                <Route path="/editor/:videoId" render={WrappedEditorPage} />
-                <Route path="/saved_notes" render={NotesPageWithFooter} />
+                <Route path="/editor/:videoId/:videoTime" component={WrappedEditorPage} />
+                <Route path="/editor/:videoId" component={WrappedEditorPage} />
+                <Route path="/editor" component={WrappedEditorPage} />
+                <Route path="/saved_notes" component={NotesPageWithFooter} />
+                <Route path="/" component={NotesPageWithFooter} />
             </Switch>
         </BrowserRouter>
     );

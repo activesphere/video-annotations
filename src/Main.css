@@ -25,7 +25,7 @@ html {
     grid-column-start: 1;
     grid-column-end: 2;
 
-    grid-template-rows: 10% 10% 50% 15%;
+    grid-template-rows: 10% 50%;
 }
 
 .youtube-player {
@@ -43,7 +43,7 @@ html {
     border-style: 2px solid purple;
     font-family: 'Noto Mono', sans-serif;
     font-size: 16px;
-    color: #090920;
+    color: #0202fa;
     overflow-y: scroll;
     caret-color: black;
     box-shadow: 0px 0px 1px 1px black;
