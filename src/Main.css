@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css?family=Noto+Sans');
+@import url('https://fonts.googleapis.com/css?family=Work+Sans');
 @import url('https://fonts.googleapis.com/css?family=Noto+Mono');
 @import url('https://fonts.googleapis.com/css?family=Cutive+Mono');
 
@@ -41,7 +41,7 @@ html {
     background-color: #fafaf0;
     border: 3px #fcfaff;
     border-style: 2px solid purple;
-    font-family: 'Noto Mono', sans-serif;
+    font-family: 'Work Sans', sans-serif;
     font-size: 16px;
     color: #0202fa;
     overflow-y: scroll;
@@ -59,35 +59,35 @@ html {
 }
 
 .editor-top-level h1 {
-    font-family: 'Noto Mono', monospace;
+    font-family: 'Work Sans', monospace;
     font-size: 1rem;
     background-color: #f0f0ff;
 }
 
 .editor-top-level h2 {
-    font-family: 'Noto Mono', monospace;
+    font-family: 'Work Sans', monospace;
     font-size: 18px;
     background-color: #f0f0ff;
 }
 
 .editor-top-level .title {
     font-weight: bold;
-    font-family: 'Noto Mono', monospace;
+    font-family: 'Work Sans', monospace;
     font-size: 1.25rem;
     color: #0f0ffa;
     margin: 3px 0 10px 0;
-    line-height: 5px;
+    line-height: 1rem;
     display: inline-block;
 }
 
 .editor-top-level .url {
-    font-family: 'Noto Mono', monospace;
+    font-family: 'Work Sans', monospace;
     font-size: 14px;
     background-color: #f0f0ff;
 }
 
 .editor-top-level .bulleted-list {
-    font-family: 'Noto Sans', monospace;
+    font-family: 'Work Sans', monospace;
     font-weight: bold;
     font-size: 0.7em;
     padding-left: 10px;
@@ -127,7 +127,7 @@ blockquote[dir='rtl'] {
     background-color: whitesmoke;
     color: #020209;
     border: 2px #0202a0;
-    font-family: 'Noto Mono', monospace;
+    font-family: 'Work Sans', monospace;
     font-size: 12px;
     display: inline-block;
     display: none;
@@ -141,7 +141,7 @@ blockquote[dir='rtl'] {
 }
 
 #__yt_video_id_input__ {
-    font-family: 'Noto Mono', sans-serif;
+    font-family: 'Work Sans', sans-serif;
     font-size: 1rem;
     background-color: whitesmoke;
     width: 100%;
@@ -163,7 +163,7 @@ blockquote[dir='rtl'] {
 }
 
 .react-select-container {
-    font-family: 'Noto Mono', monospace;
+    font-family: 'Work Sans', monospace;
     font-size: 1rem;
 }
 
@@ -175,7 +175,7 @@ blockquote[dir='rtl'] {
     width: auto;
     padding: 10px;
     background-color: aliceblue;
-    font-family: 'Noto Mono', sans-serif;
+    font-family: 'Work Sans', sans-serif;
     font-size: 16px;
 }
 
