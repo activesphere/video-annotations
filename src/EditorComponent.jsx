@@ -10,7 +10,6 @@ import AutoReplace from './slate-auto-replace-alt';
 import { noteStorageManager, NoteData } from './save_note';
 import { Menu, contextMenu, Item, Separator, Submenu } from 'react-contexify';
 import { Button, Icon, Menu as Menu_ } from './button_icon_menu';
-import StyledPopper from './InfoPopper';
 import styled from '@emotion/styled';
 import 'react-contexify/dist/ReactContexify.min.css';
 import Modal from 'react-modal';
@@ -150,7 +149,7 @@ function makeYoutubeTimestampMark(videoId, videoTime) {
     return Mark.create({ type: 'youtube_timestamp', data: { videoId, videoTime } });
 }
 
-const AUTOSAVE = true;
+const AUTOSAVE = false;
 
 class StoredTimestamp {
     constructor(videoId, videoTime, text = '') {
@@ -164,6 +163,7 @@ export default class EditorComponent extends Component {
     static propTypes = {
         parentApp: PropTypes.object.isRequired,
         editorCommand: PropTypes.object,
+        showInfo: PropTypes.func.isRequired,
     };
 
     // Just a place to create the plugins in. The action functions of the plugins do need to use
@@ -185,7 +185,7 @@ export default class EditorComponent extends Component {
                     this.props.parentApp.doVideoCommand('playVideo');
 
                     setTimeout(() => {
-                        this.showInfo('', 1.0, 'Playing', true);
+                        this.props.showInfo('Playing', 1.0, true);
                     });
                 },
             })
@@ -200,7 +200,7 @@ export default class EditorComponent extends Component {
                     change.insertText('');
                     this.props.parentApp.doVideoCommand('pauseVideo');
                     setTimeout(() => {
-                        this.showInfo('', 1.0, 'Paused', true);
+                        this.props.showInfo('Paused', 1.0, true);
                     });
                 },
             })
@@ -273,22 +273,6 @@ export default class EditorComponent extends Component {
         return plugins;
     }
 
-    // TODO: This is an exact duplicate of App component's show info.
-    showInfo = (infoText, infoDuration, popperMessage = undefined, logToConsole = false) => {
-        if (logToConsole) {
-            console.log('infoText =', infoText, ', infoDuration =', infoDuration);
-        }
-
-        if (popperMessage) {
-            infoText = popperMessage;
-            this.setState({ popperMessage });
-            // Unset the popover after given duration. This is *probably* not safe. Not sure.
-            setTimeout(() => {
-                this.setState({ popperMessage: undefined });
-            }, infoDuration * 1000.0);
-        }
-    };
-
     saveCurrentNote = () => {
         const jsonEditorValue = this.state.value.toJSON();
         const { videoId, videoTitle } = this.props.parentApp.currentVideoInfo();
@@ -356,16 +340,7 @@ export default class EditorComponent extends Component {
             // MathJax.Hub.Queue(['Typeset', MathJax.Hub, '__editor_container_div__']);
 
             // Check if we are on the boundary of a timestamp mark. If so we will toggle away that mark state.
-            const marks = value.marks;
-
-            let onTimestamp = false;
-
-            for (let mark of marks) {
-                if (mark.type === 'youtube_timestamp') {
-                    onTimestamp = true;
-                }
-            }
-
+            const onTimestamp = value.marks.some(mark => mark.type === 'youtube_timestamp');
             this.setState({ onTimestamp });
             this.setState({ value });
         };
@@ -451,12 +426,7 @@ export default class EditorComponent extends Component {
 
         this.loadNoteForVideo = videoId => {
             if (!videoId) {
-                this.props.parentApp.showInfo(
-                    'No video current playing. Not loading note.',
-                    2,
-                    true
-                );
-                // TODO(rksht): load note independently of video.
+                this.props.showInfo('No video current playing. Not loading note.', 2, true);
             }
 
             console.log('Loading note for video', videoId);
@@ -464,10 +434,7 @@ export default class EditorComponent extends Component {
             const { jsonEditorValue } = noteStorageManager.loadNoteWithId(videoId);
 
             if (!jsonEditorValue) {
-                this.props.parentApp.showInfo(
-                    `No note previously saved for videoId = ${videoId}`,
-                    2
-                );
+                this.props.showInfo(`No note previously saved for videoId = ${videoId}`, 2);
                 // Load empty editor value
                 this.setState({ ...this.state, value: initialEditorValue });
             } else {
@@ -518,8 +485,8 @@ export default class EditorComponent extends Component {
                         break;
                     }
                     case 'saveNote': {
-                        const infoText = this.saveCurrentNote();
-                        this.props.parentApp.showInfo(infoText, 0.5, 'Saved note');
+                        this.saveCurrentNote();
+                        this.props.showInfo('Saved note', 0.5);
                         break;
                     }
                     case 'videoForward': {
@@ -907,15 +874,6 @@ export default class EditorComponent extends Component {
                                 this.props.parentApp.editorRef = editorRef;
                             }}
                         />
-
-                        <StyledPopper
-                            anchorElement={
-                                this.state.popperMessage ? this.editorContainerDiv : undefined
-                            }
-                            ref={r => (this.popoverRef = r)}
-                        >
-                            {this.state.popperMessage}
-                        </StyledPopper>
                     </div>
                 </div>
             </Slide>
