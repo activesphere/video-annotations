@@ -151,7 +151,7 @@ function makeYoutubeTimestampMark(videoId, videoTime) {
     return Mark.create({ type: 'youtube_timestamp', data: { videoId, videoTime } });
 }
 
-const AUTOSAVE = true;
+const AUTOSAVE = false;
 
 class StoredTimestamp {
     constructor(videoId, videoTime, text = '') {
