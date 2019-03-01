@@ -116,7 +116,7 @@ class EditorPage extends Component {
         startingVideoId: PropTypes.string,
         startingVideoTime: PropTypes.number,
         startingPopperMessage: PropTypes.string,
-        showInfo: PropTypes.func,
+        showInfo: PropTypes.func.isRequired,
     };
 
     static defaultProps = {
@@ -126,6 +126,8 @@ class EditorPage extends Component {
 
     constructor(props) {
         super(props);
+
+        console.log('Props given to EditorPage =', props);
 
         this.state = {
             editorCommand: undefined,
@@ -240,10 +242,6 @@ class EditorPage extends Component {
         history.push(`/editor/${videoId}`);
     };
 
-    _saveEditorPageState = () => {
-        const { videoId, videoTime } = this.currentVideoInfo();
-    };
-
     componentDidMount() {
         const { ytAPI } = this.props;
         if (this.iframeRef.current) {
@@ -300,7 +298,7 @@ class EditorPage extends Component {
 
     render() {
         const { match } = this.props;
-        const videoId = match.params.videoId;
+        const videoId = match.params.videoId || '';
         const { noteMenuItems } = this.state;
 
         return (

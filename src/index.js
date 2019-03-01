@@ -104,9 +104,20 @@ const Main = ({ ytAPI }) => {
                                     return <EditorPage ytAPI={ytAPI} />;
                                 }}
                             />
-                            {/*<Route path="/" render={() => <Redirect to="/editor" />} /> */}
 
-                            <Route path="/" component={DropboxLogin} />
+                            <Route
+                                path="/db_login"
+                                render={() => {
+                                    const handleSubmitFunc = accessToken => {
+                                        console.log('Access token given =', accessToken);
+                                    };
+
+                                    return <Redirect to={'/editor'} />;
+                                }}
+                            />
+
+                            {/* Redirect to dropbox oauth token input page otherwise */}
+                            <Route path="/" render={props => <Redirect to={'/db_login/'} />} />
                         </Switch>
                     </>
                 )}
