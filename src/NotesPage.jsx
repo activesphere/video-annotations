@@ -13,14 +13,14 @@ import {
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 
-import { noteStorageManager } from './save_note.js';
+import localStorageHelper from './localStorageHelper';
 import { makeYoutubeUrl, makeYoutubeImageUrl } from './utils';
 import { Link } from 'react-router-dom';
 import seedrandom from 'seedrandom';
 
 const NotesPage = ({ cards, classes }) => {
     if (!cards) {
-        cards = noteStorageManager.getNoteMenuItemsForCards();
+        cards = localStorageHelper.getNoteMenuItemsForCards();
     }
 
     const [numCards, setNumCards] = useState(cards.length);
@@ -75,7 +75,7 @@ const NotesPage = ({ cards, classes }) => {
                                 size="small"
                                 color="primary"
                                 onClick={() => {
-                                    noteStorageManager.deleteNoteWithId(videoId);
+                                    localStorageHelper.deleteNoteWithId(videoId);
                                     setNumCards(numCards - 1);
                                 }}
                             >
