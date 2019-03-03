@@ -8,7 +8,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import EditorComponent from './EditorComponent';
 import VideoPathInput from './VideoPathInput';
 import getYoutubeTitle from 'get-youtube-title';
-import { noteStorageManager } from './save_note';
+import localStorageHelper from './localStorageHelper';
 import PropTypes from 'prop-types';
 import IFrameStyleWrapper from './IFrameStyleWrapper';
 
@@ -134,7 +134,7 @@ class EditorPage extends Component {
             infoText: undefined,
             infoLastTime: undefined,
             selectedOption: undefined,
-            noteMenuItems: noteStorageManager.getNoteMenuItems(),
+            noteMenuItems: localStorageHelper.getNoteMenuItems(),
             startingPopperMessage: this.props.startingPopperMessage,
         };
 
@@ -215,7 +215,7 @@ class EditorPage extends Component {
 
     // Called by editor component. Updates current note menu items
     updateNoteMenu = () => {
-        const noteMenuItems = noteStorageManager.getNoteMenuItems();
+        const noteMenuItems = localStorageHelper.getNoteMenuItems();
         this.setState({ noteMenuItems });
     };
 
@@ -312,7 +312,9 @@ class EditorPage extends Component {
                             placeholder="Saved notes..."
                         >
                             {noteMenuItems.map(item => (
-                                <MenuItem value={item.value}>{item.label}</MenuItem>
+                                <MenuItem key={item.videoId} value={item.value}>
+                                    {item.label}
+                                </MenuItem>
                             ))}
                         </Select>
 

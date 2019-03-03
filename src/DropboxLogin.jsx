@@ -1,6 +1,6 @@
 // Login screen that allows user to enable saving notes to their dropbox.
 
-import React, { Component, useState } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
     Button,
@@ -51,7 +51,6 @@ const DropboxLogin = props => {
         process.env.REACT_APP_DROPBOX_SOUMIKS_ACCESS_TOKEN || ''
     );
     const [formSubmitted, setFormSubmitted] = useState(false);
-
     return (
         <main className={classes.main}>
             <CssBaseline />
@@ -68,10 +67,11 @@ const DropboxLogin = props => {
                     }}
                 >
                     <FormControl margin="normal" fullWidth>
-                        <InputLabel default={inputToken}>Dropbox Access Token</InputLabel>
+                        <InputLabel default={inputToken}>Paste dropbox access token</InputLabel>
                         <Input
                             id="oauth_user_access_token"
                             autoFocus={true}
+                            defaultValue={defaultAccessToken}
                             onChange={e => setInputToken(e.target.value)}
                         />
                     </FormControl>
@@ -92,7 +92,7 @@ const DropboxLogin = props => {
                         color="primary"
                         className={classes.submit}
                     >
-                        Proceed without sync
+                        Get new token (not implemented)
                     </Button>
                 </form>
             </Paper>
@@ -107,7 +107,7 @@ DropboxLogin.propTypes = {
 };
 
 DropboxLogin.defaultProps = {
-    handleTokenSubmit: token => console.log('Token submitted = ', token),
+    handleTokenSubmit: token => console.log('Ignoring submitted token', token),
 };
 
 export default withStyles(styles)(DropboxLogin);
