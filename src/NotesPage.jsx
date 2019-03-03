@@ -40,7 +40,7 @@ const NotesPage = ({ cards, classes }) => {
         return (
             <Slide key={videoId} direction={directions[index]} in={true} mountOnEnter unmountOnExit>
                 <Grid item sm={6} md={4} lg={3}>
-                    <Card className={classes.card}>
+                    <Card className={classes.card} elevation={4}>
                         <CardMedia
                             className={classes.cardMedia}
                             image={makeYoutubeImageUrl(videoId)}

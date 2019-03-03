@@ -115,6 +115,7 @@ class YoutubePlayerController {
 class EditorPage extends Component {
     static propTypes = {
         startingVideoId: PropTypes.string,
+        startingVideoTime: PropTypes.number,
         startingPopperMessage: PropTypes.string,
     };
 
@@ -125,6 +126,7 @@ class EditorPage extends Component {
 
     constructor(props) {
         super(props);
+
         this.state = {
             editorCommand: undefined,
             infoText: undefined,
@@ -257,12 +259,17 @@ class EditorPage extends Component {
         history.push(`/editor/${videoId}`);
     };
 
+    _saveEditorPageState = () => {
+        const { videoId, videoTime } = this.currentVideoInfo();
+        this.props.saveLastEditorPageState(videoId, videoTime);
+    };
+
     componentDidMount() {
         const { ytAPI } = this.props;
         if (this.iframeRef.current) {
             let ytPlayerApi = undefined;
 
-            const startingVideoId = this.props.startingVideoId;
+            const { startingVideoId, startingVideoTime } = this.props;
 
             ytPlayerApi = new ytAPI.Player(this.iframeRef.current, {
                 height: '100%',
@@ -282,6 +289,9 @@ class EditorPage extends Component {
                             console.log('Loading video and note for ', this.props.startingVideoId);
                             const videoId = this.props.startingVideoId;
                             this.tellEditorToLoadNote(videoId);
+                            if (startingVideoTime) {
+                                this.ytPlayerController.seekTo(startingVideoTime);
+                            }
                         }
                     },
                 },
@@ -298,7 +308,16 @@ class EditorPage extends Component {
     }
 
     componentWillUnmount() {
-        if (this.ytPlayerController) this.ytPlayerController.pauseVideo();
+        if (this.ytPlayerController) {
+            let { videoId, videoTime } = this.currentVideoInfo();
+            const playerState = this.ytPlayerController.currentPlayerState;
+            if (playerState !== 'paused' && playerState !== 'playing') {
+                videoTime = undefined;
+            }
+            console.log(`Saving last editor page state - id - ${videoId}, time - ${videoTime}`);
+        }
+
+        this._saveEditorPageState();
     }
 
     render() {
