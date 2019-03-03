@@ -3,11 +3,9 @@
 import React, { Component, useState } from 'react';
 import PropTypes from 'prop-types';
 import {
-    Avatar,
     Button,
     CssBaseline,
     FormControl,
-    Checkbox,
     Input,
     InputLabel,
     Paper,
@@ -52,6 +50,7 @@ const DropboxLogin = props => {
     const [inputToken, setInputToken] = useState(
         process.env.REACT_APP_DROPBOX_SOUMIKS_ACCESS_TOKEN || ''
     );
+    const [formSubmitted, setFormSubmitted] = useState(false);
 
     return (
         <main className={classes.main}>
@@ -60,7 +59,14 @@ const DropboxLogin = props => {
                 <Typography component="h1" variant="h5">
                     Video Annotator
                 </Typography>
-                <form className={classes.form} onSubmit={() => handleTokenSubmit(inputToken)}>
+                <form
+                    className={classes.form}
+                    onSubmit={e => {
+                        e.preventDefault();
+                        handleTokenSubmit(inputToken);
+                        setFormSubmitted(true);
+                    }}
+                >
                     <FormControl margin="normal" fullWidth>
                         <InputLabel default={inputToken}>Dropbox Access Token</InputLabel>
                         <Input
@@ -97,6 +103,7 @@ const DropboxLogin = props => {
 DropboxLogin.propTypes = {
     classes: PropTypes.object.isRequired,
     handleTokenSubmit: PropTypes.func.isRequired,
+    children: PropTypes.func,
 };
 
 DropboxLogin.defaultProps = {

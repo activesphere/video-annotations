@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 
 import './index.css';
@@ -12,6 +12,12 @@ import InfoPopper from './InfoPopper';
 import { createOauthFlow } from 'react-oauth-flow';
 
 import DropboxLogin from './DropboxLogin';
+import { Dropbox } from 'dropbox';
+
+// Imports for testing
+import PropTypes from 'prop-types';
+import { Button, CssBaseline, FormControl, Input, InputLabel, Typography } from '@material-ui/core';
+import { withStyles } from '@material-ui/core/styles';
 
 import theme from './mui_theme';
 
@@ -34,8 +40,18 @@ const { Sender, Receiver } = createOauthFlow({
 
 const rootElement = document.getElementById('root');
 
+// Contains dropbox related stuff
+const dbxData = {
+    dbx: undefined,
+    accessToken: undefined,
+};
+
+let g_dbx = undefined;
+
+const defaultAccessToken = process.env.REACT_APP_DROPBOX_SOUMIKS_ACCESS_TOKEN || '';
+
 const Main = ({ ytAPI }) => {
-    const [lastVideoId, setLastVideoId] = useState(null);
+    const [lastVideoId, setLastVideoId] = useState(undefined);
     const [infoText, setInfoText] = useState(undefined);
 
     const showInfo = (infoText, infoDuration, logToConsole = false) => {
@@ -106,18 +122,35 @@ const Main = ({ ytAPI }) => {
                             />
 
                             <Route
-                                path="/db_login"
+                                path="/dropbox_oauth"
                                 render={() => {
-                                    const handleSubmitFunc = accessToken => {
-                                        console.log('Access token given =', accessToken);
-                                    };
+                                    if (!g_dbx) {
+                                        return (
+                                            <Redirect to="https://www.dropbox.com/1/oauth2/authorize" />
+                                        );
+                                    }
 
-                                    return <Redirect to={'/editor'} />;
+                                    return (
+                                        <DropboxLogin
+                                            handleTokenSubmit={accessToken => {
+                                                g_dbx = new Dropbox(accessToken);
+                                                console.log('Access token =', accessToken);
+                                                g_dbx
+                                                    .usersGetCurrentAccount()
+                                                    .then(function(response) {
+                                                        console.log(response);
+                                                    })
+                                                    .catch(function(error) {
+                                                        console.error(error);
+                                                    });
+                                            }}
+                                        />
+                                    );
                                 }}
                             />
 
                             {/* Redirect to dropbox oauth token input page otherwise */}
-                            <Route path="/" render={props => <Redirect to={'/db_login/'} />} />
+                            <Route path="/" render={props => <Redirect to={'/dropbox_oauth/'} />} />
                         </Switch>
                     </>
                 )}
