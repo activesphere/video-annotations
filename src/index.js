@@ -9,6 +9,9 @@ import { Paper, Tabs, Tab } from '@material-ui/core';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import { BrowserRouter, Switch, Route, Link, Redirect } from 'react-router-dom';
 import InfoPopper from './InfoPopper';
+import { createOauthFlow } from 'react-oauth-flow';
+
+import DropboxLogin from './DropboxLogin';
 
 import theme from './mui_theme';
 
@@ -17,6 +20,17 @@ const getTabValue = path => {
     if (path.indexOf('/saved_notes') === 0) return 'notes';
     return null;
 };
+
+// prettier-ignore
+console.log(`Dropbox Key = ${process.env.REACT_APP_DROPBOX_KEY}, Secret=${process.env.REACT_APP_DROPBOX_SECRET}`);
+
+const { Sender, Receiver } = createOauthFlow({
+    authorizeUrl: 'https://www.dropbox.com/oauth2/authorize',
+    tokenUrl: 'https://api.dropboxapi.com/oauth2/token',
+    clientId: process.env.REACT_APP_DB_KEY,
+    clientSecret: process.env.REACT_APP_DB_SECRET,
+    redirectUri: 'http://localhost:3000/auth/dropbox',
+});
 
 const rootElement = document.getElementById('root');
 
@@ -29,7 +43,6 @@ const Main = ({ ytAPI }) => {
             console.log('infoText =', infoText, ', infoDuration =', infoDuration);
         }
 
-        // Unset the popover after given duration. This is *probably* not safe. Not sure.
         setTimeout(() => {
             setInfoText(undefined);
         }, infoDuration * 1000.0);
@@ -91,7 +104,9 @@ const Main = ({ ytAPI }) => {
                                     return <EditorPage ytAPI={ytAPI} />;
                                 }}
                             />
-                            <Route path="/" render={() => <Redirect to="/editor" />} />
+                            {/*<Route path="/" render={() => <Redirect to="/editor" />} /> */}
+
+                            <Route path="/" component={DropboxLogin} />
                         </Switch>
                     </>
                 )}
