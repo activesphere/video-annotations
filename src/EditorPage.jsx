@@ -261,7 +261,6 @@ class EditorPage extends Component {
 
     _saveEditorPageState = () => {
         const { videoId, videoTime } = this.currentVideoInfo();
-        this.props.saveLastEditorPageState(videoId, videoTime);
     };
 
     componentDidMount() {
@@ -316,8 +315,6 @@ class EditorPage extends Component {
             }
             console.log(`Saving last editor page state - id - ${videoId}, time - ${videoTime}`);
         }
-
-        this._saveEditorPageState();
     }
 
     render() {
