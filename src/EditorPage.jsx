@@ -10,7 +10,6 @@ import VideoPathInput from './VideoPathInput';
 import getYoutubeTitle from 'get-youtube-title';
 import { noteStorageManager } from './save_note';
 import PropTypes from 'prop-types';
-import StyledPopper from './InfoPopper';
 import IFrameStyleWrapper from './IFrameStyleWrapper';
 
 // TODO: Remove this API key from public github? Obtain from user's OS env key.
@@ -117,6 +116,7 @@ class EditorPage extends Component {
         startingVideoId: PropTypes.string,
         startingVideoTime: PropTypes.number,
         startingPopperMessage: PropTypes.string,
+        showInfo: PropTypes.func,
     };
 
     static defaultProps = {
@@ -139,8 +139,6 @@ class EditorPage extends Component {
         // Editor ref, set by the child component
         this.editorRef = undefined;
         this.editorContainerDiv = undefined;
-
-        this.popoverRef = undefined;
 
         // We keep a handle to the youtube player (the player API, not the dom element itself).
         this.ytPlayerController = undefined;
@@ -213,23 +211,6 @@ class EditorPage extends Component {
         this.editorContainerDiv = ref;
     };
 
-    showInfo = (infoText, infoDuration, popoverText = undefined, logToConsole = false) => {
-        if (logToConsole) {
-            console.log('infoText =', infoText, ', infoDuration =', infoDuration);
-        }
-
-        if (popoverText) {
-            infoText = popoverText;
-        }
-
-        this.setState({ infoText });
-
-        // Unset the popover after given duration. This is *probably* not safe. Not sure.
-        setTimeout(() => {
-            this.setState({ infoText: undefined });
-        }, infoDuration * 1000.0);
-    };
-
     // Called by editor component. Updates current note menu items
     updateNoteMenu = () => {
         const noteMenuItems = noteStorageManager.getNoteMenuItems();
@@ -249,7 +230,7 @@ class EditorPage extends Component {
             },
         });
 
-        this.showInfo(`Loading video ${videoId}`, 1.5, 'Loading video', true);
+        this.props.showInfo(`Loading video ${videoId}`, 1.5, true);
     };
 
     handleNotemenuChange = e => {
@@ -299,7 +280,7 @@ class EditorPage extends Component {
 
         if (this.state.startingPopperMessage) {
             console.log('Showing starting popper message');
-            this.showInfo('', 1.0, this.state.startingPopperMessage);
+            this.props.showInfo(this.state.startingPopperMessage, 1.0);
             setTimeout(() => {
                 this.setState({ startingPopperMessage: undefined });
             });
@@ -321,7 +302,6 @@ class EditorPage extends Component {
         const { match } = this.props;
         const videoId = match.params.videoId;
         const { noteMenuItems } = this.state;
-        console.log('noteMenuItems', videoId, this.state.noteMenuItems);
 
         return (
             <>
@@ -347,14 +327,9 @@ class EditorPage extends Component {
                         parentApp={this}
                         dispatch={this.doVideoCommand}
                         editorCommand={this.state.editorCommand}
+                        showInfo={this.props.showInfo}
                     />
                 </div>
-                <StyledPopper
-                    anchorElement={this.state.infoText ? this.editorContainerDiv : undefined}
-                    ref={r => (this.popoverRef = r)}
-                >
-                    {this.state.infoText}
-                </StyledPopper>
             </>
         );
     }
