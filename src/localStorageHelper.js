@@ -160,11 +160,11 @@ class LocalStorageHelper {
             const dbNoteData = dbNoteDataById[videoId];
             // console.log('dbNoteData =', dbNoteData);
             if (!dbNoteData || dbNoteData.timeOfSave < lsNoteData.timeOfSave) {
-                promisesOfUploadingNotes.push(
-                    dropboxHelper.save(videoId, lsNoteData.videoTime, lsNoteData.editorValueAsJson)
-                );
+                promisesOfUploadingNotes.push(dropboxHelper.save(lsNoteData));
 
-                console.log(`Updating Dropbox for note ${videoId}, title - ${lsNoteData.videoTitle}`);
+                console.log(
+                    `Updating Dropbox for note ${videoId}, title - ${lsNoteData.videoTitle}`
+                );
             }
         }
 
@@ -178,11 +178,13 @@ class LocalStorageHelper {
         for (const videoId of Object.keys(dbNoteDataById)) {
             const dbNoteData = dbNoteDataById[videoId];
             const lsNoteData = this.videoIdToNoteData[videoId];
-            console.log('dbNoteData =', dbNoteData);
+            // console.log('dbNoteData =', dbNoteData);
             if (!lsNoteData || lsNoteData.timeOfSave < dbNoteData.timeOfSave) {
                 updatedLocalMap = true;
                 this.videoIdToNoteData[videoId] = dbNoteData;
-                console.log(`Updating localstorage for note ${videoId}, title - ${dbNoteData.videoTitle}`);
+                console.log(
+                    `Updating localstorage for note ${videoId}, title - ${dbNoteData.videoTitle}`
+                );
             }
         }
 
