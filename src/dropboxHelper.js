@@ -101,8 +101,6 @@ class DropboxHelper {
 
             const downloadInfos = await Promise.all(downloadResultPromises);
 
-            console.log('Downloaded', downloadInfos);
-
             for (const info of downloadInfos) {
                 const { fileBlob } = info;
                 const fileContent = await readBlobAsString(fileBlob);

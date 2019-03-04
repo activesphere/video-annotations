@@ -142,9 +142,36 @@ class LocalStorageHelper {
         }
 
         const dbNoteDataById = await dropboxHelper.downloadAllNoteFiles();
+        // console.log('dbNoteDataById =', dbNoteDataById);
 
-        console.log('dbNoteDataById =', dbNoteDataById);
+        // -- Correct the local storage in case we still have notes from before dropbox sync
+        // implementation. Also, TODO: remove this code after a while.
+        const oldNoteKeyRegex = /saved_note_(.+)/;
+        const oldVideoIds = [];
+        const oldKeys = [];
 
+        Object.keys(this.videoIdToNoteData).forEach(key => {
+            const m = oldNoteKeyRegex.exec(key);
+            if (m) {
+                oldKeys.push(key);
+                oldVideoIds.push(m[1]);
+            }
+        });
+
+        for (let i = 0; i < oldKeys.length; ++i) {
+            const oldKey = oldKeys[i];
+            const oldVideoId = oldVideoIds[i];
+
+            const oldNoteData = this.videoIdToNoteData[oldKey];
+            oldNoteData.timeOfSave = 0;
+
+            this.videoIdToNoteData[oldVideoId] = oldNoteData;
+            delete this.videoIdToNoteData[oldKey];
+        }
+
+        // -- End of correction related code.
+
+        // Upload notes that are newer in local storage
         const promisesOfUploadingNotes = [];
 
         for (const videoId of Object.keys(this.videoIdToNoteData)) {
