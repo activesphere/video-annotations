@@ -14,7 +14,7 @@ import styled from '@emotion/styled';
 import 'react-contexify/dist/ReactContexify.min.css';
 import Modal from 'react-modal';
 import isHotKey from 'is-hotkey';
-import { keyMap } from './userConfig';
+import keyMap from './keyMap';
 import { Slide } from '@material-ui/core';
 import { SnackbarContext } from './context/SnackbarContext';
 import ContextMenu from './editor/ContextMenu';
@@ -495,25 +495,8 @@ export default class EditorComponent extends Component {
                     break;
                 }
 
-                case 'saveToDropbox': {
-                    const { videoId, videoTitle } = this.props.parentApp.currentVideoInfo();
-                    const noteData = new NoteData(videoId, videoTitle, this.state.value.toJSON());
+                case 'save': {
                     this.saveCurrentNote(new SaveCurrentNoteOptions(true, 0, true));
-
-                    /*
-                    dropboxHelper
-                        .save(noteData)
-                        .then(result => {
-                            console.log('saveToDropbox resolved', result);
-                            this.props.showInfo('Saved to dropbox');
-                        })
-                        .catch(err => {
-                            console.log('saveToDropbox error', err);
-                            setTimeout(() => {
-                                this.props.showInfo('Failed to save to dropbox');
-                            });
-                        });
-                    */
                     break;
                 }
 

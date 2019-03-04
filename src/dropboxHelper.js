@@ -1,6 +1,7 @@
 // Functions for storing notes to dropbox
-import { pathJoin, readBlobAsString } from './utils';
-import { dropboxConfig } from './userConfig';
+import { readBlobAsString } from './utils';
+import pathJoin from './pathJoin';
+import dropboxConfig from './dropboxConfig';
 import { noteNameFromIdAndTitle } from './NoteData';
 
 const NOTES_FOLDER_PATH = pathJoin(
@@ -72,24 +73,44 @@ class DropboxHelper {
             noteFileNames.push(entry.name);
         }
 
-        // Download each.
-        const downloadResultPromises = [];
-        for (const noteFileName of noteFileNames) {
-            const path = pathJoin(NOTES_FOLDER_PATH, noteFileName);
-            const p = this.dbx.filesDownload({ path });
-            downloadResultPromises.push(p);
-        }
-
-        const downloadInfos = await Promise.all(downloadResultPromises);
-
         const notesByVideoId = {};
 
-        for (const info of downloadInfos) {
-            const { fileBlob } = info;
-            const fileContent = await readBlobAsString(fileBlob);
-            const contentAsJson = JSON.parse(fileContent);
-            notesByVideoId[contentAsJson.videoId] = contentAsJson;
+        const { downloadsPerBatch } = dropboxConfig;
+        const numFiles = noteFileNames.length;
+
+        console.log('downloadsPerBatch =', downloadsPerBatch);
+
+        for (
+            let filesDownloaded = 0;
+            filesDownloaded < numFiles;
+            filesDownloaded += downloadsPerBatch
+        ) {
+            // Download each file this batch.
+            const downloadResultPromises = [];
+
+            for (
+                let i = filesDownloaded, e = Math.min(i + downloadsPerBatch, numFiles);
+                i < e;
+                ++i
+            ) {
+                const noteFileName = noteFileNames[i];
+                const path = pathJoin(NOTES_FOLDER_PATH, noteFileName);
+                const p = this.dbx.filesDownload({ path });
+                downloadResultPromises.push(p);
+            }
+
+            const downloadInfos = await Promise.all(downloadResultPromises);
+
+            console.log('Downloaded', downloadInfos);
+
+            for (const info of downloadInfos) {
+                const { fileBlob } = info;
+                const fileContent = await readBlobAsString(fileBlob);
+                const contentAsJson = JSON.parse(fileContent);
+                notesByVideoId[contentAsJson.videoId] = contentAsJson;
+            }
         }
+
         return notesByVideoId;
     }
 }
