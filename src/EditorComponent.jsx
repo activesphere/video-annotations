@@ -164,6 +164,7 @@ export default class EditorComponent extends Component {
     static propTypes = {
         parentApp: PropTypes.object.isRequired,
         editorCommand: PropTypes.object,
+        showInfo: PropTypes.func.isRequired,
     };
 
     // Just a place to create the plugins in. The action functions of the plugins do need to use
@@ -185,7 +186,7 @@ export default class EditorComponent extends Component {
                     this.props.parentApp.doVideoCommand('playVideo');
 
                     setTimeout(() => {
-                        this.showInfo('', 1.0, 'Playing', true);
+                        this.props.showInfo('Playing', 1.0, true);
                     });
                 },
             })
@@ -200,7 +201,7 @@ export default class EditorComponent extends Component {
                     change.insertText('');
                     this.props.parentApp.doVideoCommand('pauseVideo');
                     setTimeout(() => {
-                        this.showInfo('', 1.0, 'Paused', true);
+                        this.props.showInfo('Paused', 1.0, true);
                     });
                 },
             })
@@ -272,22 +273,6 @@ export default class EditorComponent extends Component {
 
         return plugins;
     }
-
-    // TODO: This is an exact duplicate of App component's show info.
-    showInfo = (infoText, infoDuration, popperMessage = undefined, logToConsole = false) => {
-        if (logToConsole) {
-            console.log('infoText =', infoText, ', infoDuration =', infoDuration);
-        }
-
-        if (popperMessage) {
-            infoText = popperMessage;
-            this.setState({ popperMessage });
-            // Unset the popover after given duration. This is *probably* not safe. Not sure.
-            setTimeout(() => {
-                this.setState({ popperMessage: undefined });
-            }, infoDuration * 1000.0);
-        }
-    };
 
     saveCurrentNote = () => {
         const jsonEditorValue = this.state.value.toJSON();
@@ -451,12 +436,7 @@ export default class EditorComponent extends Component {
 
         this.loadNoteForVideo = videoId => {
             if (!videoId) {
-                this.props.parentApp.showInfo(
-                    'No video current playing. Not loading note.',
-                    2,
-                    true
-                );
-                // TODO(rksht): load note independently of video.
+                this.props.showInfo('No video current playing. Not loading note.', 2, true);
             }
 
             console.log('Loading note for video', videoId);
@@ -464,10 +444,7 @@ export default class EditorComponent extends Component {
             const { jsonEditorValue } = noteStorageManager.loadNoteWithId(videoId);
 
             if (!jsonEditorValue) {
-                this.props.parentApp.showInfo(
-                    `No note previously saved for videoId = ${videoId}`,
-                    2
-                );
+                this.props.showInfo(`No note previously saved for videoId = ${videoId}`, 2);
                 // Load empty editor value
                 this.setState({ ...this.state, value: initialEditorValue });
             } else {
@@ -519,7 +496,7 @@ export default class EditorComponent extends Component {
                     }
                     case 'saveNote': {
                         const infoText = this.saveCurrentNote();
-                        this.props.parentApp.showInfo(infoText, 0.5, 'Saved note');
+                        this.props.showInfo(infoText, 0.5, 'Saved note');
                         break;
                     }
                     case 'videoForward': {

@@ -13,8 +13,11 @@ import PropTypes from 'prop-types';
 import StyledPopper from './InfoPopper';
 import IFrameStyleWrapper from './IFrameStyleWrapper';
 
-// TODO: Remove this API key from public github? Obtain from user's OS env key.
-const YOUTUBE_API_KEY = 'AIzaSyB0Hslfl-deOx-ApFvTE0osjJCy2T_1uL0';
+const YOUTUBE_API_KEY = process.env.REACT_APP_YOUTUBE_API_KEY;
+
+if (!YOUTUBE_API_KEY) {
+    console.assert('REACT_APP_YOUTUBE_API_KEY required in .env file');
+}
 
 const ytNameOfPlayerState = {
     '-1': 'unstarted',
@@ -211,23 +214,6 @@ class EditorPage extends Component {
         this.editorContainerDiv = ref;
     };
 
-    showInfo = (infoText, infoDuration, popoverText = undefined, logToConsole = false) => {
-        if (logToConsole) {
-            console.log('infoText =', infoText, ', infoDuration =', infoDuration);
-        }
-
-        if (popoverText) {
-            infoText = popoverText;
-        }
-
-        this.setState({ infoText });
-
-        // Unset the popover after given duration. This is *probably* not safe. Not sure.
-        setTimeout(() => {
-            this.setState({ infoText: undefined });
-        }, infoDuration * 1000.0);
-    };
-
     // Called by editor component. Updates current note menu items
     updateNoteMenu = () => {
         const noteMenuItems = noteStorageManager.getNoteMenuItems();
@@ -247,7 +233,7 @@ class EditorPage extends Component {
             },
         });
 
-        this.showInfo(`Loading video ${videoId}`, 1.5, 'Loading video', true);
+        this.props.showInfo(`Loading video ${videoId}`, 1.5, true);
     };
 
     handleNotemenuChange = e => {
@@ -290,7 +276,7 @@ class EditorPage extends Component {
 
         if (this.state.startingPopperMessage) {
             console.log('Showing starting popper message');
-            this.showInfo('', 1.0, this.state.startingPopperMessage);
+            this.props.showInfo(this.state.startingPopperMessage, 1.0);
             setTimeout(() => {
                 this.setState({ startingPopperMessage: undefined });
             });
@@ -331,6 +317,7 @@ class EditorPage extends Component {
                         parentApp={this}
                         dispatch={this.doVideoCommand}
                         editorCommand={this.state.editorCommand}
+                        showInfo={this.props.showInfo}
                     />
                 </div>
                 <StyledPopper
