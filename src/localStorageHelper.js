@@ -1,15 +1,4 @@
-import testSavedMap from './test_saved_map';
-
-// A JSON serializable object representing a full note. Kept as values in the VIDEO_ID_TO_NOTE_DATA
-// map.
-export class NoteData {
-    constructor(videoId, videoTitle, jsonEditorValue, noteName = '') {
-        this.videoId = videoId;
-        this.strJsonEditorValue = JSON.stringify(jsonEditorValue);
-        this.videoTitle = videoTitle;
-        this.noteName = noteName;
-    }
-}
+import dropboxHelper from './dropboxHelper';
 
 // Search results
 
@@ -25,35 +14,19 @@ export class SearchResult {
 // be keyed by video id.
 const VIDEO_ID_TO_NOTE_DATA = 'video_id_to_note_data';
 
-// If you want to load that test note data.
-const LOAD_TEST_DATA = true;
-
 // If you want to use copy the save data and put it in a source file and use as test data.
 const LOG_SAVE_DATA_TO_CONSOLE = false;
 
-class NoteStorageManager {
+class LocalStorageHelper {
     constructor() {
         // Map of video id to note data.
         this.strMap = localStorage.getItem(VIDEO_ID_TO_NOTE_DATA);
         if (!this.strMap) {
-            if (LOAD_TEST_DATA) {
-                console.log('No previously saved data. Loading test save data.');
-                this.strMap = JSON.stringify(testSavedMap);
-                this.videoIdToNoteData = testSavedMap;
-            } else {
-                this.videoIdToNoteData = {};
-                this.strMap = '{}';
-            }
+            this.videoIdToNoteData = {};
+            this.strMap = '{}';
         } else {
             this.videoIdToNoteData = JSON.parse(this.strMap);
-
-            console.log('Keys of saved notes = ', Object.keys(this.videoIdToNoteData));
-
-            // This is not needed.
-            if (this.videoIdToNoteData.hasOwnProperty('saved_note_undefined')) {
-                delete this.videoIdToNoteData.saved_note_undefined;
-                this.flushToLocalStorage();
-            }
+            // console.log('Keys of saved notes = ', Object.keys(this.videoIdToNoteData));
             console.log('Loaded save data.');
         }
     }
@@ -76,7 +49,7 @@ class NoteStorageManager {
 
     // Returns the editor value for the note associated with given video id, if the value exists.
     loadNoteWithId = videoId => {
-        const key = `saved_note_${videoId}`;
+        const key = videoId;
 
         if (!(key in this.videoIdToNoteData)) {
             console.log('No note for video Id ', videoId);
@@ -86,7 +59,7 @@ class NoteStorageManager {
         const noteData = this.videoIdToNoteData[key];
 
         return {
-            jsonEditorValue: JSON.parse(this.videoIdToNoteData[key].strJsonEditorValue),
+            editorValueAsJson: this.videoIdToNoteData[key].editorValueAsJson,
             noteName: noteData.noteName,
             videoTitle: noteData.videoTitle,
         };
@@ -98,7 +71,7 @@ class NoteStorageManager {
             return;
         }
 
-        const key = `saved_note_${videoId}`;
+        const key = videoId;
         this.videoIdToNoteData[key] = noteData;
         console.log('Saved note for video', noteData.videoTitle);
         this.flushToLocalStorage();
@@ -110,7 +83,7 @@ class NoteStorageManager {
             return;
         }
 
-        const key = `saved_note_${videoId}`;
+        const key = videoId;
         if (this.videoIdToNoteData[key]) {
             delete this.videoIdToNoteData[key];
             this.flushToLocalStorage();
@@ -160,6 +133,57 @@ class NoteStorageManager {
         }
         return cardInfos;
     };
+
+    // Update dropbox file or localstorage note depending on which one is older.
+    async syncWithDropbox() {
+        if (!dropboxHelper.isInitialized()) {
+            console.log('Not syncing localStorage with dropbox');
+            return;
+        }
+
+        const dbNoteDataById = await dropboxHelper.downloadAllNoteFiles();
+
+        const promisesOfUploadingNotes = [];
+
+        for (const videoId of Object.keys(this.videoIdToNoteData)) {
+            const lsNoteData = this.videoIdToNoteData[videoId];
+            const dbNoteData = dbNoteDataById[videoId];
+            // console.log('dbNoteData =', dbNoteData);
+            if (!dbNoteData || dbNoteData.timeOfSave < lsNoteData.timeOfSave) {
+                promisesOfUploadingNotes.push(dropboxHelper.save(lsNoteData));
+
+                console.log(
+                    `Updating Dropbox for note ${videoId}, title - ${lsNoteData.videoTitle}`
+                );
+            }
+        }
+
+        // Wait for all the notes to upload.
+        const _ignore = await Promise.all(promisesOfUploadingNotes);
+
+        // Do the same in the other direction. If there's files in dropbox but not in localstorage or there's
+        // a note with same id but time of save is older in localstorage than that in dropbox,
+        // overwrite localstorage's content.
+        let updatedLocalMap = false;
+        for (const videoId of Object.keys(dbNoteDataById)) {
+            const dbNoteData = dbNoteDataById[videoId];
+            const lsNoteData = this.videoIdToNoteData[videoId];
+            // console.log('dbNoteData =', dbNoteData);
+            if (!lsNoteData || lsNoteData.timeOfSave < dbNoteData.timeOfSave) {
+                updatedLocalMap = true;
+                this.videoIdToNoteData[videoId] = dbNoteData;
+                console.log(
+                    `Updating localstorage for note ${videoId}, title - ${dbNoteData.videoTitle}`
+                );
+            }
+        }
+
+        if (updatedLocalMap) {
+            this.flushToLocalStorage();
+        }
+    }
 }
 
-export const noteStorageManager = new NoteStorageManager();
+const localStorageHelper = new LocalStorageHelper();
+
+export default localStorageHelper;

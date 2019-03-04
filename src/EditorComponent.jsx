@@ -7,16 +7,17 @@ import { secondsToHhmmss } from './utils';
 import PropTypes from 'prop-types';
 import Prism from './prism_add_markdown_syntax';
 import AutoReplace from './slate-auto-replace-alt';
-import { noteStorageManager, NoteData } from './save_note';
+import localStorageHelper from './localStorageHelper';
+import NoteData from './NoteData';
 import { Menu, contextMenu, Item, Separator, Submenu } from 'react-contexify';
 import { Button, Icon, Menu as Menu_ } from './button_icon_menu';
-import StyledPopper from './InfoPopper';
 import styled from '@emotion/styled';
 import 'react-contexify/dist/ReactContexify.min.css';
 import Modal from 'react-modal';
 import isHotKey from 'is-hotkey';
-import keyMap from './keycodeMap';
+import { keyMap } from './userConfig';
 import { Slide } from '@material-ui/core';
+import dropboxHelper from './dropboxHelper';
 
 // Removing mathjax for now.
 // import MathJax from 'MathJax'; // External
@@ -116,7 +117,7 @@ class HoverMenu extends Component {
     }
 }
 
-const TimestampMarkComponent = props => {
+const TimestampMark = props => {
     const style = {
         color: '#9ebdff',
         textDecoration: 'underline',
@@ -157,6 +158,14 @@ class StoredTimestamp {
         this.videoId = videoId;
         this.videoTime = videoTime;
         this.text = text;
+    }
+}
+
+class SaveCurrentNoteOptions {
+    constructor(uploadToDropbox, uploadAfter, returnInfoString) {
+        this.uploadToDropbox = uploadToDropbox;
+        this.uploadAfter = uploadAfter;
+        this.returnInfoString = returnInfoString;
     }
 }
 
@@ -274,17 +283,36 @@ export default class EditorComponent extends Component {
         return plugins;
     }
 
-    saveCurrentNote = () => {
+    saveCurrentNote = saveCurrentNoteOptions => {
         const jsonEditorValue = this.state.value.toJSON();
         const { videoId, videoTitle } = this.props.parentApp.currentVideoInfo();
         const noteData = new NoteData(videoId, videoTitle, jsonEditorValue);
-        noteStorageManager.saveNoteWithId(videoId, noteData);
+        localStorageHelper.saveNoteWithId(videoId, noteData);
         this.props.parentApp.updateNoteMenu();
 
-        const infoText = `Saved Note for video "${videoId}", title - "${videoTitle}"`;
-        // console.log(infoText);
-        // Return the infotext so we can show it in case user saved manually.
-        return infoText;
+        if (saveCurrentNoteOptions.uploadToDropbox) {
+            if (saveCurrentNoteOptions.uploadAfter === 0) {
+                dropboxHelper
+                    .save(noteData)
+                    .then(result => {
+                        console.log('Uploaded to dropbox');
+                        this.props.showInfo('Uploaded to dropbox');
+                    })
+                    .catch(error => {
+                        console.log(error);
+                        this.props.showInfo('Failed to upload to dropbox - ', error);
+                    });
+            } else {
+                setTimeout(() => {
+                    dropboxHelper.save(noteData);
+                }, saveCurrentNoteOptions.uploadAfter * 1000);
+            }
+        }
+
+        if (saveCurrentNoteOptions.returnInfoString) {
+            const infoText = `Saved Note for video "${videoId}", title - "${videoTitle}"`;
+            return infoText;
+        }
     };
 
     // Put timestamp into current selection in given editor state
@@ -325,6 +353,8 @@ export default class EditorComponent extends Component {
         this.storedTimestamps = [];
 
         this.hoverMenuRef = undefined;
+
+        this.lastDropboxSaveCompleted = true;
     }
 
     onChange = change => {
@@ -333,7 +363,7 @@ export default class EditorComponent extends Component {
         // ^ The value that onChange receives as argument is the new value of the editor.
         // Main reason we are overriding is to setState with the new value.
         if (AUTOSAVE && value.document !== this.state.value.document) {
-            this.saveCurrentNote();
+            this.saveCurrentNote(new SaveCurrentNoteOptions(false, 0, false));
         }
 
         // We can call mathjax to typeset the page here. TODO(rksht): don't tell it to update only
@@ -342,16 +372,7 @@ export default class EditorComponent extends Component {
         // MathJax.Hub.Queue(['Typeset', MathJax.Hub, '__editor_container_div__']);
 
         // Check if we are on the boundary of a timestamp mark. If so we will toggle away that mark state.
-        const marks = value.marks;
-
-        let onTimestamp = false;
-
-        for (let mark of marks) {
-            if (mark.type === 'youtube_timestamp') {
-                onTimestamp = true;
-            }
-        }
-
+        const onTimestamp = value.marks.some(mark => mark.type === 'youtube_timestamp');
         this.setState({ onTimestamp });
         this.setState({ value });
     };
@@ -360,7 +381,7 @@ export default class EditorComponent extends Component {
         const { attributes, children } = props;
         switch (props.mark.type) {
             case 'youtube_timestamp':
-                return <TimestampMarkComponent {...props} parentApp={this.props.parentApp} />;
+                return <TimestampMark {...props} parentApp={this.props.parentApp} />;
 
             case 'bold':
                 return <strong {...attributes}>{props.children}</strong>;
@@ -442,14 +463,14 @@ export default class EditorComponent extends Component {
 
         console.log('Loading note for video', videoId);
 
-        const { jsonEditorValue } = noteStorageManager.loadNoteWithId(videoId);
+        const { editorValueAsJson } = localStorageHelper.loadNoteWithId(videoId);
 
-        if (!jsonEditorValue) {
+        if (!editorValueAsJson) {
             this.props.showInfo(`No note previously saved for videoId = ${videoId}`, 2);
             // Load empty editor value
             this.setState({ ...this.state, value: initialEditorValue });
         } else {
-            this.setState({ ...this.state, value: Value.fromJSON(jsonEditorValue) });
+            this.setState({ ...this.state, value: Value.fromJSON(editorValueAsJson) });
         }
     };
 
@@ -493,10 +514,33 @@ export default class EditorComponent extends Component {
                     break;
                 }
                 case 'saveNote': {
-                    const infoText = this.saveCurrentNote();
-                    this.props.showInfo(infoText, 0.5, 'Saved note');
+                    this.saveCurrentNote(true, 1.5, false);
+                    this.props.showInfo('Saved note', 0.5);
                     break;
                 }
+
+                case 'saveToDropbox': {
+                    const { videoId, videoTitle } = this.props.parentApp.currentVideoInfo();
+                    const noteData = new NoteData(videoId, videoTitle, this.state.value.toJSON());
+                    this.saveCurrentNote(new SaveCurrentNoteOptions(true, 0, true));
+
+                    /*
+                    dropboxHelper
+                        .save(noteData)
+                        .then(result => {
+                            console.log('saveToDropbox resolved', result);
+                            this.props.showInfo('Saved to dropbox');
+                        })
+                        .catch(err => {
+                            console.log('saveToDropbox error', err);
+                            setTimeout(() => {
+                                this.props.showInfo('Failed to save to dropbox');
+                            });
+                        });
+                    */
+                    break;
+                }
+
                 case 'videoForward': {
                     this.props.dispatch('addToCurrentTime', {
                         secondsToAdd: 10,
@@ -881,15 +925,6 @@ export default class EditorComponent extends Component {
                                 this.props.parentApp.editorRef = editorRef;
                             }}
                         />
-
-                        <StyledPopper
-                            anchorElement={
-                                this.state.popperMessage ? this.editorContainerDiv : undefined
-                            }
-                            ref={r => (this.popoverRef = r)}
-                        >
-                            {this.state.popperMessage}
-                        </StyledPopper>
                     </div>
                 </div>
             </Slide>
