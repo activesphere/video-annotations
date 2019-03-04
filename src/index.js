@@ -81,17 +81,16 @@ const Main = ({ ytAPI }) => {
                             // Means we have created the api but have not finished setting up the notes folder on dropbox side.
                             // Disabling handleTokenSubmit.
                             return <DropboxLogin />;
-                        } else {
-                            // User didn't click submit token button
-                            return (
-                                <>
-                                    <DropboxLogin handleTokenSubmit={handleTokenSubmit} />
-                                    <InfoPopper anchorElement={infoText ? rootElement : undefined}>
-                                        {infoText}
-                                    </InfoPopper>
-                                </>
-                            );
                         }
+                        // User didn't click submit token button
+                        return (
+                            <>
+                                <DropboxLogin handleTokenSubmit={handleTokenSubmit} />
+                                <InfoPopper anchorElement={infoText ? rootElement : undefined}>
+                                    {infoText}
+                                </InfoPopper>
+                            </>
+                        );
                     }}
                 />
                 <Route
