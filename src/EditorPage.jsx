@@ -8,15 +8,14 @@ import MenuItem from '@material-ui/core/MenuItem';
 import EditorComponent from './EditorComponent';
 import VideoPathInput from './VideoPathInput';
 import getYoutubeTitle from 'get-youtube-title';
-import { noteStorageManager } from './save_note';
+import localStorageHelper from './localStorageHelper';
 import PropTypes from 'prop-types';
 import IFrameStyleWrapper from './IFrameStyleWrapper';
 import { SnackbarContext } from './context/SnackbarContext';
 
 const YOUTUBE_API_KEY = process.env.REACT_APP_YOUTUBE_API_KEY;
-
 if (!YOUTUBE_API_KEY) {
-    console.assert('REACT_APP_YOUTUBE_API_KEY required in .env file');
+    console.log('Require REACT_APP_YOUTUBE_API_KEY from .env file');
 }
 
 const ytNameOfPlayerState = {
@@ -118,7 +117,9 @@ class YoutubePlayerController {
 class EditorPage extends Component {
     static propTypes = {
         startingVideoId: PropTypes.string,
+        startingVideoTime: PropTypes.number,
         startingPopperMessage: PropTypes.string,
+        showInfo: PropTypes.func.isRequired,
     };
 
     static defaultProps = {
@@ -130,20 +131,21 @@ class EditorPage extends Component {
 
     constructor(props) {
         super(props);
+
+        console.log('Props given to EditorPage =', props);
+
         this.state = {
             editorCommand: undefined,
             infoText: undefined,
             infoLastTime: undefined,
             selectedOption: undefined,
-            noteMenuItems: noteStorageManager.getNoteMenuItems(),
+            noteMenuItems: localStorageHelper.getNoteMenuItems(),
             startingPopperMessage: this.props.startingPopperMessage,
         };
 
         // Editor ref, set by the child component
         this.editorRef = undefined;
         this.editorContainerDiv = undefined;
-
-        this.popoverRef = undefined;
 
         // We keep a handle to the youtube player (the player API, not the dom element itself).
         this.ytPlayerController = undefined;
@@ -218,7 +220,7 @@ class EditorPage extends Component {
 
     // Called by editor component. Updates current note menu items
     updateNoteMenu = () => {
-        const noteMenuItems = noteStorageManager.getNoteMenuItems();
+        const noteMenuItems = localStorageHelper.getNoteMenuItems();
         this.setState({ noteMenuItems });
     };
 
@@ -250,7 +252,7 @@ class EditorPage extends Component {
         if (this.iframeRef.current) {
             let ytPlayerApi = undefined;
 
-            const startingVideoId = this.props.startingVideoId;
+            const { startingVideoId, startingVideoTime } = this.props;
 
             ytPlayerApi = new ytAPI.Player(this.iframeRef.current, {
                 height: '100%',
@@ -270,6 +272,9 @@ class EditorPage extends Component {
                             console.log('Loading video and note for ', this.props.startingVideoId);
                             const videoId = this.props.startingVideoId;
                             this.tellEditorToLoadNote(videoId);
+                            if (startingVideoTime) {
+                                this.ytPlayerController.seekTo(startingVideoTime);
+                            }
                         }
                     },
                 },
@@ -286,40 +291,50 @@ class EditorPage extends Component {
     }
 
     componentWillUnmount() {
-        if (this.ytPlayerController) this.ytPlayerController.pauseVideo();
+        if (this.ytPlayerController) {
+            let { videoId, videoTime } = this.currentVideoInfo();
+            const playerState = this.ytPlayerController.currentPlayerState;
+            if (playerState !== 'paused' && playerState !== 'playing') {
+                videoTime = undefined;
+            }
+        }
     }
 
     render() {
         const { match } = this.props;
-        const videoId = match.params.videoId;
+        const videoId = match.params.videoId || '';
         const { noteMenuItems } = this.state;
-        console.log('noteMenuItems', videoId, this.state.noteMenuItems);
 
         return (
-            <div className="two-panel-div">
-                <div className="left-panel">
-                    <VideoPathInput />
-                    <Select
-                        value={videoId}
-                        onChange={this.handleNotemenuChange}
-                        placeholder="Saved notes..."
-                    >
-                        {noteMenuItems.map(item => (
-                            <MenuItem value={item.value}>{item.label}</MenuItem>
-                        ))}
-                    </Select>
+            <>
+                <div className="two-panel-div">
+                    <div className="left-panel">
+                        <VideoPathInput />
+                        <Select
+                            value={videoId}
+                            onChange={this.handleNotemenuChange}
+                            placeholder="Saved notes..."
+                        >
+                            {noteMenuItems.map(item => (
+                                <MenuItem key={item.videoId} value={item.value}>
+                                    {item.label}
+                                </MenuItem>
+                            ))}
+                        </Select>
 
-                    <IFrameStyleWrapper>
-                        <div ref={this.iframeRef} />
-                    </IFrameStyleWrapper>
+                        <IFrameStyleWrapper>
+                            <div ref={this.iframeRef} />
+                        </IFrameStyleWrapper>
+                    </div>
+
+                    <EditorComponent
+                        parentApp={this}
+                        dispatch={this.doVideoCommand}
+                        editorCommand={this.state.editorCommand}
+                        showInfo={this.props.showInfo}
+                    />
                 </div>
-
-                <EditorComponent
-                    parentApp={this}
-                    dispatch={this.doVideoCommand}
-                    editorCommand={this.state.editorCommand}
-                />
-            </div>
+            </>
         );
     }
 }

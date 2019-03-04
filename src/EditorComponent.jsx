@@ -6,26 +6,172 @@ import { secondsToHhmmss } from './utils';
 import PropTypes from 'prop-types';
 import Prism from './prism_add_markdown_syntax';
 import AutoReplace from './slate-auto-replace-alt';
-import { noteStorageManager, NoteData } from './save_note';
+import localStorageHelper from './localStorageHelper';
+import NoteData from './NoteData';
+import { Menu, contextMenu, Item, Separator, Submenu } from 'react-contexify';
+import { Button, Icon, Menu as Menu_ } from './button_icon_menu';
+import styled from '@emotion/styled';
+import 'react-contexify/dist/ReactContexify.min.css';
 import Modal from 'react-modal';
 import isHotKey from 'is-hotkey';
-import keyMap from './keycodeMap';
+import { keyMap } from './userConfig';
 import { Slide } from '@material-ui/core';
 import { SnackbarContext } from './context/SnackbarContext';
 import ContextMenu from './editor/ContextMenu';
 import HoverMenu from './editor/HoverMenu';
 import TimestampMark from './editor/TimestampMark';
 import debounce from './utils/debounce';
+import dropboxHelper from './dropboxHelper';
+
+// Removing mathjax for now.
+// import MathJax from 'MathJax'; // External
+
+// console.log('MathJax = ', MathJax);
 
 Modal.setAppElement('#root');
 
 const initialEditorValue = Plain.deserialize('');
+
+// Context menu that is shown when user selects a range of text and right clicks.
+const EditorContextMenu = ({ storedTimestamps, editorValue, editorRef, currentlyPlayingVideo }) => {
+    const selection = editorValue.selection;
+
+    const timestampItems = selection.isExpanded
+        ? storedTimestamps.map(s => {
+              return (
+                  <Item
+                      onClick={() => {
+                          if (currentlyPlayingVideo !== s.videoId) {
+                              console.log('Attempted to put timestamp saved for different video');
+                              return;
+                          }
+                          const timeStampMark = makeYoutubeTimestampMark(s.videoId, s.videoTime);
+                          editorRef.addMarkAtRange(selection, timeStampMark);
+                      }}
+                      key={`${s.videoTime}_${s.videoId}`}
+                  >
+                      {`${s.text}(${secondsToHhmmss(s.videoTime)})`}
+                  </Item>
+              );
+          })
+        : null;
+
+    return (
+        <Menu id="editor_context_menu">
+            {selection.isExpanded ? (
+                <Fragment>
+                    <Submenu label="Set timestamp">{timestampItems}</Submenu>
+                    <Separator />
+                </Fragment>
+            ) : null}
+            <Item> Add timestamp</Item>
+            <Item> Add current timestamp</Item>
+        </Menu>
+    );
+};
+
+class HoverMenu extends Component {
+    render() {
+        const StyledMenu = styled(Menu_)`
+            padding: 8px 7px 6px;
+            position: absolute;
+            z-index: 1;
+            top: -10000px;
+            left: -10000px;
+            margin-top: -6px;
+            opacity: 0;
+            background-color: #222;
+            border-radius: 4px;
+            transition: opacity 0.75s;
+        `;
+        const { className, getRef } = this.props;
+        const root = window.document.getElementById('root');
+
+        return ReactDOM.createPortal(
+            <StyledMenu
+                className={className}
+                ref={m => {
+                    getRef(m);
+                }}
+            >
+                {this.renderMarkButton('bold', 'format_bold')}
+                {this.renderMarkButton('italic', 'format_italic')}
+                {this.renderMarkButton('underlined', 'format_underlined')}
+                {this.renderMarkButton('code', 'code')}
+            </StyledMenu>,
+            root
+        );
+    }
+
+    renderMarkButton(type, icon) {
+        const { editor } = this.props;
+        const { value } = editor;
+        const isActive = value.activeMarks.some(mark => mark.type === type);
+        return (
+            <Button reversed active={isActive} onMouseDown={event => this.onClickMark(event, type)}>
+                <Icon>{icon}</Icon>
+            </Button>
+        );
+    }
+
+    onClickMark(event, type) {
+        const { editor } = this.props;
+        event.preventDefault();
+        editor.toggleMark(type);
+    }
+}
+
+const TimestampMark = props => {
+    const style = {
+        color: '#9ebdff',
+        textDecoration: 'underline',
+        fontStyle: 'italic',
+        cursor: 'pointer',
+    };
+
+    const videoId = props.mark.data.get('videoId');
+    const videoTime = props.mark.data.get('videoTime');
+
+    const seekToTime = () => {
+        props.parentApp.doVideoCommand('seekToTime', {
+            videoId,
+            videoTime,
+        });
+    };
+
+    return (
+        <span
+            onClick={seekToTime}
+            className="inline-youtube-timestamp"
+            {...props.attributes}
+            style={style}
+        >
+            {props.children}
+        </span>
+    );
+};
 
 function makeYoutubeTimestampMark(videoId, videoTime) {
     return Mark.create({ type: 'youtube_timestamp', data: { videoId, videoTime } });
 }
 
 const AUTOSAVE = true;
+
+class StoredTimestamp {
+    constructor(videoId, videoTime, text = '') {
+        this.videoId = videoId;
+        this.videoTime = videoTime;
+        this.text = text;
+    }
+}
+
+class SaveCurrentNoteOptions {
+    constructor(uploadToDropbox, uploadAfter, returnInfoString) {
+        this.uploadToDropbox = uploadToDropbox;
+        this.uploadAfter = uploadAfter;
+        this.returnInfoString = returnInfoString;
+    }
+}
 
 export default class EditorComponent extends Component {
     static propTypes = {
@@ -39,11 +185,121 @@ export default class EditorComponent extends Component {
         const jsonEditorValue = this.state.value.toJSON();
         const { videoId, videoTitle } = this.props.parentApp.currentVideoInfo();
         const noteData = new NoteData(videoId, videoTitle, jsonEditorValue);
-        noteStorageManager.saveNoteWithId(videoId, noteData);
+        localStorageHelper.saveNoteWithId(videoId, noteData);
         this.props.parentApp.updateNoteMenu();
-
         return `Saved Note for video "${videoId}", title - "${videoTitle}"`;
     }, 1000);
+
+    _makePlugins = () => {
+        // Pause video key-sequence
+        plugins.push(
+            AutoReplace({
+                trigger: '/',
+                before: /[^#]?(#)$/,
+                change: change => {
+                    change.insertText('');
+                    this.props.parentApp.doVideoCommand('pauseVideo');
+                    setTimeout(() => {
+                        this.props.showInfo('Paused', 1.0, true);
+                    });
+                },
+            })
+        );
+
+        // Puts a timestamp mark. Used by the following AutoReplace plugins
+        const putTimestampMark = (change, videoCommandName) => {
+            const { videoId, videoTime } = this.props.parentApp.currentVideoInfo();
+            if (!videoId) {
+                return;
+            }
+            if (!videoTime && videoTime !== 0) {
+                return;
+            }
+
+            const timeStampMark = makeYoutubeTimestampMark(videoId, videoTime);
+            change.toggleMark(timeStampMark);
+            change.insertText(secondsToHhmmss(videoTime));
+            change.toggleMark(timeStampMark);
+            this.props.parentApp.doVideoCommand(videoCommandName);
+
+            console.log(change);
+        };
+
+        // Put video timestamp and play (or continue playing) video
+        plugins.push(
+            AutoReplace({
+                trigger: '.',
+                before: /[^#]?(#t)$/,
+                change: change => {
+                    putTimestampMark(change, 'playVideo');
+                },
+            })
+        );
+
+        // Put video timestamp and pause video
+        plugins.push(
+            AutoReplace({
+                trigger: '/',
+                before: /[^#]?(#t)$/,
+                change: change => {
+                    putTimestampMark(change, 'pauseVideo');
+                },
+            })
+        );
+
+        // Seek to time. The format of input is /#-?[0-9]+(s|m)s/. So input #, then -10s, then s,
+        // and you go back 10 seconds. The full sequence is #-10ss.
+        plugins.push(
+            AutoReplace({
+                trigger: 's',
+                before: /[^#]?(#(-?)([0-9]+)(s|m))$/,
+                change: (change, event, matches) => {
+                    const groups = matches.before;
+                    const amount = +groups[3];
+                    const unit = groups[4] === 's' ? 1 : 60;
+                    const sign = groups[2] === '-' ? -1 : 1;
+                    const deltaTimeInSeconds = sign * amount * unit;
+
+                    console.log('addToCurrentTime', deltaTimeInSeconds, ' seconds');
+
+                    this.props.parentApp.doVideoCommand('addToCurrentTime', {
+                        secondsToAdd: deltaTimeInSeconds,
+                    });
+                    change.insertText('');
+                },
+            })
+        );
+
+        return plugins;
+    }
+
+    /*
+    saveCurrentNote = saveCurrentNoteOptions => {
+        if (saveCurrentNoteOptions.uploadToDropbox) {
+            if (saveCurrentNoteOptions.uploadAfter === 0) {
+                dropboxHelper
+                    .save(noteData)
+                    .then(result => {
+                        console.log('Uploaded to dropbox');
+                        this.props.showInfo('Uploaded to dropbox');
+                    })
+                    .catch(error => {
+                        console.log(error);
+                        this.props.showInfo('Failed to upload to dropbox - ', error);
+                    });
+            } else {
+                setTimeout(() => {
+                    dropboxHelper.save(noteData);
+                }, saveCurrentNoteOptions.uploadAfter * 1000);
+            }
+        }
+
+        if (saveCurrentNoteOptions.returnInfoString) {
+            const infoText = `Saved Note for video "${videoId}", title - "${videoTitle}"`;
+            return infoText;
+        }
+    };
+    */
 
     _putTimestampMarkIntoEditor = editor => {
         const { videoId, videoTime } = this.props.parentApp.currentVideoInfo();
@@ -73,6 +329,8 @@ export default class EditorComponent extends Component {
         this.editorRef = undefined;
 
         this.hoverMenuRef = undefined;
+
+        this.lastDropboxSaveCompleted = true;
     }
 
     onChange = change => {
@@ -81,7 +339,7 @@ export default class EditorComponent extends Component {
         // ^ The value that onChange receives as argument is the new value of the editor.
         // Main reason we are overriding is to setState with the new value.
         if (AUTOSAVE && value.document !== this.state.value.document) {
-            this.saveCurrentNote();
+            this.saveCurrentNote(new SaveCurrentNoteOptions(false, 0, false));
         }
 
         // We can call mathjax to typeset the page here. TODO(rksht): don't tell it to update only
@@ -90,16 +348,7 @@ export default class EditorComponent extends Component {
         // MathJax.Hub.Queue(['Typeset', MathJax.Hub, '__editor_container_div__']);
 
         // Check if we are on the boundary of a timestamp mark. If so we will toggle away that mark state.
-        const marks = value.marks;
-
-        let onTimestamp = false;
-
-        for (let mark of marks) {
-            if (mark.type === 'youtube_timestamp') {
-                onTimestamp = true;
-            }
-        }
-
+        const onTimestamp = value.marks.some(mark => mark.type === 'youtube_timestamp');
         this.setState({ onTimestamp });
         this.setState({ value });
     };
@@ -108,7 +357,7 @@ export default class EditorComponent extends Component {
         const { attributes, children } = props;
         switch (props.mark.type) {
             case 'youtube_timestamp':
-                return <TimestampMarkComponent {...props} parentApp={this.props.parentApp} />;
+                return <TimestampMark {...props} parentApp={this.props.parentApp} />;
 
             case 'bold':
                 return <strong {...attributes}>{props.children}</strong>;
@@ -190,14 +439,14 @@ export default class EditorComponent extends Component {
 
         console.log('Loading note for video', videoId);
 
-        const { jsonEditorValue } = noteStorageManager.loadNoteWithId(videoId);
+        const { editorValueAsJson } = localStorageHelper.loadNoteWithId(videoId);
 
-        if (!jsonEditorValue) {
+        if (!editorValueAsJson) {
             this.props.showInfo(`No note previously saved for videoId = ${videoId}`, 2);
             // Load empty editor value
             this.setState({ ...this.state, value: initialEditorValue });
         } else {
-            this.setState({ ...this.state, value: Value.fromJSON(jsonEditorValue) });
+            this.setState({ ...this.state, value: Value.fromJSON(editorValueAsJson) });
         }
     };
 
@@ -241,10 +490,33 @@ export default class EditorComponent extends Component {
                     break;
                 }
                 case 'saveNote': {
-                    const infoText = this.saveCurrentNote();
-                    this.props.showInfo(infoText, 0.5, 'Saved note');
+                    this.saveCurrentNote(true, 1.5, false);
+                    this.props.showInfo('Saved note', 0.5);
                     break;
                 }
+
+                case 'saveToDropbox': {
+                    const { videoId, videoTitle } = this.props.parentApp.currentVideoInfo();
+                    const noteData = new NoteData(videoId, videoTitle, this.state.value.toJSON());
+                    this.saveCurrentNote(new SaveCurrentNoteOptions(true, 0, true));
+
+                    /*
+                    dropboxHelper
+                        .save(noteData)
+                        .then(result => {
+                            console.log('saveToDropbox resolved', result);
+                            this.props.showInfo('Saved to dropbox');
+                        })
+                        .catch(err => {
+                            console.log('saveToDropbox error', err);
+                            setTimeout(() => {
+                                this.props.showInfo('Failed to save to dropbox');
+                            });
+                        });
+                    */
+                    break;
+                }
+
                 case 'videoForward': {
                     this.props.dispatch('addToCurrentTime', {
                         secondsToAdd: 10,
