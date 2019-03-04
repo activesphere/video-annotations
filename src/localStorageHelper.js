@@ -17,6 +17,8 @@ const VIDEO_ID_TO_NOTE_DATA = 'video_id_to_note_data';
 // If you want to use copy the save data and put it in a source file and use as test data.
 const LOG_SAVE_DATA_TO_CONSOLE = false;
 
+const DROPBOX_MAX_UPLOADS_PER_BATCH = 4;
+
 class LocalStorageHelper {
     constructor() {
         // Map of video id to note data.
@@ -188,7 +190,12 @@ class LocalStorageHelper {
             const dbNoteData = dbNoteDataById[videoId];
             // console.log('dbNoteData =', dbNoteData);
             if (!dbNoteData || dbNoteData.timeOfSave < lsNoteData.timeOfSave) {
-                promisesOfUploadingNotes.push(dropboxHelper.save(lsNoteData));
+                if (promisesOfUploadingNotes.length < DROPBOX_MAX_UPLOADS_PER_BATCH) {
+                    promisesOfUploadingNotes.push(dropboxHelper.save(lsNoteData));
+                } else {
+                    await Promise.all(promisesOfUploadingNotes);
+                    promisesOfUploadingNotes.length = 0;
+                }
 
                 console.log(
                     `Updating Dropbox for note ${videoId}, title - ${lsNoteData.videoTitle}`
