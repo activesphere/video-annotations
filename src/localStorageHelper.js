@@ -143,6 +143,8 @@ class LocalStorageHelper {
 
         const dbNoteDataById = await dropboxHelper.downloadAllNoteFiles();
 
+        console.log('dbNoteDataById =', dbNoteDataById);
+
         const promisesOfUploadingNotes = [];
 
         for (const videoId of Object.keys(this.videoIdToNoteData)) {

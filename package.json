@@ -9,6 +9,7 @@
         "@slate-editor/font-size-plugin": "^5.1.0",
         "classnames": "^2.2.6",
         "create-react-class": "^15.6.3",
+        "dropbox": "^4.0.16",
         "get-youtube-id": "^1.0.1",
         "get-youtube-title": "^1.0.0",
         "history": "^4.7.2",
@@ -32,7 +33,8 @@
         "seedrandom": "^2.4.4",
         "slate": "^0.44.9",
         "slate-auto-replace": "^0.12.1",
-        "slate-react": "^0.21.15"
+        "slate-react": "^0.21.15",
+        "slug": "^1.0.0"
     },
     "scripts": {
         "start": "react-scripts start",

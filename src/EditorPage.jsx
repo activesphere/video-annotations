@@ -287,16 +287,6 @@ class EditorPage extends Component {
         }
     }
 
-    componentWillUnmount() {
-        if (this.ytPlayerController) {
-            let { videoId, videoTime } = this.currentVideoInfo();
-            const playerState = this.ytPlayerController.currentPlayerState;
-            if (playerState !== 'paused' && playerState !== 'playing') {
-                videoTime = undefined;
-            }
-        }
-    }
-
     render() {
         const { match } = this.props;
         const videoId = match.params.videoId || '';
