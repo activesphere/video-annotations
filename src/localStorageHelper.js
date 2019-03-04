@@ -141,7 +141,16 @@ class LocalStorageHelper {
             return;
         }
 
-        const dbNoteDataById = await dropboxHelper.downloadAllNoteFiles();
+        // Array of raw content for each file
+        const contentsList = await dropboxHelper.downloadAllNoteFiles();
+
+        const dbNoteDataById = {};
+
+        for (const content of contentsList) {
+            const noteData = JSON.parse(content);
+            dbNoteDataById[noteData.videoId] = noteData;
+        }
+
         // console.log('dbNoteDataById =', dbNoteDataById);
 
         // -- Correct the local storage in case we still have notes from before dropbox sync
