@@ -2,7 +2,6 @@
 import { readBlobAsString } from './utils';
 import pathJoin from './pathJoin';
 import dropboxConfig from './dropboxConfig';
-import { noteNameFromIdAndTitle } from './NoteData';
 
 const NOTES_FOLDER_PATH = pathJoin(
     dropboxConfig.notesFolderParent === '/' ? '' : dropboxConfig.notesFolderParent,
@@ -40,7 +39,10 @@ class DropboxHelper {
             return undefined;
         }
 
-        const fileName = noteNameFromIdAndTitle(noteData.videoId, noteData.videoTitle);
+        // Using the videoId itself as the file name. Will make it difficult to find the note by
+        // hand (not a likely scenario for the end user, just mentioning anyway).
+        const fileName = noteData.videoId;
+
         const filePath = pathJoin(this.notesFolderPath, fileName);
         const writeMode = { '.tag': 'overwrite' };
 
@@ -73,7 +75,7 @@ class DropboxHelper {
             noteFileNames.push(entry.name);
         }
 
-        const notesByVideoId = {};
+        const contentList = [];
 
         const { downloadsPerBatch } = dropboxConfig;
         const numFiles = noteFileNames.length;
@@ -103,13 +105,12 @@ class DropboxHelper {
 
             for (const info of downloadInfos) {
                 const { fileBlob } = info;
-                const fileContent = await readBlobAsString(fileBlob);
-                const contentAsJson = JSON.parse(fileContent);
-                notesByVideoId[contentAsJson.videoId] = contentAsJson;
+                const content = await readBlobAsString(fileBlob);
+                contentList.push(content);
             }
         }
 
-        return notesByVideoId;
+        return contentList;
     }
 }
 
