@@ -8,10 +8,10 @@ import MenuItem from '@material-ui/core/MenuItem';
 import EditorComponent from './EditorComponent';
 import VideoPathInput from './VideoPathInput';
 import getYoutubeTitle from 'get-youtube-title';
-import localStorageHelper from './localStorageHelper';
 import PropTypes from 'prop-types';
 import IFrameStyleWrapper from './IFrameStyleWrapper';
 import { SnackbarContext } from './context/SnackbarContext';
+import { LocalStorageContext } from './LocalStorageHelper';
 
 const YOUTUBE_API_KEY = process.env.REACT_APP_YOUTUBE_API_KEY;
 if (!YOUTUBE_API_KEY) {
@@ -48,7 +48,7 @@ class YoutubePlayerController {
             if (!err) {
                 this.currentVideoTitle = title;
             } else {
-                return new Error(`Failed to retrive title of video - ${this.currentVideoId}`);
+                return new Error(`Failed to retrieve title of video - ${this.currentVideoId}`);
             }
             console.log('Title = ', title, 'Error =', err);
         });
@@ -120,6 +120,7 @@ class EditorPage extends Component {
         startingVideoTime: PropTypes.number,
         startingPopperMessage: PropTypes.string,
         showInfo: PropTypes.func.isRequired,
+        getNoteMenuItems: PropTypes.func.isRequired,
     };
 
     static defaultProps = {
@@ -139,7 +140,7 @@ class EditorPage extends Component {
             infoText: undefined,
             infoLastTime: undefined,
             selectedOption: undefined,
-            noteMenuItems: localStorageHelper.getNoteMenuItems(),
+            // noteMenuItems: localStorageHelper.getNoteMenuItems(),
             startingPopperMessage: this.props.startingPopperMessage,
         };
 
@@ -220,8 +221,8 @@ class EditorPage extends Component {
 
     // Called by editor component. Updates current note menu items
     updateNoteMenu = () => {
-        const noteMenuItems = localStorageHelper.getNoteMenuItems();
-        this.setState({ noteMenuItems });
+        // const noteMenuItems = localStorageHelper.getNoteMenuItems();
+        // this.setState({ noteMenuItems });
     };
 
     tellEditorToLoadNote = videoId => {
@@ -305,11 +306,12 @@ class EditorPage extends Component {
                             onChange={this.handleNotemenuChange}
                             placeholder="Saved notes..."
                         >
-                            {noteMenuItems.map(item => (
+                            {/*noteMenuItems.map(item => (
                                 <MenuItem key={item.videoId} value={item.value}>
                                     {item.label}
                                 </MenuItem>
-                            ))}
+                            ))*/
+                            []}
                         </Select>
 
                         <IFrameStyleWrapper>
@@ -317,12 +319,17 @@ class EditorPage extends Component {
                         </IFrameStyleWrapper>
                     </div>
 
-                    <EditorComponent
-                        parentApp={this}
-                        dispatch={this.doVideoCommand}
-                        editorCommand={this.state.editorCommand}
-                        showInfo={this.props.showInfo}
-                    />
+                    <LocalStorageContext.Consumer>
+                        {idToNoteData => (
+                            <EditorComponent
+                                parentApp={this}
+                                dispatch={this.doVideoCommand}
+                                editorCommand={this.state.editorCommand}
+                                showInfo={this.props.showInfo}
+                                idToNoteData={idToNoteData}
+                            />
+                        )}
+                    </LocalStorageContext.Consumer>
                 </div>
             </>
         );
