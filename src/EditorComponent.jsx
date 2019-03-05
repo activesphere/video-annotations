@@ -7,7 +7,6 @@ import { secondsToHhmmss } from './utils';
 import PropTypes from 'prop-types';
 import Prism from './prism_add_markdown_syntax';
 import AutoReplace from './slate-auto-replace-alt';
-import localStorageHelper from './localStorageHelper';
 import NoteData from './NoteData';
 import { Menu, contextMenu, Item, Separator, Submenu } from 'react-contexify';
 import { Button, Icon, Menu as Menu_ } from './button_icon_menu';
@@ -18,6 +17,7 @@ import isHotKey from 'is-hotkey';
 import keyMap from './keyMap';
 import { Slide } from '@material-ui/core';
 import dropboxHelper from './dropboxHelper';
+import * as LS from './LocalStorageHelper';
 
 // Removing mathjax for now.
 // import MathJax from 'MathJax'; // External
@@ -174,6 +174,7 @@ export default class EditorComponent extends Component {
         parentApp: PropTypes.object.isRequired,
         editorCommand: PropTypes.object,
         showInfo: PropTypes.func.isRequired,
+        idToNoteData: PropTypes.object.isRequired,
     };
 
     // Just a place to create the plugins in. The action functions of the plugins do need to use
@@ -287,7 +288,9 @@ export default class EditorComponent extends Component {
         const jsonEditorValue = this.state.value.toJSON();
         const { videoId, videoTitle } = this.props.parentApp.currentVideoInfo();
         const noteData = new NoteData(videoId, videoTitle, jsonEditorValue);
-        localStorageHelper.saveNoteWithId(videoId, noteData);
+
+        console.log('save note - idToNoteData =', this.props.idToNoteData);
+        LS.saveNoteWithId(this.props.idToNoteData, videoId, noteData);
         this.props.parentApp.updateNoteMenu();
 
         if (saveCurrentNoteOptions.uploadToDropbox) {
@@ -463,7 +466,7 @@ export default class EditorComponent extends Component {
 
         console.log('Loading note for video', videoId);
 
-        const { editorValueAsJson } = localStorageHelper.loadNoteWithId(videoId);
+        const { editorValueAsJson } = LS.loadNoteWithId(this.props.idToNoteData, videoId);
 
         if (!editorValueAsJson) {
             this.props.showInfo(`No note previously saved for videoId = ${videoId}`, 2);
@@ -492,6 +495,7 @@ export default class EditorComponent extends Component {
     };
 
     onKeyDown = (event, editor, next) => {
+        console.log('keydown');
         // Special handling of TAB key. Put 4 spaces.
         if (event.keyCode === 9) {
             editor.insertText('    ');
