@@ -92,10 +92,7 @@ const Main = ({ ytAPI }) => {
                                     // User didn't click submit token button
                                     return (
                                         <>
-                                            <DropboxLogin
-                                                handleTokenSubmit={handleTokenSubmit}
-                                                idToNoteData={idToNoteData}
-                                            />
+                                            <DropboxLogin handleTokenSubmit={handleTokenSubmit} idToNoteData={idToNoteData} />
                                             <InfoPopper
                                                 anchorElement={infoText ? rootElement : undefined}
                                             >

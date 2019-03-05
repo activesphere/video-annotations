@@ -177,11 +177,8 @@ export default class EditorComponent extends Component {
     static propTypes = {
         parentApp: PropTypes.object.isRequired,
         editorCommand: PropTypes.object,
-<<<<<<< HEAD
-=======
         showInfo: PropTypes.func.isRequired,
         idToNoteData: PropTypes.object.isRequired,
->>>>>>> Starting to use context.
     };
 
     static contextType = SnackbarContext;
