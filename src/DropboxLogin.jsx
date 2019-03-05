@@ -45,7 +45,7 @@ const styles = theme => ({
 const defaultAccessToken = process.env.REACT_APP_DROPBOX_ACCESS_TOKEN || '';
 
 const DropboxLogin = props => {
-    const { classes, handleTokenSubmit } = props;
+    const { classes, handleTokenSubmit, idToNoteData } = props;
 
     const [inputToken, setInputToken] = useState(defaultAccessToken);
     const [formSubmitted, setFormSubmitted] = useState(false);
@@ -60,7 +60,7 @@ const DropboxLogin = props => {
                     className={classes.form}
                     onSubmit={e => {
                         e.preventDefault();
-                        handleTokenSubmit(inputToken);
+                        handleTokenSubmit(inputToken, idToNoteData);
                         setFormSubmitted(true);
                     }}
                 >
@@ -102,6 +102,7 @@ DropboxLogin.propTypes = {
     classes: PropTypes.object.isRequired,
     handleTokenSubmit: PropTypes.func.isRequired,
     children: PropTypes.func,
+    idToNoteData: PropTypes.object.isRequired,
 };
 
 DropboxLogin.defaultProps = {
