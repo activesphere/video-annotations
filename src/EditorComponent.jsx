@@ -166,10 +166,11 @@ class StoredTimestamp {
 }
 
 class SaveCurrentNoteOptions {
-    constructor(uploadToDropbox, uploadAfter, returnInfoString) {
+    constructor(uploadToDropbox, uploadAfter, returnInfoString, cacheOnly = false) {
         this.uploadToDropbox = uploadToDropbox;
         this.uploadAfter = uploadAfter;
         this.returnInfoString = returnInfoString;
+        this.cacheOnly = cacheOnly;
     }
 }
 
@@ -275,18 +276,23 @@ export default class EditorComponent extends Component {
         return plugins;
     }
 
-    /*
-    saveCurrentNote = saveCurrentNoteOptions => {
+    saveCurrentNote = ({ cacheOnly, uploadToDropbox, uploadAfter, returnInfoString }) => {
         const jsonEditorValue = this.state.value.toJSON();
+        // TODO: send these two via props from parent
         const { videoId, videoTitle } = this.props.parentApp.currentVideoInfo();
         const noteData = new NoteData(videoId, videoTitle, jsonEditorValue);
+
+        if (cacheOnly) {
+            LS.cacheNoteWithId(this.props.idToNoteData, videoId, noteData);
+            return;
+        }
 
         console.log('save note - idToNoteData =', this.props.idToNoteData);
         LS.saveNoteWithId(this.props.idToNoteData, videoId, noteData);
         this.props.parentApp.updateNoteMenu();
 
-        if (saveCurrentNoteOptions.uploadToDropbox) {
-            if (saveCurrentNoteOptions.uploadAfter === 0) {
+        if (uploadToDropbox) {
+            if (uploadAfter === 0) {
                 dropboxHelper
                     .save(noteData)
                     .then(result => {
@@ -300,11 +306,11 @@ export default class EditorComponent extends Component {
             } else {
                 setTimeout(() => {
                     dropboxHelper.save(noteData);
-                }, saveCurrentNoteOptions.uploadAfter * 1000);
+                }, uploadAfter * 1000);
             }
         }
 
-        if (saveCurrentNoteOptions.returnInfoString) {
+        if (returnInfoString) {
             const infoText = `Saved Note for video "${videoId}", title - "${videoTitle}"`;
             return infoText;
         }
@@ -339,8 +345,6 @@ export default class EditorComponent extends Component {
         this.editorRef = undefined;
 
         this.hoverMenuRef = undefined;
-
-        this.lastDropboxSaveCompleted = true;
     }
 
     onChange = change => {
@@ -349,7 +353,7 @@ export default class EditorComponent extends Component {
         // ^ The value that onChange receives as argument is the new value of the editor.
         // Main reason we are overriding is to setState with the new value.
         if (AUTOSAVE && value.document !== this.state.value.document) {
-            this.saveCurrentNote(new SaveCurrentNoteOptions(false, 0, false));
+            this.saveCurrentNote(new SaveCurrentNoteOptions(false, 0, false, true));
         }
 
         // We can call mathjax to typeset the page here. TODO(rksht): don't tell it to update only
@@ -478,7 +482,6 @@ export default class EditorComponent extends Component {
     };
 
     onKeyDown = (event, editor, next) => {
-        console.log('keydown');
         // Special handling of TAB key. Put 4 spaces.
         if (event.keyCode === 9) {
             editor.insertText('    ');
@@ -751,8 +754,19 @@ export default class EditorComponent extends Component {
             rect.width / 2}px`;
     };
 
+    handleWindowClose = ev => {
+        ev.preventDefault();
+        LS.flushToLocalStorage(this.props.idToNoteData);
+    };
+
     componentDidMount() {
         this.updateHoverMenu();
+        window.addEventListener('beforeunload', this.handleWindowClose);
+    }
+
+    componentWillUnmount() {
+        LS.flushToLocalStorage(this.props.idToNoteData);
+        window.removeEventListener('beforeunload', this.handleWindowClose);
     }
 
     componentDidUpdate() {

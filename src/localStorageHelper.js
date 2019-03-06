@@ -5,38 +5,29 @@ import React from 'react';
 // be keyed by video id.
 const VIDEO_ID_TO_NOTE_DATA = 'video_id_to_note_data';
 
+// We cache the whole id to note-data map as a a JS object. We pass it around, store note data into it,
+// and flush it to local storage on route change or window close.
+let cachedIdToNoteData = undefined;
+
 export function readMapFromLocalStorage() {
     const strMap = localStorage.getItem(VIDEO_ID_TO_NOTE_DATA);
     if (!strMap) {
-        return {};
+        cachedIdToNoteData = {};
     } else {
-        return JSON.parse(strMap);
+        cachedIdToNoteData = JSON.parse(strMap);
     }
+    return cachedIdToNoteData;
 }
 
 const LocalStorageContext = React.createContext();
 
 export { LocalStorageContext };
 
-/*
-const ProviderComponent = props => {
-    const refIdToNoteData = useRef(readMapFromLocalStorage());
-
-    return (
-        <LocalStorageContext.Provider value={refIdToNoteData.current}>
-            {props.children}
-        </LocalStorageContext.Provider>
-    );
-};
-
-export { ProviderComponent };
-*/
-
 export function loadNoteWithId(idToNoteData, videoId) {
     const key = videoId;
     const noteData = idToNoteData[key];
     if (!noteData) {
-        console.log('No note for video Id ', key);
+        console.log('No note for videoId', key);
         return {};
     }
     return noteData;
@@ -44,7 +35,7 @@ export function loadNoteWithId(idToNoteData, videoId) {
 
 export function deleteNoteWithId(idToNoteData, videoId) {
     if (!videoId) {
-        console.warn('video id was undefined');
+        console.warn('videoId was undefined');
         return;
     }
 
@@ -56,6 +47,17 @@ export function deleteNoteWithId(idToNoteData, videoId) {
     } else {
         console.log('No note for video ', videoId);
     }
+}
+
+export function cacheNoteWithId(idToNoteData, videoId, noteData) {
+    if (!videoId) {
+        console.warn('videoId was undefined');
+        return;
+    }
+
+    const key = videoId;
+    idToNoteData[key] = noteData;
+    console.log('Cached note for video ', noteData.videoTitle);
 }
 
 export function saveNoteWithId(idToNoteData, videoId, noteData) {
@@ -73,10 +75,7 @@ export function saveNoteWithId(idToNoteData, videoId, noteData) {
 export function flushToLocalStorage(idToNoteData) {
     const strJsonMap = JSON.stringify(idToNoteData);
     localStorage.setItem(VIDEO_ID_TO_NOTE_DATA, strJsonMap);
-
-    if (LOG_SAVE_DATA_TO_CONSOLE) {
-        console.log('Latest strMap =\n', strJsonMap);
-    }
+    console.log('Flushed to local storage');
 }
 
 export function getNoteMenuItems(idToNoteData) {
@@ -177,7 +176,10 @@ export async function syncWithDropbox(idToNoteData) {
     for (const videoId of Object.keys(idToNoteData)) {
         const lsNoteData = idToNoteData[videoId];
         const dbNoteData = dbNoteDataById[videoId];
+
+        // console.log('lsNoteData =', lsNoteData);
         // console.log('dbNoteData =', dbNoteData);
+
         if (!dbNoteData || dbNoteData.timeOfSave < lsNoteData.timeOfSave) {
             if (promisesOfUploadingNotes.length < DROPBOX_MAX_UPLOADS_PER_BATCH) {
                 promisesOfUploadingNotes.push(dropboxHelper.save(lsNoteData));
@@ -185,7 +187,6 @@ export async function syncWithDropbox(idToNoteData) {
                 await Promise.all(promisesOfUploadingNotes);
                 promisesOfUploadingNotes.length = 0;
             }
-
             console.log(`Updating Dropbox for note ${videoId}, title - ${lsNoteData.videoTitle}`);
         }
     }
