@@ -10,8 +10,8 @@ import VideoPathInput from './VideoPathInput';
 import getYoutubeTitle from 'get-youtube-title';
 import { noteStorageManager } from './save_note';
 import PropTypes from 'prop-types';
-import StyledPopper from './InfoPopper';
 import IFrameStyleWrapper from './IFrameStyleWrapper';
+import { SnackbarContext } from './context/SnackbarContext';
 
 const YOUTUBE_API_KEY = process.env.REACT_APP_YOUTUBE_API_KEY;
 
@@ -126,6 +126,8 @@ class EditorPage extends Component {
         startingPopperMessage: undefined,
     };
 
+    static contextType = SnackbarContext;
+
     constructor(props) {
         super(props);
         this.state = {
@@ -233,7 +235,7 @@ class EditorPage extends Component {
             },
         });
 
-        this.props.showInfo(`Loading video ${videoId}`, 1.5, true);
+        this.context.openSnackbar({ message: `Loading video ${videoId}` });
     };
 
     handleNotemenuChange = e => {
@@ -276,7 +278,7 @@ class EditorPage extends Component {
 
         if (this.state.startingPopperMessage) {
             console.log('Showing starting popper message');
-            this.props.showInfo(this.state.startingPopperMessage, 1.0);
+            this.context.openSnackbar({ message: this.state.startingPopperMessage });
             setTimeout(() => {
                 this.setState({ startingPopperMessage: undefined });
             });
@@ -294,39 +296,30 @@ class EditorPage extends Component {
         console.log('noteMenuItems', videoId, this.state.noteMenuItems);
 
         return (
-            <>
-                <div className="two-panel-div">
-                    <div className="left-panel">
-                        <VideoPathInput />
-                        <Select
-                            value={videoId}
-                            onChange={this.handleNotemenuChange}
-                            placeholder="Saved notes..."
-                        >
-                            {noteMenuItems.map(item => (
-                                <MenuItem value={item.value}>{item.label}</MenuItem>
-                            ))}
-                        </Select>
+            <div className="two-panel-div">
+                <div className="left-panel">
+                    <VideoPathInput />
+                    <Select
+                        value={videoId}
+                        onChange={this.handleNotemenuChange}
+                        placeholder="Saved notes..."
+                    >
+                        {noteMenuItems.map(item => (
+                            <MenuItem value={item.value}>{item.label}</MenuItem>
+                        ))}
+                    </Select>
 
-                        <IFrameStyleWrapper>
-                            <div ref={this.iframeRef} />
-                        </IFrameStyleWrapper>
-                    </div>
-
-                    <EditorComponent
-                        parentApp={this}
-                        dispatch={this.doVideoCommand}
-                        editorCommand={this.state.editorCommand}
-                        showInfo={this.props.showInfo}
-                    />
+                    <IFrameStyleWrapper>
+                        <div ref={this.iframeRef} />
+                    </IFrameStyleWrapper>
                 </div>
-                <StyledPopper
-                    anchorElement={this.state.infoText ? this.editorContainerDiv : undefined}
-                    ref={r => (this.popoverRef = r)}
-                >
-                    {this.state.infoText}
-                </StyledPopper>
-            </>
+
+                <EditorComponent
+                    parentApp={this}
+                    dispatch={this.doVideoCommand}
+                    editorCommand={this.state.editorCommand}
+                />
+            </div>
         );
     }
 }

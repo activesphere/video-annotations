@@ -10,13 +10,13 @@ import AutoReplace from './slate-auto-replace-alt';
 import { noteStorageManager, NoteData } from './save_note';
 import { Menu, contextMenu, Item, Separator, Submenu } from 'react-contexify';
 import { Button, Icon, Menu as Menu_ } from './button_icon_menu';
-import StyledPopper from './InfoPopper';
 import styled from '@emotion/styled';
 import 'react-contexify/dist/ReactContexify.min.css';
 import Modal from 'react-modal';
 import isHotKey from 'is-hotkey';
 import keyMap from './keycodeMap';
 import { Slide } from '@material-ui/core';
+import { SnackbarContext } from './context/SnackbarContext';
 
 // Removing mathjax for now.
 // import MathJax from 'MathJax'; // External
@@ -164,8 +164,9 @@ export default class EditorComponent extends Component {
     static propTypes = {
         parentApp: PropTypes.object.isRequired,
         editorCommand: PropTypes.object,
-        showInfo: PropTypes.func.isRequired,
     };
+
+    static contextType = SnackbarContext;
 
     // Just a place to create the plugins in. The action functions of the plugins do need to use
     // `this`. So this is a method rather than a free function.
@@ -184,10 +185,7 @@ export default class EditorComponent extends Component {
                 change: change => {
                     change.insertText('');
                     this.props.parentApp.doVideoCommand('playVideo');
-
-                    setTimeout(() => {
-                        this.props.showInfo('Playing', 1.0, true);
-                    });
+                    this.context.openSnackbar({ message: 'Playing' });
                 },
             })
         );
@@ -200,9 +198,7 @@ export default class EditorComponent extends Component {
                 change: change => {
                     change.insertText('');
                     this.props.parentApp.doVideoCommand('pauseVideo');
-                    setTimeout(() => {
-                        this.props.showInfo('Paused', 1.0, true);
-                    });
+                    this.context.openSnackbar({ message: 'Paused' });
                 },
             })
         );
@@ -436,7 +432,9 @@ export default class EditorComponent extends Component {
 
         this.loadNoteForVideo = videoId => {
             if (!videoId) {
-                this.props.showInfo('No video current playing. Not loading note.', 2, true);
+                this.context.openSnackbar({
+                    message: 'No video current playing. Not loading note.',
+                });
             }
 
             console.log('Loading note for video', videoId);
@@ -444,7 +442,9 @@ export default class EditorComponent extends Component {
             const { jsonEditorValue } = noteStorageManager.loadNoteWithId(videoId);
 
             if (!jsonEditorValue) {
-                this.props.showInfo(`No note previously saved for videoId = ${videoId}`, 2);
+                this.context.openSnackbar({
+                    message: `No note previously saved for videoId = ${videoId}`,
+                });
                 // Load empty editor value
                 this.setState({ ...this.state, value: initialEditorValue });
             } else {
@@ -495,8 +495,7 @@ export default class EditorComponent extends Component {
                         break;
                     }
                     case 'saveNote': {
-                        const infoText = this.saveCurrentNote();
-                        this.props.showInfo(infoText, 0.5, 'Saved note');
+                        this.context.openSnackbar({ message: this.saveCurrentNote() });
                         break;
                     }
                     case 'videoForward': {
@@ -884,15 +883,6 @@ export default class EditorComponent extends Component {
                                 this.props.parentApp.editorRef = editorRef;
                             }}
                         />
-
-                        <StyledPopper
-                            anchorElement={
-                                this.state.popperMessage ? this.editorContainerDiv : undefined
-                            }
-                            ref={r => (this.popoverRef = r)}
-                        >
-                            {this.state.popperMessage}
-                        </StyledPopper>
                     </div>
                 </div>
             </Slide>

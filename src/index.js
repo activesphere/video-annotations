@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import ReactDOM from 'react-dom';
 
 import './index.css';
@@ -8,7 +8,7 @@ import LoadYouTubeIFrameAPI from './LoadYouTubeIFrameAPI';
 import { Paper, Tabs, Tab } from '@material-ui/core';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import { BrowserRouter, Switch, Route, Link, Redirect } from 'react-router-dom';
-import InfoPopper from './InfoPopper';
+import { SnackbarContextProvider } from './context/SnackbarContext';
 
 import theme from './mui_theme';
 
@@ -18,23 +18,8 @@ const getTabValue = path => {
     return null;
 };
 
-const rootElement = document.getElementById('root');
-
 const Main = ({ ytAPI }) => {
     const [lastVideoId, setLastVideoId] = useState(undefined);
-    const [infoText, setInfoText] = useState(undefined);
-
-    const showInfo = (infoText, infoDuration, logToConsole = false) => {
-        if (logToConsole) {
-            console.log('infoText =', infoText, ', infoDuration =', infoDuration);
-        }
-
-        setTimeout(() => {
-            setInfoText(undefined);
-        }, infoDuration * 1000.0);
-
-        setInfoText(infoText);
-    };
 
     return (
         <BrowserRouter>
@@ -58,9 +43,6 @@ const Main = ({ ytAPI }) => {
                                 />
                             </Tabs>
                         </Paper>
-                        <InfoPopper anchorElement={infoText ? rootElement : undefined}>
-                            {infoText}
-                        </InfoPopper>
                         <Switch>
                             <Route path="/saved_notes" component={NotesPage} />
                             <Route
@@ -76,7 +58,6 @@ const Main = ({ ytAPI }) => {
                                             key={videoId}
                                             ytAPI={ytAPI}
                                             startingVideoId={videoId}
-                                            showInfo={showInfo}
                                         />
                                     );
                                 }}
@@ -100,17 +81,19 @@ const Main = ({ ytAPI }) => {
 
 const App = () => (
     <MuiThemeProvider theme={theme}>
-        <LoadYouTubeIFrameAPI>
-            {({ ytAPI }) =>
-                ytAPI ? (
-                    <div className="app">
-                        <Main ytAPI={ytAPI} />
-                    </div>
-                ) : (
-                    <div>Couldn't load YouTube API</div>
-                )
-            }
-        </LoadYouTubeIFrameAPI>
+        <SnackbarContextProvider>
+            <LoadYouTubeIFrameAPI>
+                {({ ytAPI }) =>
+                    ytAPI ? (
+                        <div className="app">
+                            <Main ytAPI={ytAPI} />
+                        </div>
+                    ) : (
+                        <div>Couldn't load YouTube API</div>
+                    )
+                }
+            </LoadYouTubeIFrameAPI>
+        </SnackbarContextProvider>
     </MuiThemeProvider>
 );
 
