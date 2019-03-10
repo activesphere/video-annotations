@@ -34,108 +34,6 @@ export default class EditorComponent extends Component {
 
     static contextType = SnackbarContext;
 
-    // Just a place to create the plugins in. The action functions of the plugins do need to use
-    // `this`. So this is a method rather than a free function.
-    _makePlugins() {
-        let plugins = [];
-
-        // The slate-auto-replace plugin checks if the trigger character we have given requires
-        // pressing mod keys like shift. If so it doesn't proceed with its replacing behavior at
-        // all. Could change that myself.
-
-        // Play video key-sequence
-        plugins.push(
-            AutoReplace({
-                trigger: '.',
-                before: /[^#]?(#)$/,
-                change: change => {
-                    change.insertText('');
-                    this.props.parentApp.doVideoCommand('playVideo');
-                    this.context.openSnackbar({ message: 'Playing' });
-                },
-            })
-        );
-
-        // Pause video key-sequence
-        plugins.push(
-            AutoReplace({
-                trigger: '/',
-                before: /[^#]?(#)$/,
-                change: change => {
-                    change.insertText('');
-                    this.props.parentApp.doVideoCommand('pauseVideo');
-                    this.context.openSnackbar({ message: 'Paused' });
-                },
-            })
-        );
-
-        // Puts a timestamp mark. Used by the following AutoReplace plugins
-        const putTimestampMark = (change, videoCommandName) => {
-            const { videoId, videoTime } = this.props.parentApp.currentVideoInfo();
-            if (!videoId) {
-                return;
-            }
-            if (!videoTime && videoTime !== 0) {
-                return;
-            }
-
-            const timeStampMark = makeYoutubeTimestampMark(videoId, videoTime);
-            change.toggleMark(timeStampMark);
-            change.insertText(secondsToHhmmss(videoTime));
-            change.toggleMark(timeStampMark);
-            this.props.parentApp.doVideoCommand(videoCommandName);
-
-            console.log(change);
-        };
-
-        // Put video timestamp and play (or continue playing) video
-        plugins.push(
-            AutoReplace({
-                trigger: '.',
-                before: /[^#]?(#t)$/,
-                change: change => {
-                    putTimestampMark(change, 'playVideo');
-                },
-            })
-        );
-
-        // Put video timestamp and pause video
-        plugins.push(
-            AutoReplace({
-                trigger: '/',
-                before: /[^#]?(#t)$/,
-                change: change => {
-                    putTimestampMark(change, 'pauseVideo');
-                },
-            })
-        );
-
-        // Seek to time. The format of input is /#-?[0-9]+(s|m)s/. So input #, then -10s, then s,
-        // and you go back 10 seconds. The full sequence is #-10ss.
-        plugins.push(
-            AutoReplace({
-                trigger: 's',
-                before: /[^#]?(#(-?)([0-9]+)(s|m))$/,
-                change: (change, event, matches) => {
-                    const groups = matches.before;
-                    const amount = +groups[3];
-                    const unit = groups[4] === 's' ? 1 : 60;
-                    const sign = groups[2] === '-' ? -1 : 1;
-                    const deltaTimeInSeconds = sign * amount * unit;
-
-                    console.log('addToCurrentTime', deltaTimeInSeconds, ' seconds');
-
-                    this.props.parentApp.doVideoCommand('addToCurrentTime', {
-                        secondsToAdd: deltaTimeInSeconds,
-                    });
-                    change.insertText('');
-                },
-            })
-        );
-
-        return plugins;
-    }
-
     saveCurrentNote = () => {
         const jsonEditorValue = this.state.value.toJSON();
         const { videoId, videoTitle } = this.props.parentApp.currentVideoInfo();
@@ -180,8 +78,6 @@ export default class EditorComponent extends Component {
         };
 
         this.editorRef = undefined;
-
-        this.plugins = this._makePlugins();
 
         this.hoverMenuRef = undefined;
 
@@ -699,7 +595,6 @@ export default class EditorComponent extends Component {
                             className="editor-top-level"
                             autoCorrect={false}
                             autoFocus={true}
-                            plugins={this.plugins}
                             placeholder="Write your note here.."
                             style={styles}
                             ref={editorRef => {
