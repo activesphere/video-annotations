@@ -41,13 +41,9 @@ export default class EditorComponent extends Component {
         noteStorageManager.saveNoteWithId(videoId, noteData);
         this.props.parentApp.updateNoteMenu();
 
-        const infoText = `Saved Note for video "${videoId}", title - "${videoTitle}"`;
-        // console.log(infoText);
-        // Return the infotext so we can show it in case user saved manually.
-        return infoText;
+        return `Saved Note for video "${videoId}", title - "${videoTitle}"`;
     };
 
-    // Put timestamp into current selection in given editor state
     _putTimestampMarkIntoEditor = editor => {
         const { videoId, videoTime } = this.props.parentApp.currentVideoInfo();
         if (!videoId) {
@@ -70,10 +66,6 @@ export default class EditorComponent extends Component {
         this.state = {
             value: initialEditorValue,
             showGetTimestampTitle: false,
-            /*
-            wasAtTimestampBorder: false,
-            timestampBorderMark: undefined,
-            */
             onTimestamp: false,
         };
 
@@ -90,12 +82,8 @@ export default class EditorComponent extends Component {
                 this.saveCurrentNote();
             }
 
-            // We can call mathjax to typeset the page here. TODO(rksht): don't tell it to update only
-            // when there's at least one inline math element in the block that is currently being
-            // edited?
-            // MathJax.Hub.Queue(['Typeset', MathJax.Hub, '__editor_container_div__']);
-
-            // Check if we are on the boundary of a timestamp mark. If so we will toggle away that mark state.
+            // Check if we are on the boundary of a timestamp mark. If so we
+            // will toggle away that mark state.
             const marks = value.marks;
 
             let onTimestamp = false;
@@ -106,8 +94,7 @@ export default class EditorComponent extends Component {
                 }
             }
 
-            this.setState({ onTimestamp });
-            this.setState({ value });
+            this.setState({ onTimestamp, value });
         };
 
         this.renderMark = (props, editor, next) => {
