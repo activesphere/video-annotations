@@ -45,10 +45,13 @@ class HoverMenu extends Component {
                     getRef(m);
                 }}
             >
-                {this.renderMarkButton('bold', 'format_bold')}
-                {this.renderMarkButton('italic', 'format_italic')}
-                {this.renderMarkButton('underlined', 'format_underlined')}
-                {this.renderMarkButton('code', 'code')}
+                {this.renderMarkButton('bold', <b>Bold</b>)}
+                {this.renderMarkButton('italic', <i>Italic</i>)}
+                {this.renderMarkButton(
+                    'underlined',
+                    <span style={{ textDecoration: 'underline' }}>Underline</span>
+                )}
+                {this.renderMarkButton('code', '<Code>')}
             </StyledMenu>,
             root
         );
