@@ -15,6 +15,7 @@ import { SnackbarContext } from './context/SnackbarContext';
 import ContextMenu from './editor/ContextMenu';
 import HoverMenu from './editor/HoverMenu';
 import TimestampMark from './editor/TimestampMark';
+import debounce from './utils/debounce';
 
 Modal.setAppElement('#root');
 
@@ -34,7 +35,7 @@ export default class EditorComponent extends Component {
 
     static contextType = SnackbarContext;
 
-    saveCurrentNote = () => {
+    saveCurrentNote = debounce(() => {
         const jsonEditorValue = this.state.value.toJSON();
         const { videoId, videoTitle } = this.props.parentApp.currentVideoInfo();
         const noteData = new NoteData(videoId, videoTitle, jsonEditorValue);
@@ -42,7 +43,7 @@ export default class EditorComponent extends Component {
         this.props.parentApp.updateNoteMenu();
 
         return `Saved Note for video "${videoId}", title - "${videoTitle}"`;
-    };
+    }, 1000);
 
     _putTimestampMarkIntoEditor = editor => {
         const { videoId, videoTime } = this.props.parentApp.currentVideoInfo();
@@ -73,26 +74,14 @@ export default class EditorComponent extends Component {
 
         this.hoverMenuRef = undefined;
 
-        this.onChange = change => {
-            let { value } = change;
-
-            // ^ The value that onChange receives as argument is the new value of the editor.
-            // Main reason we are overriding is to setState with the new value.
-            if (AUTOSAVE && value.document !== this.state.value.document) {
+        this.onChange = ({ value }) => {
+            if (value.document !== this.state.value.document) {
                 this.saveCurrentNote();
             }
 
             // Check if we are on the boundary of a timestamp mark. If so we
             // will toggle away that mark state.
-            const marks = value.marks;
-
-            let onTimestamp = false;
-
-            for (let mark of marks) {
-                if (mark.type === 'youtube_timestamp') {
-                    onTimestamp = true;
-                }
-            }
+            const onTimestamp = value.marks.some(({ type }) => type === 'youtube_timestamp');
 
             this.setState({ onTimestamp, value });
         };
