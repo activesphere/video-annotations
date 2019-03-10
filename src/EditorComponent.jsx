@@ -16,7 +16,7 @@ import isHotKey from 'is-hotkey';
 import keyMap from './keycodeMap';
 import { Slide } from '@material-ui/core';
 import { SnackbarContext } from './context/SnackbarContext';
-import ContextMenu, { showContextMenu } from './editor/ContextMenu';
+import ContextMenu from './editor/ContextMenu';
 
 Modal.setAppElement('#root');
 
@@ -634,11 +634,6 @@ export default class EditorComponent extends Component {
             }
         };
 
-        this.showContextMenuOnRightClick = event => {
-            event.preventDefault();
-            showContextMenu(event);
-        };
-
         this.saveTimestamp = timestampName => {
             console.log('Saving timestamp with name', timestampName);
             const { videoId } = this.props.parentApp.currentVideoInfo();
@@ -805,13 +800,12 @@ export default class EditorComponent extends Component {
                         this.editorContainerDiv = r;
                     }}
                 >
-                    <div onContextMenu={this.showContextMenuOnRightClick}>
-                        <ContextMenu
-                            editorValue={this.state.value}
-                            editorRef={this.editorRef}
-                            storedTimestamps={this.storedTimestamps}
-                            currentlyPlayingVideo={videoId}
-                        />
+                    <ContextMenu
+                        editorValue={this.state.value}
+                        editorRef={this.editorRef}
+                        storedTimestamps={this.storedTimestamps}
+                        currentVideoId={videoId}
+                    >
                         <Editor
                             defaultValue={this.state.value}
                             value={this.state.value}
@@ -832,7 +826,7 @@ export default class EditorComponent extends Component {
                                 this.props.parentApp.editorRef = editorRef;
                             }}
                         />
-                    </div>
+                    </ContextMenu>
                 </div>
             </Slide>
         );
