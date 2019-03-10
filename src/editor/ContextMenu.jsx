@@ -18,12 +18,12 @@ const showContextMenu = event => {
 // Context menu that is shown when user selects a range of text and right clicks.
 const EditorContextMenu = ({
     storedTimestamps,
-    editorValue,
+    editorValue: { selection },
     editorRef,
     currentVideoId,
     children,
 }) => {
-    const { isExpanded } = editorValue.selection;
+    const { isExpanded } = selection;
 
     let timestampItems = null;
 
@@ -37,7 +37,7 @@ const EditorContextMenu = ({
                             return;
                         }
                         const timeStampMark = makeYoutubeTimestampMark(s);
-                        editorRef.addMarkAtRange(editorValue.selection, timeStampMark);
+                        editorRef.addMarkAtRange(selection, timeStampMark);
                     }}
                     key={`${s.videoTime}_${s.videoId}`}
                 >
