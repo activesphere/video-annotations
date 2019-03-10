@@ -14,40 +14,11 @@ import { Slide } from '@material-ui/core';
 import { SnackbarContext } from './context/SnackbarContext';
 import ContextMenu from './editor/ContextMenu';
 import HoverMenu from './editor/HoverMenu';
+import TimestampMark from './editor/TimestampMark';
 
 Modal.setAppElement('#root');
 
 const initialEditorValue = Plain.deserialize('');
-
-const TimestampMarkComponent = props => {
-    const style = {
-        color: '#9ebdff',
-        textDecoration: 'underline',
-        fontStyle: 'italic',
-        cursor: 'pointer',
-    };
-
-    const videoId = props.mark.data.get('videoId');
-    const videoTime = props.mark.data.get('videoTime');
-
-    const seekToTime = () => {
-        props.parentApp.doVideoCommand('seekToTime', {
-            videoId,
-            videoTime,
-        });
-    };
-
-    return (
-        <span
-            onClick={seekToTime}
-            className="inline-youtube-timestamp"
-            {...props.attributes}
-            style={style}
-        >
-            {props.children}
-        </span>
-    );
-};
 
 function makeYoutubeTimestampMark(videoId, videoTime) {
     return Mark.create({ type: 'youtube_timestamp', data: { videoId, videoTime } });
@@ -247,7 +218,7 @@ export default class EditorComponent extends Component {
             const { attributes, children } = props;
             switch (props.mark.type) {
                 case 'youtube_timestamp':
-                    return <TimestampMarkComponent {...props} parentApp={this.props.parentApp} />;
+                    return <TimestampMark {...props} parentApp={this.props.parentApp} />;
 
                 case 'bold':
                     return <strong {...attributes}>{props.children}</strong>;
