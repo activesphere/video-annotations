@@ -111,14 +111,6 @@ function makeYoutubeTimestampMark(videoId, videoTime) {
 
 const AUTOSAVE = true;
 
-class StoredTimestamp {
-    constructor(videoId, videoTime, text = '') {
-        this.videoId = videoId;
-        this.videoTime = videoTime;
-        this.text = text;
-    }
-}
-
 export default class EditorComponent extends Component {
     static propTypes = {
         parentApp: PropTypes.object.isRequired,
@@ -275,9 +267,6 @@ export default class EditorComponent extends Component {
         this.editorRef = undefined;
 
         this.plugins = this._makePlugins();
-
-        // A list of stored timestamps for later use.
-        this.storedTimestamps = [];
 
         this.hoverMenuRef = undefined;
 
@@ -636,26 +625,6 @@ export default class EditorComponent extends Component {
             }
         };
 
-        this.saveTimestamp = timestampName => {
-            console.log('Saving timestamp with name', timestampName);
-            const { videoId } = this.props.parentApp.currentVideoInfo();
-            const videoTime = Math.floor(this.state.videoTimeToSet);
-
-            console.log('Saving timestamp to list', videoTime);
-
-            // Add to our list if it doesn't exist.
-            for (let i = 0; i < this.storedTimestamps; ++i) {
-                if (
-                    this.storedTimestamps[i].videoTime === videoTime &&
-                    this.storedTimestamps[i].text === timestampName
-                ) {
-                    return;
-                }
-            }
-
-            this.storedTimestamps.push(new StoredTimestamp(videoId, videoTime, timestampName));
-        };
-
         this.updateHoverMenu = () => {
             const menu = this.hoverMenuRef;
             if (!menu) {
@@ -802,12 +771,7 @@ export default class EditorComponent extends Component {
                         this.editorContainerDiv = r;
                     }}
                 >
-                    <ContextMenu
-                        editorValue={this.state.value}
-                        editorRef={this.editorRef}
-                        storedTimestamps={this.storedTimestamps}
-                        currentVideoId={videoId}
-                    >
+                    <ContextMenu currentVideoId={videoId}>
                         <Editor
                             defaultValue={this.state.value}
                             value={this.state.value}
