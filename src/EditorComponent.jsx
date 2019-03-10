@@ -8,7 +8,6 @@ import PropTypes from 'prop-types';
 import Prism from './prism_add_markdown_syntax';
 import AutoReplace from './slate-auto-replace-alt';
 import { noteStorageManager, NoteData } from './save_note';
-import { Menu, contextMenu, Item, Separator, Submenu } from 'react-contexify';
 import { Button, Icon, Menu as Menu_ } from './button_icon_menu';
 import styled from '@emotion/styled';
 import 'react-contexify/dist/ReactContexify.min.css';
@@ -17,53 +16,11 @@ import isHotKey from 'is-hotkey';
 import keyMap from './keycodeMap';
 import { Slide } from '@material-ui/core';
 import { SnackbarContext } from './context/SnackbarContext';
-
-// Removing mathjax for now.
-// import MathJax from 'MathJax'; // External
-
-// console.log('MathJax = ', MathJax);
+import ContextMenu, { showContextMenu } from './editor/ContextMenu';
 
 Modal.setAppElement('#root');
 
 const initialEditorValue = Plain.deserialize('');
-
-// Context menu that is shown when user selects a range of text and right clicks.
-const EditorContextMenu = ({ storedTimestamps, editorValue, editorRef, currentlyPlayingVideo }) => {
-    const selection = editorValue.selection;
-
-    const timestampItems = selection.isExpanded
-        ? storedTimestamps.map(s => {
-              return (
-                  <Item
-                      onClick={() => {
-                          if (currentlyPlayingVideo !== s.videoId) {
-                              console.log('Attempted to put timestamp saved for different video');
-                              return;
-                          }
-                          const timeStampMark = makeYoutubeTimestampMark(s.videoId, s.videoTime);
-                          editorRef.addMarkAtRange(selection, timeStampMark);
-                      }}
-                      key={`${s.videoTime}_${s.videoId}`}
-                  >
-                      {`${s.text}(${secondsToHhmmss(s.videoTime)})`}
-                  </Item>
-              );
-          })
-        : null;
-
-    return (
-        <Menu id="editor_context_menu">
-            {selection.isExpanded ? (
-                <Fragment>
-                    <Submenu label="Set timestamp">{timestampItems}</Submenu>
-                    <Separator />
-                </Fragment>
-            ) : null}
-            <Item> Add timestamp</Item>
-            <Item> Add current timestamp</Item>
-        </Menu>
-    );
-};
 
 class HoverMenu extends Component {
     render() {
@@ -679,15 +636,7 @@ export default class EditorComponent extends Component {
 
         this.showContextMenuOnRightClick = event => {
             event.preventDefault();
-
-            contextMenu.show({
-                id: 'editor_context_menu',
-                event: event,
-                props: {
-                    value: this.state.value, // Editor value
-                    storedTimestamps: this.storedTimestamps,
-                },
-            });
+            showContextMenu(event);
         };
 
         this.saveTimestamp = timestampName => {
@@ -857,7 +806,7 @@ export default class EditorComponent extends Component {
                     }}
                 >
                     <div onContextMenu={this.showContextMenuOnRightClick}>
-                        <EditorContextMenu
+                        <ContextMenu
                             editorValue={this.state.value}
                             editorRef={this.editorRef}
                             storedTimestamps={this.storedTimestamps}
