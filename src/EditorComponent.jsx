@@ -10,7 +10,6 @@ import AutoReplace from './slate-auto-replace-alt';
 import { noteStorageManager, NoteData } from './save_note';
 import { Button, Icon, Menu } from './button_icon_menu';
 import styled from '@emotion/styled';
-import 'react-contexify/dist/ReactContexify.min.css';
 import Modal from 'react-modal';
 import isHotKey from 'is-hotkey';
 import keyMap from './keycodeMap';
