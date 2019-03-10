@@ -1,5 +1,4 @@
 import React, { Component, Fragment } from 'react';
-import ReactDOM from 'react-dom';
 import { Editor } from 'slate-react';
 import { Value, Mark } from 'slate';
 import Plain from 'slate-plain-serializer';
@@ -8,72 +7,17 @@ import PropTypes from 'prop-types';
 import Prism from './prism_add_markdown_syntax';
 import AutoReplace from './slate-auto-replace-alt';
 import { noteStorageManager, NoteData } from './save_note';
-import { Button, Icon, Menu } from './button_icon_menu';
-import styled from '@emotion/styled';
 import Modal from 'react-modal';
 import isHotKey from 'is-hotkey';
 import keyMap from './keycodeMap';
 import { Slide } from '@material-ui/core';
 import { SnackbarContext } from './context/SnackbarContext';
 import ContextMenu from './editor/ContextMenu';
+import HoverMenu from './editor/HoverMenu';
 
 Modal.setAppElement('#root');
 
 const initialEditorValue = Plain.deserialize('');
-
-class HoverMenu extends Component {
-    render() {
-        const StyledMenu = styled(Menu)`
-            padding: 8px 7px 6px;
-            position: absolute;
-            z-index: 1;
-            top: -10000px;
-            left: -10000px;
-            margin-top: -6px;
-            opacity: 0;
-            background-color: #222;
-            border-radius: 4px;
-            transition: opacity 0.75s;
-        `;
-        const { className, getRef } = this.props;
-        const root = window.document.getElementById('root');
-
-        return ReactDOM.createPortal(
-            <StyledMenu
-                className={className}
-                ref={m => {
-                    getRef(m);
-                }}
-            >
-                {this.renderMarkButton('bold', <b>Bold</b>)}
-                {this.renderMarkButton('italic', <i>Italic</i>)}
-                {this.renderMarkButton(
-                    'underlined',
-                    <span style={{ textDecoration: 'underline' }}>Underline</span>
-                )}
-                {this.renderMarkButton('code', '<Code>')}
-            </StyledMenu>,
-            root
-        );
-    }
-
-    renderMarkButton(type, icon) {
-        const { editor } = this.props;
-        const { value } = editor;
-        const isActive = value.activeMarks.some(mark => mark.type === type);
-        return (
-            <Button reversed active={isActive} onMouseDown={event => this.onClickMark(event, type)}>
-                <Icon>{icon}</Icon>
-            </Button>
-        );
-    }
-
-    onClickMark(event, type) {
-        const { editor } = this.props;
-        event.preventDefault();
-        editor.toggleMark(type);
-    }
-}
 
 const TimestampMarkComponent = props => {
     const style = {
