@@ -10,11 +10,14 @@ import VideoPathInput from './VideoPathInput';
 import getYoutubeTitle from 'get-youtube-title';
 import { noteStorageManager } from './save_note';
 import PropTypes from 'prop-types';
-import StyledPopper from './InfoPopper';
 import IFrameStyleWrapper from './IFrameStyleWrapper';
+import { SnackbarContext } from './context/SnackbarContext';
 
-// TODO: Remove this API key from public github? Obtain from user's OS env key.
-const YOUTUBE_API_KEY = 'AIzaSyB0Hslfl-deOx-ApFvTE0osjJCy2T_1uL0';
+const YOUTUBE_API_KEY = process.env.REACT_APP_YOUTUBE_API_KEY;
+
+if (!YOUTUBE_API_KEY) {
+    console.assert('REACT_APP_YOUTUBE_API_KEY required in .env file');
+}
 
 const ytNameOfPlayerState = {
     '-1': 'unstarted',
@@ -123,6 +126,8 @@ class EditorPage extends Component {
         startingPopperMessage: undefined,
     };
 
+    static contextType = SnackbarContext;
+
     constructor(props) {
         super(props);
         this.state = {
@@ -211,23 +216,6 @@ class EditorPage extends Component {
         this.editorContainerDiv = ref;
     };
 
-    showInfo = (infoText, infoDuration, popoverText = undefined, logToConsole = false) => {
-        if (logToConsole) {
-            console.log('infoText =', infoText, ', infoDuration =', infoDuration);
-        }
-
-        if (popoverText) {
-            infoText = popoverText;
-        }
-
-        this.setState({ infoText });
-
-        // Unset the popover after given duration. This is *probably* not safe. Not sure.
-        setTimeout(() => {
-            this.setState({ infoText: undefined });
-        }, infoDuration * 1000.0);
-    };
-
     // Called by editor component. Updates current note menu items
     updateNoteMenu = () => {
         const noteMenuItems = noteStorageManager.getNoteMenuItems();
@@ -247,7 +235,7 @@ class EditorPage extends Component {
             },
         });
 
-        this.showInfo(`Loading video ${videoId}`, 1.5, 'Loading video', true);
+        this.context.openSnackbar({ message: `Loading video ${videoId}` });
     };
 
     handleNotemenuChange = e => {
@@ -290,7 +278,7 @@ class EditorPage extends Component {
 
         if (this.state.startingPopperMessage) {
             console.log('Showing starting popper message');
-            this.showInfo('', 1.0, this.state.startingPopperMessage);
+            this.context.openSnackbar({ message: this.state.startingPopperMessage });
             setTimeout(() => {
                 this.setState({ startingPopperMessage: undefined });
             });
@@ -308,38 +296,30 @@ class EditorPage extends Component {
         console.log('noteMenuItems', videoId, this.state.noteMenuItems);
 
         return (
-            <>
-                <div className="two-panel-div">
-                    <div className="left-panel">
-                        <VideoPathInput />
-                        <Select
-                            value={videoId}
-                            onChange={this.handleNotemenuChange}
-                            placeholder="Saved notes..."
-                        >
-                            {noteMenuItems.map(item => (
-                                <MenuItem value={item.value}>{item.label}</MenuItem>
-                            ))}
-                        </Select>
+            <div className="two-panel-div">
+                <div className="left-panel">
+                    <VideoPathInput />
+                    <Select
+                        value={videoId}
+                        onChange={this.handleNotemenuChange}
+                        placeholder="Saved notes..."
+                    >
+                        {noteMenuItems.map(item => (
+                            <MenuItem value={item.value}>{item.label}</MenuItem>
+                        ))}
+                    </Select>
 
-                        <IFrameStyleWrapper>
-                            <div ref={this.iframeRef} />
-                        </IFrameStyleWrapper>
-                    </div>
-
-                    <EditorComponent
-                        parentApp={this}
-                        dispatch={this.doVideoCommand}
-                        editorCommand={this.state.editorCommand}
-                    />
+                    <IFrameStyleWrapper>
+                        <div ref={this.iframeRef} />
+                    </IFrameStyleWrapper>
                 </div>
-                <StyledPopper
-                    anchorElement={this.state.infoText ? this.editorContainerDiv : undefined}
-                    ref={r => (this.popoverRef = r)}
-                >
-                    {this.state.infoText}
-                </StyledPopper>
-            </>
+
+                <EditorComponent
+                    parentApp={this}
+                    dispatch={this.doVideoCommand}
+                    editorCommand={this.state.editorCommand}
+                />
+            </div>
         );
     }
 }
