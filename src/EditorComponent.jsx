@@ -8,7 +8,7 @@ import PropTypes from 'prop-types';
 import Prism from './prism_add_markdown_syntax';
 import AutoReplace from './slate-auto-replace-alt';
 import { noteStorageManager, NoteData } from './save_note';
-import { Button, Icon, Menu as Menu_ } from './button_icon_menu';
+import { Button, Icon, Menu } from './button_icon_menu';
 import styled from '@emotion/styled';
 import 'react-contexify/dist/ReactContexify.min.css';
 import Modal from 'react-modal';
@@ -24,7 +24,7 @@ const initialEditorValue = Plain.deserialize('');
 
 class HoverMenu extends Component {
     render() {
-        const StyledMenu = styled(Menu_)`
+        const StyledMenu = styled(Menu)`
             padding: 8px 7px 6px;
             position: absolute;
             z-index: 1;
