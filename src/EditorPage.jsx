@@ -11,7 +11,6 @@ import getYoutubeTitle from 'get-youtube-title';
 import PropTypes from 'prop-types';
 import IFrameStyleWrapper from './IFrameStyleWrapper';
 import { SnackbarContext } from './context/SnackbarContext';
-import { LocalStorageContext } from './LocalStorageHelper';
 
 const YOUTUBE_API_KEY = process.env.REACT_APP_YOUTUBE_API_KEY;
 if (!YOUTUBE_API_KEY) {
@@ -317,18 +316,12 @@ class EditorPage extends Component {
                             <div ref={this.iframeRef} />
                         </IFrameStyleWrapper>
                     </div>
-
-                    <LocalStorageContext.Consumer>
-                        {idToNoteData => (
-                            <EditorComponent
-                                parentApp={this}
-                                dispatch={this.doVideoCommand}
-                                editorCommand={this.state.editorCommand}
-                                showInfo={this.props.showInfo}
-                                idToNoteData={idToNoteData}
-                            />
-                        )}
-                    </LocalStorageContext.Consumer>
+                    <EditorComponent
+                        parentApp={this}
+                        dispatch={this.doVideoCommand}
+                        editorCommand={this.state.editorCommand}
+                        showInfo={this.props.showInfo}
+                    />
                 </div>
             </>
         );

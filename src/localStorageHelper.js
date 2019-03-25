@@ -19,9 +19,9 @@ export function readMapFromLocalStorage() {
     return cachedIdToNoteData;
 }
 
-const LocalStorageContext = React.createContext();
+const idToNoteData = readMapFromLocalStorage();
 
-export { LocalStorageContext };
+export { idToNoteData };
 
 export function loadNoteWithId(idToNoteData, videoId) {
     const key = videoId;

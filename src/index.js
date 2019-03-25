@@ -9,7 +9,6 @@ import { Paper, Tabs, Tab } from '@material-ui/core';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import { BrowserRouter, Switch, Route, Link, Redirect } from 'react-router-dom';
 import { SnackbarContextProvider } from './context/SnackbarContext';
-import InfoPopper from './InfoPopper';
 import DropboxLogin from './DropboxLogin';
 import { Dropbox } from 'dropbox';
 import dropboxHelper, { initDropboxHelper } from './dropboxHelper';
@@ -55,7 +54,7 @@ const Main = ({ ytAPI }) => {
         const p = initDropboxHelper(dbx);
 
         p.then(() => {
-            const p1 = LS.syncWithDropbox(idToNoteData);
+            const p1 = LS.syncWithDropbox(LS.idToNoteData);
             p1.then(() => {
                 console.log('setup dropbox complete');
                 setDropboxSetupComplete(true);
@@ -71,118 +70,95 @@ const Main = ({ ytAPI }) => {
     };
 
     return (
-        <LS.LocalStorageContext.Provider value={LS.readMapFromLocalStorage()}>
-            <BrowserRouter>
-                <Switch>
-                    <Route
-                        path="/dropbox_oauth"
-                        render={() => (
-                            <LS.LocalStorageContext.Consumer>
-                                {idToNoteData => {
-                                    if (dropboxSetupComplete) {
-                                        return <Redirect to="/editor" />;
-                                    } else if (
-                                        dropboxHelper.isInitialized() &&
-                                        !dropboxSetupFailed
-                                    ) {
-                                        // Means we have created the api but have not finished setting up the notes folder on dropbox side.
-                                        // Disabling handleTokenSubmit.
-                                        return <DropboxLogin idToNoteData={idToNoteData} />;
-                                    }
-                                    // User didn't click submit token button
-                                    return (
-                                        <>
-                                            <DropboxLogin handleTokenSubmit={handleTokenSubmit} idToNoteData={idToNoteData} />
-                                            <InfoPopper
-                                                anchorElement={infoText ? rootElement : undefined}
-                                            >
-                                                {infoText}
-                                            </InfoPopper>
-                                        </>
-                                    );
-                                }}
-                            </LS.LocalStorageContext.Consumer>
-                        )}
-                    />
-                    <Route
-                        path="/"
-                        render={({ location }) => (
+        <BrowserRouter>
+            <Switch>
+                <Route
+                    path="/dropbox_oauth"
+                    render={() => {
+                        if (dropboxSetupComplete) {
+                            return <Redirect to="/editor" />;
+                        } else if (dropboxHelper.isInitialized() && !dropboxSetupFailed) {
+                            // Means we have created the api but have not finished setting up the notes folder on dropbox side.
+                            // Disabling handleTokenSubmit.
+                            return <DropboxLogin idToNoteData={LS.idToNoteData} />;
+                        }
+                        // User didn't click submit token button
+                        return (
                             <>
-                                <Paper elevation={0}>
-                                    <Tabs
-                                        indicatorColor="primary"
-                                        textColor="primary"
-                                        value={getTabValue(location.pathname)}
-                                        centered
-                                    >
-                                        <Tab
-                                            value="editor"
-                                            label="Editor"
-                                            component={Link}
-                                            to="/editor"
-                                        />
-                                        <Tab
-                                            value="notes"
-                                            label="Saved notes"
-                                            component={Link}
-                                            to="/saved_notes"
-                                        />
-                                    </Tabs>
-                                </Paper>
-                                <InfoPopper anchorElement={infoText ? rootElement : undefined}>
-                                    {infoText}
-                                </InfoPopper>
-                                <Switch>
-                                    <Route
-                                        path="/saved_notes"
-                                        render={() => (
-                                            <LS.LocalStorageContext.Consumer>
-                                                {idToNoteData => (
-                                                    <NotesPage idToNoteData={idToNoteData} />
-                                                )}
-                                            </LS.LocalStorageContext.Consumer>
-                                        )}
-                                    />
-                                    <Route
-                                        path="/editor/:videoId"
-                                        render={({ match }) => {
-                                            const { videoId } = match.params;
-                                            if (videoId) {
-                                                setLastVideoId(videoId);
-                                            }
-
-                                            return (
-                                                <EditorPage
-                                                    key={videoId}
-                                                    ytAPI={ytAPI}
-                                                    startingVideoId={videoId}
-                                                    showInfo={showInfo}
-                                                />
-                                            );
-                                        }}
-                                    />
-                                    <Route
-                                        path="/editor"
-                                        render={() => {
-                                            if (lastVideoId)
-                                                return <Redirect to={`/editor/${lastVideoId}`} />;
-
-                                            return <EditorPage ytAPI={ytAPI} />;
-                                        }}
-                                    />
-
-                                    {/* Redirect to dropbox oauth token input page otherwise */}
-                                    <Route
-                                        path="/"
-                                        render={props => <Redirect to={'/dropbox_oauth/'} />}
-                                    />
-                                </Switch>
+                                <DropboxLogin
+                                    handleTokenSubmit={handleTokenSubmit}
+                                    idToNoteData={LS.idToNoteData}
+                                />
                             </>
-                        )}
-                    />
-                </Switch>
-            </BrowserRouter>
-        </LS.LocalStorageContext.Provider>
+                        );
+                    }}
+                />
+                <Route
+                    path="/"
+                    render={({ location }) => (
+                        <>
+                            <Paper elevation={0}>
+                                <Tabs
+                                    indicatorColor="primary"
+                                    textColor="primary"
+                                    value={getTabValue(location.pathname)}
+                                    centered
+                                >
+                                    <Tab
+                                        value="editor"
+                                        label="Editor"
+                                        component={Link}
+                                        to="/editor"
+                                    />
+                                    <Tab
+                                        value="notes"
+                                        label="Saved notes"
+                                        component={Link}
+                                        to="/saved_notes"
+                                    />
+                                </Tabs>
+                            </Paper>
+                            <Switch>
+                                <Route path="/saved_notes" render={() => <NotesPage />} />
+                                <Route
+                                    path="/editor/:videoId"
+                                    render={({ match }) => {
+                                        const { videoId } = match.params;
+                                        if (videoId) {
+                                            setLastVideoId(videoId);
+                                        }
+
+                                        return (
+                                            <EditorPage
+                                                key={videoId}
+                                                ytAPI={ytAPI}
+                                                startingVideoId={videoId}
+                                                showInfo={showInfo}
+                                            />
+                                        );
+                                    }}
+                                />
+                                <Route
+                                    path="/editor"
+                                    render={() => {
+                                        if (lastVideoId)
+                                            return <Redirect to={`/editor/${lastVideoId}`} />;
+
+                                        return <EditorPage ytAPI={ytAPI} />;
+                                    }}
+                                />
+
+                                {/* Redirect to dropbox oauth token input page otherwise */}
+                                <Route
+                                    path="/"
+                                    render={props => <Redirect to={'/dropbox_oauth/'} />}
+                                />
+                            </Switch>
+                        </>
+                    )}
+                />
+            </Switch>
+        </BrowserRouter>
     );
 };
 

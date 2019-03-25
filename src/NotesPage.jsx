@@ -17,8 +17,8 @@ import { Link } from 'react-router-dom';
 import * as LS from './LocalStorageHelper';
 import seedrandom from 'seedrandom';
 
-const NotesPage = ({ idToNoteData, classes }) => {
-    const cards = LS.getNoteMenuItemsForCards(idToNoteData);
+const NotesPage = ({ classes }) => {
+    const cards = LS.getNoteMenuItemsForCards(LS.idToNoteData);
 
     const [numCards, setNumCards] = useState(cards.length);
 

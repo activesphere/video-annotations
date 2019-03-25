@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import ReactDOM from 'react-dom';
 import { Editor } from 'slate-react';
 import { Value, Mark } from 'slate';
 import Plain from 'slate-plain-serializer';
@@ -32,125 +33,6 @@ Modal.setAppElement('#root');
 
 const initialEditorValue = Plain.deserialize('');
 
-// Context menu that is shown when user selects a range of text and right clicks.
-const EditorContextMenu = ({ storedTimestamps, editorValue, editorRef, currentlyPlayingVideo }) => {
-    const selection = editorValue.selection;
-
-    const timestampItems = selection.isExpanded
-        ? storedTimestamps.map(s => {
-              return (
-                  <Item
-                      onClick={() => {
-                          if (currentlyPlayingVideo !== s.videoId) {
-                              console.log('Attempted to put timestamp saved for different video');
-                              return;
-                          }
-                          const timeStampMark = makeYoutubeTimestampMark(s.videoId, s.videoTime);
-                          editorRef.addMarkAtRange(selection, timeStampMark);
-                      }}
-                      key={`${s.videoTime}_${s.videoId}`}
-                  >
-                      {`${s.text}(${secondsToHhmmss(s.videoTime)})`}
-                  </Item>
-              );
-          })
-        : null;
-
-    return (
-        <Menu id="editor_context_menu">
-            {selection.isExpanded ? (
-                <Fragment>
-                    <Submenu label="Set timestamp">{timestampItems}</Submenu>
-                    <Separator />
-                </Fragment>
-            ) : null}
-            <Item> Add timestamp</Item>
-            <Item> Add current timestamp</Item>
-        </Menu>
-    );
-};
-
-class HoverMenu extends Component {
-    render() {
-        const StyledMenu = styled(Menu_)`
-            padding: 8px 7px 6px;
-            position: absolute;
-            z-index: 1;
-            top: -10000px;
-            left: -10000px;
-            margin-top: -6px;
-            opacity: 0;
-            background-color: #222;
-            border-radius: 4px;
-            transition: opacity 0.75s;
-        `;
-        const { className, getRef } = this.props;
-        const root = window.document.getElementById('root');
-
-        return ReactDOM.createPortal(
-            <StyledMenu
-                className={className}
-                ref={m => {
-                    getRef(m);
-                }}
-            >
-                {this.renderMarkButton('bold', 'format_bold')}
-                {this.renderMarkButton('italic', 'format_italic')}
-                {this.renderMarkButton('underlined', 'format_underlined')}
-                {this.renderMarkButton('code', 'code')}
-            </StyledMenu>,
-            root
-        );
-    }
-
-    renderMarkButton(type, icon) {
-        const { editor } = this.props;
-        const { value } = editor;
-        const isActive = value.activeMarks.some(mark => mark.type === type);
-        return (
-            <Button reversed active={isActive} onMouseDown={event => this.onClickMark(event, type)}>
-                <Icon>{icon}</Icon>
-            </Button>
-        );
-    }
-
-    onClickMark(event, type) {
-        const { editor } = this.props;
-        event.preventDefault();
-        editor.toggleMark(type);
-    }
-}
-
-const TimestampMark = props => {
-    const style = {
-        color: '#9ebdff',
-        textDecoration: 'underline',
-        fontStyle: 'italic',
-        cursor: 'pointer',
-    };
-
-    const videoId = props.mark.data.get('videoId');
-    const videoTime = props.mark.data.get('videoTime');
-
-    const seekToTime = () => {
-        props.parentApp.doVideoCommand('seekToTime', {
-            videoId,
-            videoTime,
-        });
-    };
-
-    return (
-        <span
-            onClick={seekToTime}
-            className="inline-youtube-timestamp"
-            {...props.attributes}
-            style={style}
-        >
-            {props.children}
-        </span>
-    );
-};
-
 function makeYoutubeTimestampMark(videoId, videoTime) {
     return Mark.create({ type: 'youtube_timestamp', data: { videoId, videoTime } });
 }
@@ -178,8 +60,6 @@ export default class EditorComponent extends Component {
     static propTypes = {
         parentApp: PropTypes.object.isRequired,
         editorCommand: PropTypes.object,
-        showInfo: PropTypes.func.isRequired,
-        idToNoteData: PropTypes.object.isRequired,
     };
 
     static contextType = SnackbarContext;
@@ -188,14 +68,15 @@ export default class EditorComponent extends Component {
         const jsonEditorValue = this.state.value.toJSON();
         const { videoId, videoTitle } = this.props.parentApp.currentVideoInfo();
         const noteData = new NoteData(videoId, videoTitle, jsonEditorValue);
-        localStorageHelper.saveNoteWithId(videoId, noteData);
+        LS.saveNoteWithId(LS.idToNoteData, videoId, noteData);
         this.props.parentApp.updateNoteMenu();
         return `Saved Note for video "${videoId}", title - "${videoTitle}"`;
     }, 1000);
 
     _makePlugins = () => {
+        this.plugins = [];
         // Pause video key-sequence
-        plugins.push(
+        this.plugins.push(
             AutoReplace({
                 trigger: '/',
                 before: /[^#]?(#)$/,
@@ -203,7 +84,8 @@ export default class EditorComponent extends Component {
                     change.insertText('');
                     this.props.parentApp.doVideoCommand('pauseVideo');
                     setTimeout(() => {
-                        this.props.showInfo('Paused', 1.0, true);
+                        // this.props.showInfo('Paused', 1.0, true);
+                        this.context.openSnackbar({ message: `Paused` });
                     });
                 },
             })
@@ -229,7 +111,7 @@ export default class EditorComponent extends Component {
         };
 
         // Put video timestamp and play (or continue playing) video
-        plugins.push(
+        this.plugins.push(
             AutoReplace({
                 trigger: '.',
                 before: /[^#]?(#t)$/,
@@ -240,7 +122,7 @@ export default class EditorComponent extends Component {
         );
 
         // Put video timestamp and pause video
-        plugins.push(
+        this.plugins.push(
             AutoReplace({
                 trigger: '/',
                 before: /[^#]?(#t)$/,
@@ -252,7 +134,7 @@ export default class EditorComponent extends Component {
 
         // Seek to time. The format of input is /#-?[0-9]+(s|m)s/. So input #, then -10s, then s,
         // and you go back 10 seconds. The full sequence is #-10ss.
-        plugins.push(
+        this.plugins.push(
             AutoReplace({
                 trigger: 's',
                 before: /[^#]?(#(-?)([0-9]+)(s|m))$/,
@@ -272,10 +154,9 @@ export default class EditorComponent extends Component {
                 },
             })
         );
+    };
 
-        return plugins;
-    }
-
+    /*
     saveCurrentNote = ({ cacheOnly, uploadToDropbox, uploadAfter, returnInfoString }) => {
         const jsonEditorValue = this.state.value.toJSON();
         // TODO: send these two via props from parent
@@ -283,12 +164,12 @@ export default class EditorComponent extends Component {
         const noteData = new NoteData(videoId, videoTitle, jsonEditorValue);
 
         if (cacheOnly) {
-            LS.cacheNoteWithId(this.props.idToNoteData, videoId, noteData);
+            LS.cacheNoteWithId(LS.idToNoteData, videoId, noteData);
             return;
         }
 
-        console.log('save note - idToNoteData =', this.props.idToNoteData);
-        LS.saveNoteWithId(this.props.idToNoteData, videoId, noteData);
+        console.log('save note - idToNoteData =', LS.idToNoteData);
+        LS.saveNoteWithId(LS.idToNoteData, videoId, noteData);
         this.props.parentApp.updateNoteMenu();
 
         if (uploadToDropbox) {
@@ -343,8 +224,8 @@ export default class EditorComponent extends Component {
         };
 
         this.editorRef = undefined;
-
         this.hoverMenuRef = undefined;
+        this._makePlugins();
     }
 
     onChange = change => {
@@ -448,15 +329,19 @@ export default class EditorComponent extends Component {
 
     loadNoteForVideo = videoId => {
         if (!videoId) {
-            this.props.showInfo('No video current playing. Not loading note.', 2, true);
+            // this.props.showInfo('No video current playing. Not loading note.', 2, true);
+            this.context.openSnackbar({ message: `No video playing, not loading any note` });
         }
 
         console.log('Loading note for video', videoId);
 
-        const { editorValueAsJson } = LS.loadNoteWithId(this.props.idToNoteData, videoId);
+        const { editorValueAsJson } = LS.loadNoteWithId(LS.idToNoteData, videoId);
 
         if (!editorValueAsJson) {
-            this.props.showInfo(`No note previously saved for videoId = ${videoId}`, 2);
+            // this.props.showInfo(`No note previously saved for videoId = ${videoId}`, 2);
+            this.context.openSnackbar({
+                message: `No previously saved note for video - ${videoId}`,
+            });
             // Load empty editor value
             this.setState({ ...this.state, value: initialEditorValue });
         } else {
@@ -505,7 +390,8 @@ export default class EditorComponent extends Component {
                 }
                 case 'saveNote': {
                     this.saveCurrentNote(true, 1.5, false);
-                    this.props.showInfo('Saved note', 0.5);
+                    // this.props.showInfo('Saved note', 0.5);
+                    this.context.openSnackbar({ message: `Saved` });
                     break;
                 }
 
@@ -756,7 +642,7 @@ export default class EditorComponent extends Component {
 
     handleWindowClose = ev => {
         ev.preventDefault();
-        LS.flushToLocalStorage(this.props.idToNoteData);
+        LS.flushToLocalStorage(LS.idToNoteData);
     };
 
     componentDidMount() {
@@ -765,7 +651,7 @@ export default class EditorComponent extends Component {
     }
 
     componentWillUnmount() {
-        LS.flushToLocalStorage(this.props.idToNoteData);
+        LS.flushToLocalStorage(LS.idToNoteData);
         window.removeEventListener('beforeunload', this.handleWindowClose);
     }
 
