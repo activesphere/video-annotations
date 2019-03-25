@@ -12,7 +12,7 @@ const styles = theme => ({
 
 const IFrameStyleWrapper = ({ children, classes }) => (
     <Slide direction="right" in={true} mountOnEnter unmountOnExit className="youtube-player">
-        <Paper elevation={4} className={classes.paper}>
+        <Paper elevation={4} className={classes.paper} id="__iframe_container__">
             {children}
         </Paper>
     </Slide>

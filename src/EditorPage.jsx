@@ -313,7 +313,7 @@ class EditorPage extends Component {
                         </Select>
 
                         <IFrameStyleWrapper>
-                            <div ref={this.iframeRef} />
+                            <div ref={this.iframeRef} id={'__yt_iframe__'} />
                         </IFrameStyleWrapper>
                     </div>
                     <EditorComponent
