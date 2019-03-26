@@ -9,12 +9,25 @@ browser.browserAction.onClicked.addListener(tab => {
 });
 
 browser.runtime.onConnect.addListener(port => {
-    if (port.name !== 'vid-annot-port') {
+    if (port.name !== 'vid_annot_port') {
         console.log('Got connection from unexpected port -', port);
         return;
     }
     console.log('Connection at port', port);
     port.onMessage.addListener(msg => {
-        console.log('Received message ', msg);
+        msg = JSON.parse(msg);
+
+        if (msg.type === 'logging') {
+            console.log('Log -', msg.text);
+            return;
+        }
+
+        if (msg.type === 'captured_frame') {
+            console.log('Received captured frame -', msg.dataURI);
+        } else if (msg.type === 'found_video_element') {
+            console.log('Injected script and found video element');
+        } else {
+            console.log('Unknown message type -', msg);
+        }
     });
 });
