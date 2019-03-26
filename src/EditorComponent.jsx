@@ -9,7 +9,6 @@ import AutoReplace from './slate-auto-replace-alt';
 import NoteData from './NoteData';
 import { contextMenu } from 'react-contexify';
 import 'react-contexify/dist/ReactContexify.min.css';
-import Modal from 'react-modal';
 import isHotKey from 'is-hotkey';
 import keyMap from './keyMap';
 import { Slide } from '@material-ui/core';
@@ -25,8 +24,6 @@ import * as LS from './LocalStorageHelper';
 // import MathJax from 'MathJax'; // External
 
 // console.log('MathJax = ', MathJax);
-
-Modal.setAppElement('#root');
 
 const initialEditorValue = Plain.deserialize('');
 
