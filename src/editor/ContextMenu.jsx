@@ -1,7 +1,7 @@
 import React from 'react';
 import { Mark } from 'slate';
 import { secondsToHhmmss } from '../utils';
-import { Menu, contextMenu, Item, Separator, Submenu } from 'react-contexify';
+import { Menu, contextMenu, Item, Submenu } from 'react-contexify';
 import 'react-contexify/dist/ReactContexify.min.css';
 
 const makeYoutubeTimestampMark = ({ videoId, videoTime }) =>
