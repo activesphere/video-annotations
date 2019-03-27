@@ -646,11 +646,14 @@ export default class EditorComponent extends Component {
     componentDidMount() {
         this.updateHoverMenu();
         window.addEventListener('beforeunload', this.handleWindowClose);
+        window.addEventListener('message', this.handleFrameCapture, false);
+        console.log('window.addEventListener this.handleFrameCapture');
     }
 
     componentWillUnmount() {
         LS.flushToLocalStorage(LS.idToNoteData);
         window.removeEventListener('beforeunload', this.handleWindowClose);
+        window.removeEventListener('message', this.handleFrameCapture);
     }
 
     componentDidUpdate() {
@@ -663,6 +666,12 @@ export default class EditorComponent extends Component {
             newProps.editorCommand.resetCommand();
         }
     }
+
+    handleFrameCapture = e => {
+        if (e.data.type === 'VID_ANNOT_CAPTURED_FRAME') {
+            this.context.openSnackbar({ message: 'Received image data...' });
+        }
+    };
 
     renderEditor = (props, editor, next) => {
         const children = next();

@@ -5,6 +5,7 @@
 
     console.log('Called inject.js');
 
+    // TODO: Not needed.
     let gScriptIsInIframe = false;
     let gScriptIsInAppRoot = false;
 
@@ -28,29 +29,23 @@
             canvas.style.position = 'fixed';
             canvas.style.top = 0;
             canvas.style.right = 0;
-
-            // TODO: Don't append to body. Keep hidden.
             // document.body.appendChild(canvas);
-            port.postMessage(JSON.stringify({ type: 'logging', text: `2` }));
         }
         canvas.width = width;
         canvas.height = height;
-        port.postMessage(JSON.stringify({ type: 'logging', text: `3` }));
         canvasRef = canvas;
         return canvas;
     }
 
     function getCurrentFrameURI(canvasRef, videoElement) {
         // TODO: create a single context. don't re-create over and over.
-        port.postMessage(JSON.stringify({ type: 'logging', text: `4` }));
         const C = canvasRef.getContext('2d');
-        port.postMessage(JSON.stringify({ type: 'logging', text: `5` }));
         C.drawImage(videoElement, 0, 0, canvasRef.width, canvasRef.height);
-        port.postMessage(JSON.stringify({ type: 'logging', text: `6` }));
         port.postMessage(JSON.stringify({ type: 'logging', text: 'Drew image on canvas' }));
 
         const url = canvasRef.toDataURL('image/png');
-        console.log('data url =', url);
+        // console.log(url);
+        return url;
     }
 
     function main() {
@@ -81,6 +76,7 @@
             port.postMessage(
                 JSON.stringify({ type: 'logging', text: 'Adding event listener on video play' })
             );
+
             videoElement.addEventListener('playing', () => {
                 port.postMessage(
                     JSON.stringify({
@@ -89,18 +85,32 @@
                     })
                 );
 
-                console.log('Before getting the data url');
                 const dataURI = getCurrentFrameURI(getCanvasElement(), videoElement);
+
+                /*No need to send the image to the background page.
                 port.postMessage(
                     JSON.stringify({
                         type: 'logging',
                         text: `Video being played, frame image dataURI = ${dataURI}`,
                     })
                 );
-                console.log('FUCKING... KILL!!!');
-                port.postMessage(JSON.stringify({ type: 'logging', text: `7` }));
-                const msg = { type: 'captured_frame', dataURI };
-                port.postMessage(JSON.stringify(msg));
+                */
+
+                try {
+                    // Since this script is in an iframe
+                    window.parent.postMessage(
+                        { type: 'VID_ANNOT_CAPTURED_FRAME', data: dataURI },
+                        '*'
+                    );
+                } catch (e) {
+                    port.postMessage(
+                        JSON.stringify({
+                            type: 'logging',
+                            text: `Error on window.postMessage - JSON.stringify(e)`,
+                        })
+                    );
+                    console.log(e);
+                }
             });
         }
     }

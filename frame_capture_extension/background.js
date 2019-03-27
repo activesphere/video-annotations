@@ -21,13 +21,6 @@ browser.runtime.onConnect.addListener(port => {
             console.log('Log -', msg.text);
             return;
         }
-
-        if (msg.type === 'captured_frame') {
-            console.log('Received captured frame -', msg.dataURI);
-        } else if (msg.type === 'found_video_element') {
-            console.log('Injected script and found video element');
-        } else {
-            console.log('Unknown message type -', msg);
-        }
+        console.log('Unknown message type -', msg);
     });
 });
