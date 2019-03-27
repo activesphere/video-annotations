@@ -224,6 +224,7 @@ export default class EditorComponent extends Component {
         this.editorRef = undefined;
         this.hoverMenuRef = undefined;
         this._makePlugins();
+        this.selectionBeforeBlur = undefined;
     }
 
     onChange = change => {
@@ -247,10 +248,12 @@ export default class EditorComponent extends Component {
     };
 
     renderMark = (props, editor, next) => {
-        const { attributes, children } = props;
-        switch (props.mark.type) {
+        const { mark, attributes, children } = props;
+        switch (mark.type) {
             case 'youtube_timestamp':
-                return <TimestampMark {...props} parentApp={this.props.parentApp} />;
+                return (
+                    <TimestampMark {...props} parentApp={this.props.parentApp} {...attributes} />
+                );
 
             case 'bold':
                 return <strong {...attributes}>{props.children}</strong>;
@@ -395,6 +398,19 @@ export default class EditorComponent extends Component {
 
                 case 'save': {
                     this.saveCurrentNote(new SaveCurrentNoteOptions(true, 0, true));
+                    break;
+                }
+
+                case 'captureFrame': {
+                    const { videoId } = this.props.parentApp.currentVideoInfo();
+                    if (!videoId) {
+                        this.context.openSnackbar({
+                            message: 'No video currently playing',
+                            autoHideDuration: 1000,
+                        });
+                        return;
+                    }
+                    window.frames[0].postMessage({ type: 'VID_ANNOT_CAPTURE_CURRENT_FRAME' }, '*');
                     break;
                 }
 
@@ -572,6 +588,19 @@ export default class EditorComponent extends Component {
                 return <h6 {...props.attributes}>{props.children}</h6>;
             case 'list-item':
                 return <li {...props.attributes}>{props.children}</li>;
+
+            case 'image': {
+                const dataUrl = props.node.data.get('dataUrl');
+                console.log('Renderin image node - dataUrl=', dataUrl);
+                console.log('children =', props.children);
+                return (
+                    <>
+                        <img src={dataUrl} {...props.attributes} />
+                        {props.children}
+                    </>
+                );
+            }
+
             default:
                 return next();
         }
@@ -669,7 +698,17 @@ export default class EditorComponent extends Component {
 
     handleFrameCapture = e => {
         if (e.data.type === 'VID_ANNOT_CAPTURED_FRAME') {
-            this.context.openSnackbar({ message: 'Received image data...' });
+            this.context.openSnackbar({
+                message: 'Received image data...',
+                autoHideDuration: 1000,
+            });
+            console.log('Received image data');
+            this.editorRef
+                .insertBlock({
+                    type: 'image',
+                    data: { dataUrl: e.data.dataUrl },
+                })
+                .insertBlock('paragraph');
         }
     };
 
@@ -775,27 +814,27 @@ export default class EditorComponent extends Component {
                         this.editorContainerDiv = r;
                     }}
                 >
-                    <ContextMenu currentVideoId={videoId}>
-                        <Editor
-                            defaultValue={this.state.value}
-                            value={this.state.value}
-                            onChange={this.onChange}
-                            onKeyDown={this.onKeyDown}
-                            renderMark={this.renderMark}
-                            renderNode={this.renderNode}
-                            renderEditor={this.renderEditor}
-                            decorateNode={this.decorateNode}
-                            className="editor-top-level"
-                            autoCorrect={false}
-                            autoFocus={true}
-                            placeholder="Write your note here.."
-                            style={styles}
-                            ref={editorRef => {
-                                this.editorRef = editorRef;
-                                this.props.parentApp.editorRef = editorRef;
-                            }}
-                        />
-                    </ContextMenu>
+                    {/*<ContextMenu currentVideoId={videoId}>*/}
+                    <Editor
+                        defaultValue={this.state.value}
+                        value={this.state.value}
+                        onChange={this.onChange}
+                        onKeyDown={this.onKeyDown}
+                        renderMark={this.renderMark}
+                        renderNode={this.renderNode}
+                        renderEditor={this.renderEditor}
+                        decorateNode={this.decorateNode}
+                        className="editor-top-level"
+                        autoCorrect={false}
+                        autoFocus={true}
+                        placeholder="Write your note here.."
+                        style={styles}
+                        ref={editorRef => {
+                            this.editorRef = editorRef;
+                            this.props.parentApp.editorRef = editorRef;
+                        }}
+                    />
+                    {/*</ContextMenu>*/}
                 </div>
             </Slide>
         );

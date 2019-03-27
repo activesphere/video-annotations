@@ -72,7 +72,7 @@ const NotesPage = ({ classes }) => {
                                 size="small"
                                 color="primary"
                                 onClick={() => {
-                                    // localStorageHelper.deleteNoteWithId(videoId);
+                                    LS.deleteNoteWithId(LS.idToNoteData, videoId);
                                     setNumCards(numCards - 1);
                                 }}
                             >

@@ -1,3 +1,4 @@
+// TODO: Get rid of all these logs. The thing the script is doing is not complicated at all.
 (function() {
     const YOUTUBE_IFRAME_ID = '__yt_iframe__';
     const VID_ANNOT_ROOT_ID = '__vid_annot_root__';
@@ -48,6 +49,10 @@
         return url;
     }
 
+    function sendImageToApp(dataUrl) {
+        window.parent.postMessage({ type: 'VID_ANNOT_CAPTURED_FRAME', dataUrl }, '*');
+    }
+
     function main() {
         // Get the <video> element.
         const videoElement = document.querySelector(`video`);
@@ -77,6 +82,19 @@
                 JSON.stringify({ type: 'logging', text: 'Adding event listener on video play' })
             );
 
+            window.addEventListener(
+                'message',
+                e => {
+                    if (e.data.type === 'VID_ANNOT_CAPTURE_CURRENT_FRAME') {
+                        console.log('VID_ANNOT_CAPTURE_CURRENT_FRAME received by content script');
+                        const dataUrl = getCurrentFrameURI(getCanvasElement(), videoElement);
+                        sendImageToApp(dataUrl);
+                    }
+                },
+                false
+            );
+
+            /*
             videoElement.addEventListener('playing', () => {
                 port.postMessage(
                     JSON.stringify({
@@ -85,33 +103,10 @@
                     })
                 );
 
-                const dataURI = getCurrentFrameURI(getCanvasElement(), videoElement);
-
-                /*No need to send the image to the background page.
-                port.postMessage(
-                    JSON.stringify({
-                        type: 'logging',
-                        text: `Video being played, frame image dataURI = ${dataURI}`,
-                    })
-                );
-                */
-
-                try {
-                    // Since this script is in an iframe
-                    window.parent.postMessage(
-                        { type: 'VID_ANNOT_CAPTURED_FRAME', data: dataURI },
-                        '*'
-                    );
-                } catch (e) {
-                    port.postMessage(
-                        JSON.stringify({
-                            type: 'logging',
-                            text: `Error on window.postMessage - JSON.stringify(e)`,
-                        })
-                    );
-                    console.log(e);
-                }
+                const dataUrl = getCurrentFrameURI(getCanvasElement(), videoElement);
+                sendImageToApp(dataUrl);
             });
+            */
         }
     }
 

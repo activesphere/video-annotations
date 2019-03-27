@@ -1,6 +1,6 @@
 // Functions for storing notes to dropbox
 import { readBlobAsString } from './utils';
-import pathJoin from './pathJoin';
+import pathJoin from './utils/pathJoin';
 import dropboxConfig from './dropboxConfig';
 
 const NOTES_FOLDER_PATH = pathJoin(
