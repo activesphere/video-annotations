@@ -118,7 +118,6 @@ class EditorPage extends Component {
         startingVideoId: PropTypes.string,
         startingVideoTime: PropTypes.number,
         startingPopperMessage: PropTypes.string,
-        showInfo: PropTypes.func.isRequired,
     };
 
     static defaultProps = {
