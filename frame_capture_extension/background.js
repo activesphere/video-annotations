@@ -8,6 +8,7 @@ browser.browserAction.onClicked.addListener(tab => {
     });
 });
 
+// TODO: Not using this. Remove it.
 browser.runtime.onConnect.addListener(port => {
     if (port.name !== 'vid_annot_port') {
         console.log('Got connection from unexpected port -', port);

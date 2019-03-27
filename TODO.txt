@@ -1,8 +1,3 @@
-#### Better saving
-
-* Save notes with a name. Doesn't have to be per-video. Show a simple dialog
-when user wants to save.
-
 #### More edit options
 
 * Support arbitrary hyperlinks (with slate paste link plugin)
@@ -12,8 +7,6 @@ formulas into editor as the user types is a complicated due to the way these edi
 
 * Add full markdown support
 
-* Implement `Add Timestamp` and `Add current timestamp` in the context menu.
-
 
 #### Editing experience
 
@@ -21,3 +14,10 @@ formulas into editor as the user types is a complicated due to the way these edi
 
 On every change of cursor, check if the cursor is on a timestamp mark. If so, toggle away the
 timestamp mark from currently activated timestamp.
+
+#### Bugs, quirks
+
+* Broke the video url input text. Have to fix it.
+* Cannot move cursor across some marks like timestamp and title.
+* Note deletion from dropbox.
+* Save and Restore cursor position on blur and focus respectively.

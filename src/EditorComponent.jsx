@@ -434,6 +434,13 @@ export default class EditorComponent extends Component {
             return true;
         }
 
+        if (event.key === 'Enter') {
+            // When we are in an 'image' block, we don't want to split into
+            // two image blocks. The new block should just be a paragraph.
+            editor.splitBlock().setBlocks('paragraph');
+            handled = true;
+        }
+
         if (!event.ctrlKey) {
             // return this.handleNonHotkey(event, editor, next);
             return next();
@@ -595,8 +602,8 @@ export default class EditorComponent extends Component {
                 console.log('children =', props.children);
                 return (
                     <>
-                        <img src={dataUrl} {...props.attributes} />
                         {props.children}
+                        <img src={dataUrl} {...props.attributes} />
                     </>
                 );
             }
@@ -698,17 +705,16 @@ export default class EditorComponent extends Component {
 
     handleFrameCapture = e => {
         if (e.data.type === 'VID_ANNOT_CAPTURED_FRAME') {
+            console.log('Received image data');
             this.context.openSnackbar({
                 message: 'Received image data...',
                 autoHideDuration: 1000,
             });
-            console.log('Received image data');
-            this.editorRef
-                .insertBlock({
-                    type: 'image',
-                    data: { dataUrl: e.data.dataUrl },
-                })
-                .insertBlock('paragraph');
+            this.editorRef.insertBlock({
+                type: 'image',
+                data: { dataUrl: e.data.dataUrl },
+            });
+            //.insertBlock('paragraph');
         }
     };
 
