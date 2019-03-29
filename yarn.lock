@@ -10730,6 +10730,11 @@ slate-react@^0.21.15:
     tiny-invariant "^1.0.1"
     tiny-warning "^0.0.3"
 
+slate-trailing-block@^0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/slate-trailing-block/-/slate-trailing-block-0.5.0.tgz#cedb4f2975f1167e0fb9d259ce1252b82f4d74ff"
+  integrity sha512-CrN+bBzo//CRwcVyIBaWSKyi7yiYjcc8wIKoiqpIbXDEUHEF++NCO8zr/j5PzelzqltTj9tg4n18d/f1/SLfLQ==
+
 slate@^0.44.9:
   version "0.44.12"
   resolved "https://registry.yarnpkg.com/slate/-/slate-0.44.12.tgz#06dbf98a7583d1a3b56636e762f494e4b0a13ffa"

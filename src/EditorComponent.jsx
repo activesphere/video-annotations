@@ -19,6 +19,7 @@ import TimestampMark from './editor/TimestampMark';
 import debounce from './utils/debounce';
 import dropboxHelper from './dropboxHelper';
 import * as LS from './LocalStorageHelper';
+import TrailingBlock from 'slate-trailing-block';
 
 // Removing mathjax for now.
 // import MathJax from 'MathJax'; // External
@@ -48,6 +49,17 @@ class SaveCurrentNoteOptions {
         this.returnInfoString = returnInfoString;
         this.cacheOnly = cacheOnly;
     }
+}
+
+// Plugin that saves and restores cursor selection on blur and focus respectively.
+class RestoreSelectionOnFocus {
+    selection = undefined;
+
+    onBlur = (event, editor, next) => {
+        this.selection = editor.value.selection;
+    };
+
+    onFocus = (event, editor, next) => {};
 }
 
 export default class EditorComponent extends Component {
@@ -152,6 +164,9 @@ export default class EditorComponent extends Component {
                 },
             })
         );
+
+        // Trailing block plugin. Just seeing what it does.
+        // this.plugins.push(TrailingBlock({ type: 'paragraph' }));
     };
 
     /*
@@ -391,7 +406,6 @@ export default class EditorComponent extends Component {
                 }
                 case 'saveNote': {
                     this.saveCurrentNote(true, 1.5, false);
-                    // this.props.showInfo('Saved note', 0.5);
                     this.context.openSnackbar({ message: `Saved` });
                     break;
                 }
@@ -437,8 +451,12 @@ export default class EditorComponent extends Component {
         if (event.key === 'Enter') {
             // When we are in an 'image' block, we don't want to split into
             // two image blocks. The new block should just be a paragraph.
-            editor.splitBlock().setBlocks('paragraph');
-            handled = true;
+            if (editor.value.startBlock.type === 'image') {
+                editor.splitBlock().setBlocks('paragraph');
+                handled = true;
+            } else {
+                return next();
+            }
         }
 
         if (!event.ctrlKey) {
@@ -831,6 +849,7 @@ export default class EditorComponent extends Component {
                         renderEditor={this.renderEditor}
                         decorateNode={this.decorateNode}
                         className="editor-top-level"
+                        plugins={this.plugins}
                         autoCorrect={false}
                         autoFocus={true}
                         placeholder="Write your note here.."
