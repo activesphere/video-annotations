@@ -51,15 +51,23 @@ class SaveCurrentNoteOptions {
     }
 }
 
-// Plugin that saves and restores cursor selection on blur and focus respectively.
-class RestoreSelectionOnFocus {
+// Plugin to save and restore cursor selection on blur and focus respectively.
+class SaveAndRestoreSelection {
     selection = undefined;
 
     onBlur = (event, editor, next) => {
         this.selection = editor.value.selection;
+        return next();
     };
 
-    onFocus = (event, editor, next) => {};
+    onFocus = (event, editor, next) => {
+        if (this.selection) {
+            event.preventDefault();
+            editor.select(this.selection);
+        } else {
+            return next();
+        }
+    };
 }
 
 export default class EditorComponent extends Component {
@@ -85,6 +93,21 @@ export default class EditorComponent extends Component {
 
     _makePlugins = () => {
         this.plugins = [];
+
+        this.plugins.push(
+            AutoReplace({
+                trigger: '.',
+                before: /[^#]?(#)$/,
+                change: change => {
+                    change.insertText('');
+                    this.props.parentApp.doVideoCommand('playVideo');
+                    setTimeout(() => {
+                        this.context.openSnackbar({ message: `Playing` });
+                    });
+                },
+            })
+        );
+
         // Pause video key-sequence
         this.plugins.push(
             AutoReplace({
@@ -94,7 +117,6 @@ export default class EditorComponent extends Component {
                     change.insertText('');
                     this.props.parentApp.doVideoCommand('pauseVideo');
                     setTimeout(() => {
-                        // this.props.showInfo('Paused', 1.0, true);
                         this.context.openSnackbar({ message: `Paused` });
                     });
                 },
@@ -167,6 +189,8 @@ export default class EditorComponent extends Component {
 
         // Trailing block plugin. Just seeing what it does.
         // this.plugins.push(TrailingBlock({ type: 'paragraph' }));
+
+        this.plugins.push(new SaveAndRestoreSelection());
     };
 
     /*
