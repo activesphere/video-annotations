@@ -193,48 +193,6 @@ export default class EditorComponent extends Component {
         this.plugins.push(new SaveAndRestoreSelection());
     };
 
-    /*
-    saveCurrentNote = ({ cacheOnly, uploadToDropbox, uploadAfter, returnInfoString }) => {
-        const jsonEditorValue = this.state.value.toJSON();
-        // TODO: send these two via props from parent
-        const { videoId, videoTitle } = this.props.parentApp.currentVideoInfo();
-        const noteData = new NoteData(videoId, videoTitle, jsonEditorValue);
-
-        if (cacheOnly) {
-            LS.cacheNoteWithId(LS.idToNoteData, videoId, noteData);
-            return;
-        }
-
-        console.log('save note - idToNoteData =', LS.idToNoteData);
-        LS.saveNoteWithId(LS.idToNoteData, videoId, noteData);
-        this.props.parentApp.updateNoteMenu();
-
-        if (uploadToDropbox) {
-            if (uploadAfter === 0) {
-                dropboxHelper
-                    .save(noteData)
-                    .then(result => {
-                        console.log('Uploaded to dropbox');
-                        this.props.showInfo('Uploaded to dropbox');
-                    })
-                    .catch(error => {
-                        console.log(error);
-                        this.props.showInfo('Failed to upload to dropbox - ', error);
-                    });
-            } else {
-                setTimeout(() => {
-                    dropboxHelper.save(noteData);
-                }, uploadAfter * 1000);
-            }
-        }
-
-        if (returnInfoString) {
-            const infoText = `Saved Note for video "${videoId}", title - "${videoTitle}"`;
-            return infoText;
-        }
-    };
-    */
-
     _putTimestampMarkIntoEditor = editor => {
         const { videoId, videoTime } = this.props.parentApp.currentVideoInfo();
         if (!videoId) {
