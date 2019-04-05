@@ -13,31 +13,30 @@ const styles = {
     },
 };
 
-const VideoPathInput = ({ classes, currentVideoId = undefined }) => {
-    const [text, setText] = useState(currentVideoId || '');
-    const [isValidVideoId, setIsValidVideoId] = useState(false);
+const VideoPathInput = ({ classes, currentVideoId = '' }) => {
+    const [text, setText] = useState(currentVideoId);
+    const [isValidVideoId, setIsValidVideoId] = useState(!!getYouTubeID(text));
 
     const onChange = e => {
         const { value } = e.target;
-        const videoId = isYouTubeID(value) ? value : getYouTubeID(value);
+        const videoId = (isYouTubeID(value) && value) || getYouTubeID(value, { fuzzy: false });
+
         setText(value);
 
         if (!videoId) {
             return;
         }
         setIsValidVideoId(true);
-        setText(value);
     };
 
     useEffect(() => {
         if (isValidVideoId) {
             setIsValidVideoId(false);
         }
-    }, [isValidVideoId])
+    });
 
     if (isValidVideoId) {
-        console.log('Is valid video id');
-        return <Redirect to={`/editor/${text}`} />;
+        return <Redirect to={`/editor/${getYouTubeID(text)}`} />;
     }
 
     return (
@@ -47,6 +46,7 @@ const VideoPathInput = ({ classes, currentVideoId = undefined }) => {
             placeholder="Paste video id or path here"
             onChange={onChange}
             spellCheck="false"
+            value={text}
         />
     );
 };

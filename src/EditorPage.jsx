@@ -297,7 +297,7 @@ class EditorPage extends Component {
             <>
                 <div className="two-panel-div">
                     <div className="left-panel">
-                        <VideoPathInput />
+                        <VideoPathInput currentVideoId={videoId} />
                         <Select
                             value={videoId}
                             onChange={this.handleNotemenuChange}
