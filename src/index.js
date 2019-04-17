@@ -27,25 +27,12 @@ console.log(`Dropbox Key = ${process.env.REACT_APP_DROPBOX_KEY}, Secret=${proces
 
 const Main = ({ ytAPI }) => {
     const [lastVideoId, setLastVideoId] = useState(undefined);
-    const [infoText, setInfoText] = useState(undefined);
 
     const [dropboxSetupComplete, setDropboxSetupComplete] = useState(false);
     // ^ Means that we have initialized the dropbox api and also made sure the notes folder
     // is available there and synced localstorage with dropbox.
 
     const [dropboxSetupFailed, setDropboxSetupFailed] = useState(false);
-
-    const showInfo = (infoText, infoDuration, logToConsole = false) => {
-        if (logToConsole) {
-            console.log('infoText =', infoText, ', infoDuration =', infoDuration);
-        }
-
-        setTimeout(() => {
-            setInfoText(undefined);
-        }, infoDuration * 1000.0);
-
-        setInfoText(infoText);
-    };
 
     const handleTokenSubmit = (accessToken, idToNoteData) => {
         const dbx = new Dropbox({ accessToken, clientId: process.env.REACT_APP_DROPBOX_KEY });
@@ -56,14 +43,14 @@ const Main = ({ ytAPI }) => {
             p1.then(() => {
                 console.log('setup dropbox complete');
                 setDropboxSetupComplete(true);
-                showInfo('Dropbox setup complete', 2.0);
+                console.log('Dropbox setup complete');
             }).catch(error => {
                 console.log('Failed to sync with dropbox - ', error);
             });
         }).catch(err => {
             console.log(err);
             setDropboxSetupFailed(true);
-            showInfo('Failed to set up Dropbox', 2.0);
+            console.log('Failed to set up Dropbox');
         });
     };
 
@@ -131,7 +118,6 @@ const Main = ({ ytAPI }) => {
                                                 key={videoId}
                                                 ytAPI={ytAPI}
                                                 startingVideoId={videoId}
-                                                showInfo={showInfo}
                                             />
                                         );
                                     }}
