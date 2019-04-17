@@ -2,8 +2,6 @@ import './Main.css';
 
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
 
 import EditorComponent from './EditorComponent';
 import VideoPathInput from './VideoPathInput';
@@ -130,14 +128,11 @@ class EditorPage extends Component {
     constructor(props) {
         super(props);
 
-        console.log('Props given to EditorPage =', props);
-
         this.state = {
             editorCommand: undefined,
             infoText: undefined,
             infoLastTime: undefined,
             selectedOption: undefined,
-            // noteMenuItems: localStorageHelper.getNoteMenuItems(),
             startingPopperMessage: this.props.startingPopperMessage,
         };
 
@@ -145,16 +140,14 @@ class EditorPage extends Component {
         this.editorRef = undefined;
         this.editorContainerDiv = undefined;
 
-        // We keep a handle to the youtube player (the player API, not the dom element itself).
+        // We keep a handle to the youtube player. This is the player API object, not the dom
+        // element itself.
         this.ytPlayerController = undefined;
-
         this.doVideoCommand = this.doVideoCommand.bind(this);
 
         this.iframeRef = React.createRef();
     }
 
-    // TODO(rksht) - perhaps break these into multiple functions instead of sending command objects,
-    // which is a leftover from the previous style.
     doVideoCommand(command, params) {
         console.assert(this.ytPlayerController !== undefined);
         const currentTime = this.ytPlayerController.getCurrentTime();
@@ -238,13 +231,6 @@ class EditorPage extends Component {
         this.context.openSnackbar({ message: `Loading video ${videoId}` });
     };
 
-    handleNotemenuChange = e => {
-        const videoId = e.target.value;
-
-        const { history } = this.props;
-        history.push(`/editor/${videoId}`);
-    };
-
     componentDidMount() {
         const { ytAPI } = this.props;
         if (this.iframeRef.current) {
@@ -291,26 +277,12 @@ class EditorPage extends Component {
     render() {
         const { match } = this.props;
         const videoId = match.params.videoId || '';
-        const { noteMenuItems } = this.state;
 
         return (
             <>
                 <div className="two-panel-div">
                     <div className="left-panel">
                         <VideoPathInput currentVideoId={videoId} />
-                        <Select
-                            value={videoId}
-                            onChange={this.handleNotemenuChange}
-                            placeholder="Saved notes..."
-                        >
-                            {/*noteMenuItems.map(item => (
-                                <MenuItem key={item.videoId} value={item.value}>
-                                    {item.label}
-                                </MenuItem>
-                            ))*/
-                            []}
-                        </Select>
-
                         <IFrameStyleWrapper>
                             <div ref={this.iframeRef} id={'__yt_iframe__'} />
                         </IFrameStyleWrapper>

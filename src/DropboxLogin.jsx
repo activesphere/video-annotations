@@ -48,7 +48,7 @@ const DropboxLogin = props => {
     const { classes, handleTokenSubmit, idToNoteData } = props;
 
     const [inputToken, setInputToken] = useState(defaultAccessToken);
-    const [formSubmitted, setFormSubmitted] = useState(false);
+    const [_, setFormSubmitted] = useState(false);
     return (
         <main className={classes.main}>
             <CssBaseline />

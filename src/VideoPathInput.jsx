@@ -26,6 +26,7 @@ const VideoPathInput = ({ classes, currentVideoId = '' }) => {
         if (!videoId) {
             return;
         }
+        console.log('videoId =', videoId);
         setIsValidVideoId(true);
     };
 
@@ -36,7 +37,8 @@ const VideoPathInput = ({ classes, currentVideoId = '' }) => {
     });
 
     if (isValidVideoId) {
-        return <Redirect to={`/editor/${getYouTubeID(text)}`} />;
+        const videoId = isYouTubeID(text) ? text : getYouTubeID(text);
+        return <Redirect to={`/editor/${videoId}`} />;
     }
 
     return (

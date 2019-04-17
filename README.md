@@ -29,11 +29,17 @@ REACT_APP_DROPBOX_ACCESS_TOKEN=some_access_token
 
 #### Save Notes to Dropbox (WIP)
 
-Open `localhost:<port>`, get redirected to `/dropbox_oauth` (or just open that directly).
-Enter access token for Dropbox. Now you can use the saveToDropbox shortcut (ctrl+shift+s)
-to save the note to dropbox. See `userConfig.js` for dropbox related configuration.
+Open `localhost:<port>`, get redirected to `/dropbox_oauth` (or just open that
+directly). Enter access token for Dropbox. Now notes will be saved to dropbox
+(as well as localstorage).
 
 If you don't authorize with Dropbox via the `/dropbox_oauth` screen, commnds for
 saving to dropbox and loading new notes from dropbox are silently ignored.
 
 TODO: Delete notes from dropbox.
+
+#### Capture image
+
+Install the frame_capture_extension. You have to activate the extension (click
+on its icon) to inject the script into the page. Then while editing press the
+captureFrame shortcut to insert current video frame into the editor.

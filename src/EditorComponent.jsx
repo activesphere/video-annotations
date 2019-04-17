@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import ReactDOM from 'react-dom';
 import { Editor } from 'slate-react';
 import { Value, Mark } from 'slate';
 import Plain from 'slate-plain-serializer';
@@ -13,13 +14,11 @@ import isHotKey from 'is-hotkey';
 import keyMap from './keyMap';
 import { Slide } from '@material-ui/core';
 import { SnackbarContext } from './context/SnackbarContext';
-import ContextMenu from './editor/ContextMenu';
 import HoverMenu from './editor/HoverMenu';
 import TimestampMark from './editor/TimestampMark';
 import debounce from './utils/debounce';
 import dropboxHelper from './dropboxHelper';
 import * as LS from './LocalStorageHelper';
-import TrailingBlock from 'slate-trailing-block';
 
 // Removing mathjax for now.
 // import MathJax from 'MathJax'; // External
@@ -34,14 +33,7 @@ function makeYoutubeTimestampMark(videoId, videoTime) {
 
 const AUTOSAVE = true;
 
-class StoredTimestamp {
-    constructor(videoId, videoTime, text = '') {
-        this.videoId = videoId;
-        this.videoTime = videoTime;
-        this.text = text;
-    }
-}
-
+// TODO: unneeded.
 class SaveCurrentNoteOptions {
     constructor(uploadToDropbox, uploadAfter, returnInfoString, cacheOnly = false) {
         this.uploadToDropbox = uploadToDropbox;
@@ -57,16 +49,42 @@ class SaveAndRestoreSelection {
 
     onBlur = (event, editor, next) => {
         this.selection = editor.value.selection;
+        console.log(
+            'Saving selection onBlur, selection undefined?',
+            !!this.selection ? 'no' : 'yes'
+        );
         return next();
     };
 
     onFocus = (event, editor, next) => {
-        if (this.selection) {
+        console.log('SaveAndRestoreSelection onFocus');
+
+        if (!this.selection) {
+            return next();
+        }
+
+        if (this.selection && this.selection.isCollapsed) {
             event.preventDefault();
-            editor.select(this.selection);
         } else {
             return next();
         }
+
+        const savedSelection = this.selection;
+        this.selection = undefined;
+
+        // Slate's onFocus calls editor.deselect. Don't want that to occur at the end. So let
+        // everything occur first, and then we will restore the selection as the last action.
+        // Using setTimeout for that purpose.
+
+        setTimeout(() => {
+            if (savedSelection.isUnset) {
+                return next();
+            }
+
+            const el = ReactDOM.findDOMNode(editor);
+
+            el.focus();
+        });
     };
 }
 
@@ -327,7 +345,6 @@ export default class EditorComponent extends Component {
 
     loadNoteForVideo = videoId => {
         if (!videoId) {
-            // this.props.showInfo('No video current playing. Not loading note.', 2, true);
             this.context.openSnackbar({ message: `No video playing, not loading any note` });
         }
 
@@ -336,7 +353,6 @@ export default class EditorComponent extends Component {
         const { editorValueAsJson } = LS.loadNoteWithId(LS.idToNoteData, videoId);
 
         if (!editorValueAsJson) {
-            // this.props.showInfo(`No note previously saved for videoId = ${videoId}`, 2);
             this.context.openSnackbar({
                 message: `No previously saved note for video - ${videoId}`,
             });
@@ -430,9 +446,11 @@ export default class EditorComponent extends Component {
             return true;
         }
 
+        let handled = false;
+
         if (event.key === 'Enter') {
-            // When we are in an 'image' block, we don't want to split into
-            // two image blocks. The new block should just be a paragraph.
+            // When we are in an 'image' block, we don't want to split into two image blocks. The
+            // new block should just be a paragraph.
             if (editor.value.startBlock.type === 'image') {
                 editor.splitBlock().setBlocks('paragraph');
                 handled = true;
@@ -445,8 +463,6 @@ export default class EditorComponent extends Component {
             // return this.handleNonHotkey(event, editor, next);
             return next();
         }
-
-        let handled = false;
 
         switch (event.key) {
             case 'b': {
@@ -598,12 +614,20 @@ export default class EditorComponent extends Component {
 
             case 'image': {
                 const dataUrl = props.node.data.get('dataUrl');
-                console.log('Renderin image node - dataUrl=', dataUrl);
-                console.log('children =', props.children);
+                // console.log('Renderin image node - dataUrl=', dataUrl);
+                // console.log('children =', props.children);
+                const { attributes, isSelected } = props;
+
+                const styles = {
+                    boxShadow: isSelected ? '3px 3px 2px 2px green' : '1px 1px 1px 1px purple',
+                    marginLeft: '2em',
+                    backgroundColor: '0xe6e6e6',
+                };
+
                 return (
                     <>
                         {props.children}
-                        <img src={dataUrl} {...props.attributes} />
+                        <img src={dataUrl} {...attributes} alt={'Captured Frame'} style={styles} />
                     </>
                 );
             }
@@ -624,26 +648,6 @@ export default class EditorComponent extends Component {
                 storedTimestamps: this.storedTimestamps,
             },
         });
-    };
-
-    saveTimestamp = timestampName => {
-        console.log('Saving timestamp with name', timestampName);
-        const { videoId } = this.props.parentApp.currentVideoInfo();
-        const videoTime = Math.floor(this.state.videoTimeToSet);
-
-        console.log('Saving timestamp to list', videoTime);
-
-        // Add to our list if it doesn't exist.
-        for (let i = 0; i < this.storedTimestamps; ++i) {
-            if (
-                this.storedTimestamps[i].videoTime === videoTime &&
-                this.storedTimestamps[i].text === timestampName
-            ) {
-                return;
-            }
-        }
-
-        this.storedTimestamps.push(new StoredTimestamp(videoId, videoTime, timestampName));
     };
 
     updateHoverMenu = () => {
@@ -683,7 +687,7 @@ export default class EditorComponent extends Component {
         this.updateHoverMenu();
         window.addEventListener('beforeunload', this.handleWindowClose);
         window.addEventListener('message', this.handleFrameCapture, false);
-        console.log('window.addEventListener this.handleFrameCapture');
+        console.log('window.addEventListener(this.handleFrameCapture)');
     }
 
     componentWillUnmount() {
@@ -804,8 +808,6 @@ export default class EditorComponent extends Component {
     };
 
     render() {
-        const { videoId } = this.props.parentApp.currentVideoInfo();
-
         // Pick bg color of editor based on if it's on a timestamp or not.
         const styles = {
             backgroundColor: this.state.onTimestamp ? '#fff4f7' : '#fafaf0',
