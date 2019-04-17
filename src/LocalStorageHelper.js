@@ -1,5 +1,4 @@
 import dropboxHelper from './dropboxHelper';
-import React from 'react';
 
 // localStorage key for the full JSON object we are storing which contains *all* notes. Notes will
 // be keyed by video id.
@@ -119,9 +118,6 @@ export function getNoteMenuItemsForCards(idToNoteData) {
     return cardInfos;
 }
 
-// If you want to use copy the save data and put it in a source file and use as test data.
-const LOG_SAVE_DATA_TO_CONSOLE = false;
-
 const DROPBOX_MAX_UPLOADS_PER_BATCH = 4;
 
 // Update dropbox file or localstorage note depending on which one is older.
@@ -192,7 +188,7 @@ export async function syncWithDropbox(idToNoteData) {
     }
 
     // Wait for all the notes to upload.
-    const _ignore = await Promise.all(promisesOfUploadingNotes);
+    await Promise.all(promisesOfUploadingNotes);
 
     // Do the same in the other direction. If there's files in dropbox but not in localstorage or there's
     // a note with same id but time of save is older in localstorage than that in dropbox,
