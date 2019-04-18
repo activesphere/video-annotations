@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import { Editor } from 'slate-react';
 import { Value, Mark } from 'slate';
@@ -12,7 +12,6 @@ import isHotKey from 'is-hotkey';
 import keyMap from './keycodeMap';
 import { Slide } from '@material-ui/core';
 import { SnackbarContext } from './context/SnackbarContext';
-import ContextMenu from './editor/ContextMenu';
 import HoverMenu from './editor/HoverMenu';
 import TimestampMark from './editor/TimestampMark';
 import debounce from './utils/debounce';
@@ -235,18 +234,28 @@ export default class EditorComponent extends Component {
 
         this.editorRef = undefined;
         this.hoverMenuRef = undefined;
+        this._makePlugins();
+        this.selectionBeforeBlur = undefined;
     }
 
-    onChange = ({ value }) => {
-        if (value.document !== this.state.value.document) {
-            this.saveCurrentNote();
+    onChange = change => {
+        let { value } = change;
+
+        // ^ The value that onChange receives as argument is the new value of the editor.
+        // Main reason we are overriding is to setState with the new value.
+        if (AUTOSAVE && value.document !== this.state.value.document) {
+            this.saveCurrentNote(new SaveCurrentNoteOptions(false, 0, false, true));
         }
 
-        // Check if we are on the boundary of a timestamp mark. If so we
-        // will toggle away that mark state.
-        const onTimestamp = value.marks.some(({ type }) => type === 'youtube_timestamp');
+        // We can call mathjax to typeset the page here. TODO(rksht): don't tell it to update only
+        // when there's at least one inline math element in the block that is currently being
+        // edited?
+        // MathJax.Hub.Queue(['Typeset', MathJax.Hub, '__editor_container_div__']);
 
-        this.setState({ onTimestamp, value });
+        // Check if we are on the boundary of a timestamp mark. If so we will toggle away that mark state.
+        const onTimestamp = value.marks.some(mark => mark.type === 'youtube_timestamp');
+        this.setState({ onTimestamp });
+        this.setState({ value });
     };
 
     renderMark = (props, editor, next) => {
@@ -779,27 +788,25 @@ export default class EditorComponent extends Component {
                         this.editorContainerDiv = r;
                     }}
                 >
-                    <ContextMenu currentVideoId={videoId}>
-                        <Editor
-                            defaultValue={this.state.value}
-                            value={this.state.value}
-                            onChange={this.onChange}
-                            onKeyDown={this.onKeyDown}
-                            renderMark={this.renderMark}
-                            renderNode={this.renderNode}
-                            renderEditor={this.renderEditor}
-                            decorateNode={this.decorateNode}
-                            className="editor-top-level"
-                            autoCorrect={false}
-                            autoFocus={true}
-                            placeholder="Write your note here.."
-                            style={styles}
-                            ref={editorRef => {
-                                this.editorRef = editorRef;
-                                this.props.parentApp.editorRef = editorRef;
-                            }}
-                        />
-                    </ContextMenu>
+                    <Editor
+                        defaultValue={this.state.value}
+                        value={this.state.value}
+                        onChange={this.onChange}
+                        onKeyDown={this.onKeyDown}
+                        renderMark={this.renderMark}
+                        renderNode={this.renderNode}
+                        renderEditor={this.renderEditor}
+                        decorateNode={this.decorateNode}
+                        className="editor-top-level"
+                        autoCorrect={false}
+                        autoFocus={true}
+                        placeholder="Write your note here.."
+                        style={styles}
+                        ref={editorRef => {
+                            this.editorRef = editorRef;
+                            this.props.parentApp.editorRef = editorRef;
+                        }}
+                    />
                 </div>
             </Slide>
         );
