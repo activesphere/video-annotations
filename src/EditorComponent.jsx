@@ -61,6 +61,107 @@ export default class EditorComponent extends Component {
         return true;
     };
 
+    _makePlugins = () => {
+        this.plugins = [];
+
+        this.plugins.push(
+            AutoReplace({
+                trigger: '.',
+                before: /[^#]?(#)$/,
+                change: change => {
+                    change.insertText('');
+                    this.props.parentApp.doVideoCommand('playVideo');
+                    setTimeout(() => {
+                        this.context.openSnackbar({
+                            message: `Playing`,
+                        });
+                    });
+                },
+            })
+        );
+
+        // Pause video key-sequence
+        this.plugins.push(
+            AutoReplace({
+                trigger: '/',
+                before: /[^#]?(#)$/,
+                change: change => {
+                    change.insertText('');
+                    this.props.parentApp.doVideoCommand('pauseVideo');
+                    setTimeout(() => {
+                        this.context.openSnackbar({
+                            message: `Paused`,
+                        });
+                    });
+                },
+            })
+        );
+
+        // Puts a timestamp mark. Used by the following AutoReplace plugins
+        const putTimestampMark = (change, videoCommandName) => {
+            const { videoId, videoTime } = this.props.parentApp.currentVideoInfo();
+            if (!videoId) {
+                return;
+            }
+            if (!videoTime && videoTime !== 0) {
+                return;
+            }
+
+            const timeStampMark = makeYoutubeTimestampMark(videoId, videoTime);
+            change.toggleMark(timeStampMark);
+            change.insertText(secondsToHhmmss(videoTime));
+            change.toggleMark(timeStampMark);
+            this.props.parentApp.doVideoCommand(videoCommandName);
+
+            console.log(change);
+        };
+
+        // Put video timestamp and play (or continue playing) video
+        this.plugins.push(
+            AutoReplace({
+                trigger: '.',
+                before: /[^#]?(#t)$/,
+                change: change => {
+                    putTimestampMark(change, 'playVideo');
+                },
+            })
+        );
+
+        // Put video timestamp and pause video
+        this.plugins.push(
+            AutoReplace({
+                trigger: '/',
+                before: /[^#]?(#t)$/,
+                change: change => {
+                    putTimestampMark(change, 'pauseVideo');
+                },
+            })
+        );
+
+        // Seek to time. The format of input is /#-?[0-9]+(s|m)s/. So input #, then -10s, then s,
+        // and you go back 10 seconds. The full sequence is #-10ss.
+        this.plugins.push(
+            AutoReplace({
+                trigger: 's',
+                before: /[^#]?(#(-?)([0-9]+)(s|m))$/,
+                change: (change, event, matches) => {
+                    const groups = matches.before;
+                    const amount = +groups[3];
+                    const unit = groups[4] === 's' ? 1 : 60;
+                    const sign = groups[2] === '-' ? -1 : 1;
+                    const deltaTimeInSeconds = sign * amount * unit;
+
+                    console.log('addToCurrentTime', deltaTimeInSeconds, ' seconds');
+
+                    this.props.parentApp.doVideoCommand('addToCurrentTime', {
+                        secondsToAdd: deltaTimeInSeconds,
+                    });
+                    change.insertText('');
+                },
+            })
+        );
+    };
+
     constructor(props) {
         super(props);
 
@@ -182,9 +283,15 @@ export default class EditorComponent extends Component {
                 message: `No note previously saved for videoId = ${videoId}`,
             });
             // Load empty editor value
-            this.setState({ ...this.state, value: initialEditorValue });
+            this.setState({
+                ...this.state,
+                value: initialEditorValue,
+            });
         } else {
-            this.setState({ ...this.state, value: Value.fromJSON(jsonEditorValue) });
+            this.setState({
+                ...this.state,
+                value: Value.fromJSON(jsonEditorValue),
+            });
         }
     };
 
@@ -228,7 +335,9 @@ export default class EditorComponent extends Component {
                     break;
                 }
                 case 'saveNote': {
-                    this.context.openSnackbar({ message: this.saveCurrentNote() });
+                    this.context.openSnackbar({
+                        message: this.saveCurrentNote(),
+                    });
                     break;
                 }
                 case 'videoForward': {
