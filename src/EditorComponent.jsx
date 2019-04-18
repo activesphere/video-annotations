@@ -72,6 +72,16 @@ class SaveAndRestoreSelection {
     };
 }
 
+// TODO: unneeded.
+class SaveCurrentNoteOptions {
+    constructor(uploadToDropbox, uploadAfter, returnInfoString, cacheOnly = false) {
+        this.uploadToDropbox = uploadToDropbox;
+        this.uploadAfter = uploadAfter;
+        this.returnInfoString = returnInfoString;
+        this.cacheOnly = cacheOnly;
+    }
+}
+
 export default class EditorComponent extends Component {
     static propTypes = {
         parentApp: PropTypes.object.isRequired,
@@ -224,7 +234,6 @@ export default class EditorComponent extends Component {
         };
 
         this.editorRef = undefined;
-
         this.hoverMenuRef = undefined;
     }
 
@@ -391,6 +400,25 @@ export default class EditorComponent extends Component {
                     this.context.openSnackbar({ message: `Saved` });
                     break;
                 }
+
+                case 'save': {
+                    this.saveCurrentNote(new SaveCurrentNoteOptions(true, 0, true));
+                    break;
+                }
+
+                case 'captureFrame': {
+                    const { videoId } = this.props.parentApp.currentVideoInfo();
+                    if (!videoId) {
+                        this.context.openSnackbar({
+                            message: 'No video currently playing',
+                            autoHideDuration: 1000,
+                        });
+                        return;
+                    }
+                    window.frames[0].postMessage({ type: 'VID_ANNOT_CAPTURE_CURRENT_FRAME' }, '*');
+                    break;
+                }
+
                 case 'videoForward': {
                     this.props.dispatch('addToCurrentTime', {
                         secondsToAdd: 10,
@@ -411,12 +439,23 @@ export default class EditorComponent extends Component {
             return true;
         }
 
+        let handled = false;
+
+        if (event.key === 'Enter') {
+            // When we are in an 'image' block, we don't want to split into two image blocks. The
+            // new block should just be a paragraph.
+            if (editor.value.startBlock.type === 'image') {
+                editor.splitBlock().setBlocks('paragraph');
+                handled = true;
+            } else {
+                return next();
+            }
+        }
+
         if (!event.ctrlKey) {
             // return this.handleNonHotkey(event, editor, next);
             return next();
         }
-
-        let handled = false;
 
         switch (event.key) {
             case 'b': {
@@ -598,12 +637,22 @@ export default class EditorComponent extends Component {
             rect.width / 2}px`;
     };
 
+    handleWindowClose = ev => {
+        ev.preventDefault();
+        LS.flushToLocalStorage(LS.idToNoteData);
+    };
+
     componentDidMount() {
         this.updateHoverMenu();
+        window.addEventListener('beforeunload', this.handleWindowClose);
+        window.addEventListener('message', this.handleFrameCapture, false);
+        console.log('window.addEventListener(this.handleFrameCapture)');
     }
 
-    componentDidUpdate() {
-        this.updateHoverMenu();
+    componentWillUnmount() {
+        LS.flushToLocalStorage(LS.idToNoteData);
+        window.removeEventListener('beforeunload', this.handleWindowClose);
+        window.removeEventListener('message', this.handleFrameCapture);
     }
 
     componentWillReceiveProps(newProps) {
@@ -612,6 +661,21 @@ export default class EditorComponent extends Component {
             newProps.editorCommand.resetCommand();
         }
     }
+
+    handleFrameCapture = e => {
+        if (e.data.type === 'VID_ANNOT_CAPTURED_FRAME') {
+            console.log('Received image data');
+            this.context.openSnackbar({
+                message: 'Received image data...',
+                autoHideDuration: 1000,
+            });
+            this.editorRef.insertBlock({
+                type: 'image',
+                data: { dataUrl: e.data.dataUrl },
+            });
+            //.insertBlock('paragraph');
+        }
+    };
 
     renderEditor = (props, editor, next) => {
         const children = next();
