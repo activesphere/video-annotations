@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import ReactDOM from 'react-dom';
 import { Editor } from 'slate-react';
 import { Value, Mark } from 'slate';
 import Plain from 'slate-plain-serializer';
@@ -28,6 +29,51 @@ function makeYoutubeTimestampMark(videoId, videoTime) {
 }
 
 const AUTOSAVE = true;
+
+// Plugin to save and restore cursor selection on blur and focus respectively.
+class SaveAndRestoreSelection {
+    selection = undefined;
+
+    onBlur = (event, editor, next) => {
+        this.selection = editor.value.selection;
+        console.log(
+            'Saving selection onBlur, selection undefined?',
+            !!this.selection ? 'no' : 'yes'
+        );
+        return next();
+    };
+
+    onFocus = (event, editor, next) => {
+        console.log('SaveAndRestoreSelection onFocus');
+
+        if (!this.selection) {
+            return next();
+        }
+
+        if (this.selection && this.selection.isCollapsed) {
+            event.preventDefault();
+        } else {
+            return next();
+        }
+
+        const savedSelection = this.selection;
+        this.selection = undefined;
+
+        // Slate's onFocus calls editor.deselect. Don't want that to occur at the end. So let
+        // everything occur first, and then we will restore the selection as the last action.
+        // Using setTimeout for that purpose.
+
+        setTimeout(() => {
+            if (savedSelection.isUnset) {
+                return next();
+            }
+
+            const el = ReactDOM.findDOMNode(editor);
+
+            el.focus();
+        });
+    };
+}
 
 export default class EditorComponent extends Component {
     static propTypes = {
@@ -167,6 +213,8 @@ export default class EditorComponent extends Component {
                 },
             })
         );
+
+        this.plugins.push(new SaveAndRestoreSelection());
     };
 
     constructor(props) {
