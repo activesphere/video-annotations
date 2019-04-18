@@ -40,6 +40,15 @@ export function timeAfter(seconds) {
 
 export const TEST_VIDEO_ID = '495nCzxM9PI';
 
+export async function readBlobAsString(blob) {
+    const reader = new FileReader();
+    return new Promise((resolve, reject) => {
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(this);
+        reader.readAsText(blob);
+    });
+}
+
 /*
 export function shortenStringEllipsis(fullString, maxLength = 10) {
     const len = fullString.length;

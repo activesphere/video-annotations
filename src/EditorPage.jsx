@@ -8,7 +8,6 @@ import MenuItem from '@material-ui/core/MenuItem';
 import EditorComponent from './EditorComponent';
 import VideoPathInput from './VideoPathInput';
 import getYoutubeTitle from 'get-youtube-title';
-import { noteStorageManager } from './save_note';
 import PropTypes from 'prop-types';
 import IFrameStyleWrapper from './IFrameStyleWrapper';
 import { SnackbarContext } from './context/SnackbarContext';
@@ -135,7 +134,6 @@ class EditorPage extends Component {
             infoText: undefined,
             infoLastTime: undefined,
             selectedOption: undefined,
-            noteMenuItems: noteStorageManager.getNoteMenuItems(),
             startingPopperMessage: this.props.startingPopperMessage,
         };
 
@@ -218,8 +216,8 @@ class EditorPage extends Component {
 
     // Called by editor component. Updates current note menu items
     updateNoteMenu = () => {
-        const noteMenuItems = noteStorageManager.getNoteMenuItems();
-        this.setState({ noteMenuItems });
+        // const noteMenuItems = noteStorageManager.getNoteMenuItems();
+        // this.setState({ noteMenuItems });
     };
 
     tellEditorToLoadNote = videoId => {
@@ -299,16 +297,6 @@ class EditorPage extends Component {
             <div className="two-panel-div">
                 <div className="left-panel">
                     <VideoPathInput />
-                    <Select
-                        value={videoId}
-                        onChange={this.handleNotemenuChange}
-                        placeholder="Saved notes..."
-                    >
-                        {noteMenuItems.map(item => (
-                            <MenuItem value={item.value}>{item.label}</MenuItem>
-                        ))}
-                    </Select>
-
                     <IFrameStyleWrapper>
                         <div ref={this.iframeRef} />
                     </IFrameStyleWrapper>

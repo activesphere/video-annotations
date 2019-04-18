@@ -6,7 +6,7 @@ import { secondsToHhmmss } from './utils';
 import PropTypes from 'prop-types';
 import Prism from './prism_add_markdown_syntax';
 import AutoReplace from './slate-auto-replace-alt';
-import { noteStorageManager, NoteData } from './save_note';
+import NoteData from './NoteData';
 import Modal from 'react-modal';
 import isHotKey from 'is-hotkey';
 import keyMap from './keycodeMap';
@@ -16,6 +16,8 @@ import ContextMenu from './editor/ContextMenu';
 import HoverMenu from './editor/HoverMenu';
 import TimestampMark from './editor/TimestampMark';
 import debounce from './utils/debounce';
+import dropboxHelper from './dropboxHelper';
+import * as LS from './LocalStorageHelper';
 
 Modal.setAppElement('#root');
 
@@ -39,11 +41,16 @@ export default class EditorComponent extends Component {
         const jsonEditorValue = this.state.value.toJSON();
         const { videoId, videoTitle } = this.props.parentApp.currentVideoInfo();
         const noteData = new NoteData(videoId, videoTitle, jsonEditorValue);
-        noteStorageManager.saveNoteWithId(videoId, noteData);
+        LS.saveNoteWithId(LS.idToNoteData, videoId, noteData);
+        dropboxHelper.save(noteData).catch(error => {
+            console.log(error);
+            this.context.openSnackbar({
+                message: `Failed to upload to dropbox - ${error}`,
+            });
+        });
         this.props.parentApp.updateNoteMenu();
-
         return `Saved Note for video "${videoId}", title - "${videoTitle}"`;
-    }, 1000);
+    }, 3000);
 
     _putTimestampMarkIntoEditor = editor => {
         const { videoId, videoTime } = this.props.parentApp.currentVideoInfo();
@@ -270,17 +277,17 @@ export default class EditorComponent extends Component {
     loadNoteForVideo = videoId => {
         if (!videoId) {
             this.context.openSnackbar({
-                message: 'No video current playing. Not loading note.',
+                message: `No video playing, not loading any note`,
             });
         }
 
         console.log('Loading note for video', videoId);
 
-        const { jsonEditorValue } = noteStorageManager.loadNoteWithId(videoId);
+        const { editorValueAsJson } = LS.loadNoteWithId(LS.idToNoteData, videoId);
 
-        if (!jsonEditorValue) {
+        if (!editorValueAsJson) {
             this.context.openSnackbar({
-                message: `No note previously saved for videoId = ${videoId}`,
+                message: `No previously saved note for video - ${videoId}`,
             });
             // Load empty editor value
             this.setState({
@@ -290,7 +297,7 @@ export default class EditorComponent extends Component {
         } else {
             this.setState({
                 ...this.state,
-                value: Value.fromJSON(jsonEditorValue),
+                value: Value.fromJSON(editorValueAsJson),
             });
         }
     };
@@ -335,9 +342,8 @@ export default class EditorComponent extends Component {
                     break;
                 }
                 case 'saveNote': {
-                    this.context.openSnackbar({
-                        message: this.saveCurrentNote(),
-                    });
+                    this.saveCurrentNote(true, 1.5, false);
+                    this.context.openSnackbar({ message: `Saved` });
                     break;
                 }
                 case 'videoForward': {
