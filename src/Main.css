@@ -25,7 +25,7 @@ html {
     grid-column-start: 1;
     grid-column-end: 2;
 
-    grid-template-rows: 10% 10% 50% 15%;
+    grid-template-rows: 10% 50% 15%;
 }
 
 .youtube-player {
