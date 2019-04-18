@@ -71,16 +71,6 @@ class SaveAndRestoreSelection {
     };
 }
 
-// TODO: unneeded.
-class SaveCurrentNoteOptions {
-    constructor(uploadToDropbox, uploadAfter, returnInfoString, cacheOnly = false) {
-        this.uploadToDropbox = uploadToDropbox;
-        this.uploadAfter = uploadAfter;
-        this.returnInfoString = returnInfoString;
-        this.cacheOnly = cacheOnly;
-    }
-}
-
 export default class EditorComponent extends Component {
     static propTypes = {
         parentApp: PropTypes.object.isRequired,
@@ -244,7 +234,7 @@ export default class EditorComponent extends Component {
         // ^ The value that onChange receives as argument is the new value of the editor.
         // Main reason we are overriding is to setState with the new value.
         if (AUTOSAVE && value.document !== this.state.value.document) {
-            this.saveCurrentNote(new SaveCurrentNoteOptions(false, 0, false, true));
+            this.saveCurrentNote();
         }
 
         // We can call mathjax to typeset the page here. TODO(rksht): don't tell it to update only
@@ -254,8 +244,7 @@ export default class EditorComponent extends Component {
 
         // Check if we are on the boundary of a timestamp mark. If so we will toggle away that mark state.
         const onTimestamp = value.marks.some(mark => mark.type === 'youtube_timestamp');
-        this.setState({ onTimestamp });
-        this.setState({ value });
+        this.setState({ onTimestamp, value });
     };
 
     renderMark = (props, editor, next) => {
@@ -407,13 +396,13 @@ export default class EditorComponent extends Component {
                     break;
                 }
                 case 'saveNote': {
-                    this.saveCurrentNote(true, 1.5, false);
+                    this.saveCurrentNote();
                     this.context.openSnackbar({ message: `Saved` });
                     break;
                 }
 
                 case 'save': {
-                    this.saveCurrentNote(new SaveCurrentNoteOptions(true, 0, true));
+                    this.saveCurrentNote();
                     break;
                 }
 
