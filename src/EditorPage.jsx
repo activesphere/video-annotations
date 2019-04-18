@@ -136,10 +136,6 @@ class EditorPage extends Component {
             startingPopperMessage: this.props.startingPopperMessage,
         };
 
-        // Editor ref, set by the child component
-        this.editorRef = undefined;
-        this.editorContainerDiv = undefined;
-
         // We keep a handle to the youtube player. This is the player API object, not the dom
         // element itself.
         this.ytPlayerController = undefined;
@@ -204,10 +200,6 @@ class EditorPage extends Component {
         // console.log('Current video info =', info);
         return info;
     }
-
-    getEditorContainerDiv = ref => {
-        this.editorContainerDiv = ref;
-    };
 
     // Called by editor component. Updates current note menu items
     updateNoteMenu = () => {
