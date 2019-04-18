@@ -8,7 +8,6 @@ import PropTypes from 'prop-types';
 import Prism from './prism_add_markdown_syntax';
 import AutoReplace from './slate-auto-replace-alt';
 import NoteData from './NoteData';
-import Modal from 'react-modal';
 import isHotKey from 'is-hotkey';
 import keyMap from './keycodeMap';
 import { Slide } from '@material-ui/core';
@@ -19,8 +18,6 @@ import TimestampMark from './editor/TimestampMark';
 import debounce from './utils/debounce';
 import dropboxHelper from './dropboxHelper';
 import * as LS from './LocalStorageHelper';
-
-Modal.setAppElement('#root');
 
 const initialEditorValue = Plain.deserialize('');
 
