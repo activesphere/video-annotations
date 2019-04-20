@@ -40,7 +40,8 @@
     }
 
     function main() {
-        // Get the <video> element.
+        // Get the <video> element. A more specific query would be 'better', but I can't seem to get
+        // that to work.
         const videoElement = document.querySelector(`video`);
 
         const scriptIsInIframe = !!videoElement;
@@ -51,14 +52,14 @@
 
         console.log('Yeah bruh, content script is in frame');
 
-        // Listen for message from main app...
+        // Listen for message from main app and do the corresponding thing.
         window.addEventListener(
             'message',
             e => {
                 if (e.data.type === 'VID_ANNOT_CAPTURE_CURRENT_FRAME') {
                     console.log('Content script received message requesting current frame');
 
-                    // ... then get the frame and send back to app.
+                    // Send image back to app via postMessage
                     try {
                         const dataUrl = getCurrentFrameURI(getCanvasElement(), videoElement);
                         console.log('dataUrl =', dataUrl);
@@ -68,6 +69,14 @@
                         );
                     } catch (e) {
                         console.log(e);
+                    }
+                }
+
+                if (e.data.type == 'VID_ANNOT_REMOVE_PAUSE_OVERLAY') {
+                    console.log('Content script received message to remove pause overlay');
+                    const elements = document.getElementsByClassName('ytp-pause-overlay');
+                    for (const element of elements) {
+                        element.parentNode.removeChild(element);
                     }
                 }
             },

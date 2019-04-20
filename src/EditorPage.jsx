@@ -81,12 +81,16 @@ class YoutubePlayerController {
         this.playerApi.pauseVideo(this.currentVideoId);
     }
 
+    // Returns state after toggle
     togglePause() {
         if (this.currentPlayerState === 'paused') {
             this.playVideo();
+            return 'playing';
         } else if (this.currentPlayerState === 'playing') {
             this.pauseVideo();
+            return 'paused';
         }
+        return undefined;
     }
 
     addToCurrentTime(seconds) {
@@ -144,6 +148,10 @@ class EditorPage extends Component {
         this.iframeRef = React.createRef();
     }
 
+    tellPluginToRemovePauseOverlay = () => {
+        window.frames[0].postMessage({ type: 'VID_ANNOT_REMOVE_PAUSE_OVERLAY' }, '*');
+    };
+
     doVideoCommand(command, params) {
         console.assert(this.ytPlayerController !== undefined);
         const currentTime = this.ytPlayerController.getCurrentTime();
@@ -155,6 +163,7 @@ class EditorPage extends Component {
 
             case 'pauseVideo':
                 this.ytPlayerController.pauseVideo();
+                this.tellPluginToRemovePauseOverlay();
                 break;
 
             case 'restartVideo':
@@ -162,7 +171,10 @@ class EditorPage extends Component {
                 break;
 
             case 'togglePause':
-                this.ytPlayerController.togglePause();
+                const playState = this.ytPlayerController.togglePause();
+                if (playState === 'paused') {
+                    this.tellPluginToRemovePauseOverlay();
+                }
                 break;
 
             case 'addToCurrentTime':
