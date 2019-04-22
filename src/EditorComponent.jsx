@@ -43,7 +43,7 @@ export default class EditorComponent extends Component {
         this.props.parentApp.updateNoteMenu();
 
         return `Saved Note for video "${videoId}", title - "${videoTitle}"`;
-    }, 1000);
+    }, 3000);
 
     _putTimestampMarkIntoEditor = editor => {
         const { videoId, videoTime } = this.props.parentApp.currentVideoInfo();
@@ -270,7 +270,7 @@ export default class EditorComponent extends Component {
     loadNoteForVideo = videoId => {
         if (!videoId) {
             this.context.openSnackbar({
-                message: 'No video current playing. Not loading note.',
+                message: 'No video playing, not loading any note',
             });
         }
 
@@ -280,7 +280,7 @@ export default class EditorComponent extends Component {
 
         if (!jsonEditorValue) {
             this.context.openSnackbar({
-                message: `No note previously saved for videoId = ${videoId}`,
+                message: `No previously saved note for video - ${videoId}`,
             });
             // Load empty editor value
             this.setState({
@@ -335,9 +335,8 @@ export default class EditorComponent extends Component {
                     break;
                 }
                 case 'saveNote': {
-                    this.context.openSnackbar({
-                        message: this.saveCurrentNote(),
-                    });
+                    this.saveCurrentNote();
+                    this.context.openSnackbar({ message: `Saved` });
                     break;
                 }
                 case 'videoForward': {
