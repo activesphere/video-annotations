@@ -40,7 +40,6 @@ export default class EditorComponent extends Component {
         const { videoId, videoTitle } = this.props.parentApp.currentVideoInfo();
         const noteData = new NoteData(videoId, videoTitle, jsonEditorValue);
         noteStorageManager.saveNoteWithId(videoId, noteData);
-        this.props.parentApp.updateNoteMenu();
 
         return `Saved Note for video "${videoId}", title - "${videoTitle}"`;
     }, 3000);
