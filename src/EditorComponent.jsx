@@ -1,22 +1,23 @@
-import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
-import { Editor } from 'slate-react';
-import { Value, Mark } from 'slate';
-import Plain from 'slate-plain-serializer';
 import { secondsToHhmmss } from './utils';
-import PropTypes from 'prop-types';
-import Prism from './prism_add_markdown_syntax';
-import AutoReplace from './slate-auto-replace-alt';
 import NoteData from './NoteData';
-import isHotKey from 'is-hotkey';
 import keyMap from './keycodeMap';
-import { Slide } from '@material-ui/core';
 import { SnackbarContext } from './context/SnackbarContext';
 import HoverMenu from './editor/HoverMenu';
 import TimestampMark from './editor/TimestampMark';
 import debounce from './utils/debounce';
 import dropboxHelper from './dropboxHelper';
 import * as LS from './LocalStorageHelper';
+
+import React, { Component } from 'react';
+import ReactDOM from 'react-dom';
+import { Editor } from 'slate-react';
+import { Value, Mark } from 'slate';
+import Plain from 'slate-plain-serializer';
+import PropTypes from 'prop-types';
+import Prism from './prism_add_markdown_syntax';
+import AutoReplace from './slate-auto-replace-alt';
+import isHotKey from 'is-hotkey';
+import { Slide } from '@material-ui/core';
 
 const initialEditorValue = Plain.deserialize('');
 
