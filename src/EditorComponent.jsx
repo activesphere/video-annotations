@@ -375,6 +375,7 @@ export default class EditorComponent extends Component {
     };
 
     onKeyDown = (event, editor, next) => {
+        console.log('Num marks = ', editor.value.marks.size);
         // Special handling of TAB key. Put 4 spaces.
         if (event.keyCode === 9) {
             editor.insertText('    ');
@@ -489,14 +490,14 @@ export default class EditorComponent extends Component {
                 for (let mark of marks) {
                     if (mark.type === 'youtube_timestamp') {
                         const params = {
-                            videoId: mark.data.get('videoId'),
                             videoTime: mark.data.get('videoTime'),
                         };
 
-                        // prettier-ignore
                         console.log(
-                                `Seeking video ${params.videoId} to time ${secondsToHhmmss(params.videoTime)}`
-                            );
+                            `Seeking video ${params.videoId} to time ${secondsToHhmmss(
+                                params.videoTime
+                            )}`
+                        );
 
                         this.props.parentApp.doVideoCommand('seekToTime', params);
                     }
@@ -608,6 +609,7 @@ export default class EditorComponent extends Component {
 
             case 'image': {
                 const dataUrl = props.node.data.get('dataUrl');
+                const videoTime = props.node.data.get('videoTime');
                 // console.log('Renderin image node - dataUrl=', dataUrl);
                 // console.log('children =', props.children);
                 const { attributes, isSelected } = props;
@@ -621,7 +623,19 @@ export default class EditorComponent extends Component {
                 return (
                     <>
                         {props.children}
-                        <img src={dataUrl} {...attributes} alt={'Captured Frame'} style={styles} />
+                        <img
+                            src={dataUrl}
+                            {...attributes}
+                            alt={'Captured Frame'}
+                            style={styles}
+                            onClick={() => {
+                                if (videoTime) {
+                                    this.props.parentApp.doVideoCommand('seekToTime', {
+                                        videoTime,
+                                    });
+                                }
+                            }}
+                        />
                     </>
                 );
             }
@@ -695,9 +709,12 @@ export default class EditorComponent extends Component {
                 message: 'Received image data...',
                 autoHideDuration: 1000,
             });
+
+            const { videoTime } = this.props.parentApp.currentVideoInfo();
+
             this.editorRef.insertBlock({
                 type: 'image',
-                data: { dataUrl: e.data.dataUrl },
+                data: { dataUrl: e.data.dataUrl, videoTime },
             });
             //.insertBlock('paragraph');
         }

@@ -182,15 +182,7 @@ class EditorPage extends Component {
                 break;
 
             case 'seekToTime':
-                if (
-                    !params.videoId ||
-                    (!params.videoTime !== undefined && params.videoTime !== 0)
-                ) {
-                    // Check if currently playing videoId is the same as sent as params, if not we
-                    // will load the given video
-                    if (this.ytPlayerController.currentVideoId !== params.videoId) {
-                        this.ytPlayerController.loadAndPlayVideo(params.videoId);
-                    }
+                if (params.videoTime) {
                     this.ytPlayerController.seekTo(params.videoTime);
                 }
                 break;
