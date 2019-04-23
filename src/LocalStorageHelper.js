@@ -42,11 +42,13 @@ export const getNoteMenuItemsForCards = idToNoteData => Object.values(idToNoteDa
 const DROPBOX_UPLOAD_BATCH_LIMIT = 4;
 
 const batchDropboxUpload = async (notes, promiseFn, limit) => {
+    console.log('Notes to upload =', notes);
     let remaining = [...notes];
     while (remaining.length) {
-        const promises = remaining.slice(0, limit).map(promiseFn);
+        const sliceLength = Math.min(limit, remaining.length);
+        const promises = remaining.slice(0, sliceLength).map(promiseFn);
         await Promise.all(promises);
-        remaining = remaining.slice(limit);
+        remaining = remaining.slice(sliceLength);
     }
 };
 
@@ -64,7 +66,7 @@ export async function syncWithDropbox(idToNoteData) {
     // Notes to be uploaded
     const uploadNotes = [];
 
-    const keys = unique([...Object.keys(idToNoteData), dbxNotes.map(x => x.videoId)]);
+    const keys = unique([...Object.keys(idToNoteData), ...dbxNotes.map(x => x.videoId)]);
 
     for (const videoId of keys) {
         const lsData = idToNoteData[videoId];
@@ -79,6 +81,10 @@ export async function syncWithDropbox(idToNoteData) {
         }
     }
 
-    await batchDropboxUpload(uploadNotes, dropboxHelper.save, DROPBOX_UPLOAD_BATCH_LIMIT);
+    await batchDropboxUpload(
+        uploadNotes,
+        dropboxHelper.save.bind(dropboxHelper),
+        DROPBOX_UPLOAD_BATCH_LIMIT
+    );
     flushToLocalStorage(idToNoteData);
 }
