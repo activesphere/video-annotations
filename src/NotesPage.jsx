@@ -14,9 +14,28 @@ import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 
 import { noteStorageManager } from './save_note.js';
-import { makeYoutubeUrl, makeYoutubeImageUrl } from './utils';
 import { Link } from 'react-router-dom';
 import seedrandom from 'seedrandom';
+
+function makeYoutubeUrl(videoId, videoTimeInSeconds) {
+    if (!videoTimeInSeconds) {
+        return `http://www.youtube.com/watch?v=${videoId}`;
+    }
+
+    // Seconds to mmss
+    let remainingSeconds = videoTimeInSeconds;
+    let minutes = Math.floor(remainingSeconds / 60);
+    remainingSeconds = remainingSeconds % 60;
+    const mmss = `${minutes}m${remainingSeconds.toFixed(0)}s`;
+    return `http://www.youtube.com/watch?v=${videoId}&t=${mmss}`;
+}
+
+function makeYoutubeImageUrl(videoId, imageNumber = 1) {
+    if (!videoId) {
+        return '';
+    }
+    return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+}
 
 const NotesPage = ({ cards, classes }) => {
     if (!cards) {
