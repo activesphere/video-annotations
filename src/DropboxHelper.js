@@ -1,5 +1,5 @@
 // Functions for storing notes to dropbox
-import { readBlobAsString } from './utils';
+import readBlobAsString from './utils/readBlobAsString';
 import pathJoin from './utils/pathJoin';
 import dropboxConfig from './dropboxConfig';
 
