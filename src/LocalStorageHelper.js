@@ -1,4 +1,4 @@
-import dropboxHelper from './dropboxHelper';
+import dropboxHelper from './DropboxHelper';
 import unique from './utils/unique';
 
 // localStorage key for the full JSON object we are storing which contains *all* notes. Notes will
@@ -70,11 +70,11 @@ export async function syncWithDropbox(idToNoteData) {
         const lsData = idToNoteData[videoId];
         const dbxData = dbxNotes.find(x => x.videoId === videoId);
 
-        if (!dbxData || dbxData.timeOfSave < lsData.timeOfSave) {
+        if (lsData && (!dbxData || dbxData.timeOfSave < lsData.timeOfSave)) {
             uploadNotes.push(lsData);
         }
 
-        if (!lsData || lsData.timeOfSave < dbxData.timeOfSave) {
+        if (dbxData && (!lsData || lsData.timeOfSave < dbxData.timeOfSave)) {
             idToNoteData[videoId] = dbxData;
         }
     }

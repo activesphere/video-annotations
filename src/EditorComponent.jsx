@@ -6,7 +6,9 @@ import secondsToHhmmss from './utils/secondsToHhmmsss';
 import PropTypes from 'prop-types';
 import Prism from './prism_add_markdown_syntax';
 import AutoReplace from './slate-auto-replace-alt';
-import { noteStorageManager, NoteData } from './save_note';
+import * as LS from './LocalStorageHelper';
+import NoteData from './NoteData';
+import dropboxHelper from './DropboxHelper';
 import Modal from 'react-modal';
 import isHotKey from 'is-hotkey';
 import keyMap from './keycodeMap';
@@ -36,7 +38,13 @@ export default class EditorComponent extends Component {
         const jsonEditorValue = this.state.value.toJSON();
         const { videoId, videoTitle } = this.props.parentApp.currentVideoInfo();
         const noteData = new NoteData(videoId, videoTitle, jsonEditorValue);
-        noteStorageManager.saveNoteWithId(videoId, noteData);
+        LS.saveNoteWithId(LS.idToNoteData, videoId, noteData);
+        dropboxHelper.save(noteData).catch(error => {
+            console.log(error);
+            this.context.openSnackbar({
+                message: `Failed to upload to dropbox - ${error}`,
+            });
+        });
 
         return `Saved Note for video "${videoId}", title - "${videoTitle}"`;
     }, 3000);
@@ -272,9 +280,9 @@ export default class EditorComponent extends Component {
 
         console.log('Loading note for video', videoId);
 
-        const { jsonEditorValue } = noteStorageManager.loadNoteWithId(videoId);
+        const { editorValueAsJson } = LS.loadNoteWithId(LS.idToNoteData, videoId);
 
-        if (!jsonEditorValue) {
+        if (!editorValueAsJson) {
             this.context.openSnackbar({
                 message: `No previously saved note for video - ${videoId}`,
             });
@@ -286,7 +294,7 @@ export default class EditorComponent extends Component {
         } else {
             this.setState({
                 ...this.state,
-                value: Value.fromJSON(jsonEditorValue),
+                value: Value.fromJSON(editorValueAsJson),
             });
         }
     };
