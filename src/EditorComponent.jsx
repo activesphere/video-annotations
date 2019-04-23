@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { Editor } from 'slate-react';
 import { Value, Mark } from 'slate';
 import Plain from 'slate-plain-serializer';
-import { secondsToHhmmss } from './utils';
+import secondsToHhmmss from './utils/secondsToHhmmsss';
 import PropTypes from 'prop-types';
 import Prism from './prism_add_markdown_syntax';
 import AutoReplace from './slate-auto-replace-alt';
@@ -12,7 +12,6 @@ import isHotKey from 'is-hotkey';
 import keyMap from './keycodeMap';
 import { Slide } from '@material-ui/core';
 import { SnackbarContext } from './context/SnackbarContext';
-import ContextMenu from './editor/ContextMenu';
 import HoverMenu from './editor/HoverMenu';
 import TimestampMark from './editor/TimestampMark';
 import debounce from './utils/debounce';
@@ -24,8 +23,6 @@ const initialEditorValue = Plain.deserialize('');
 function makeYoutubeTimestampMark(videoId, videoTime) {
     return Mark.create({ type: 'youtube_timestamp', data: { videoId, videoTime } });
 }
-
-const AUTOSAVE = true;
 
 export default class EditorComponent extends Component {
     static propTypes = {
@@ -563,7 +560,7 @@ export default class EditorComponent extends Component {
     renderEditor = (props, editor, next) => {
         const children = next();
         return (
-            <React.Fragment>
+            <Fragment>
                 {children}
                 <HoverMenu
                     getRef={menu => {
@@ -571,7 +568,7 @@ export default class EditorComponent extends Component {
                     }}
                     editor={editor}
                 />
-            </React.Fragment>
+            </Fragment>
         );
     };
 
@@ -646,8 +643,6 @@ export default class EditorComponent extends Component {
     };
 
     render() {
-        const { videoId } = this.props.parentApp.currentVideoInfo();
-
         // Pick bg color of editor based on if it's on a timestamp or not.
         const styles = {
             backgroundColor: this.state.onTimestamp ? '#fff4f7' : '#fafaf0',
@@ -662,27 +657,25 @@ export default class EditorComponent extends Component {
                         this.editorContainerDiv = r;
                     }}
                 >
-                    <ContextMenu currentVideoId={videoId}>
-                        <Editor
-                            defaultValue={this.state.value}
-                            value={this.state.value}
-                            onChange={this.onChange}
-                            onKeyDown={this.onKeyDown}
-                            renderMark={this.renderMark}
-                            renderNode={this.renderNode}
-                            renderEditor={this.renderEditor}
-                            decorateNode={this.decorateNode}
-                            className="editor-top-level"
-                            autoCorrect={false}
-                            autoFocus={true}
-                            placeholder="Write your note here.."
-                            style={styles}
-                            ref={editorRef => {
-                                this.editorRef = editorRef;
-                                this.props.parentApp.editorRef = editorRef;
-                            }}
-                        />
-                    </ContextMenu>
+                    <Editor
+                        defaultValue={this.state.value}
+                        value={this.state.value}
+                        onChange={this.onChange}
+                        onKeyDown={this.onKeyDown}
+                        renderMark={this.renderMark}
+                        renderNode={this.renderNode}
+                        renderEditor={this.renderEditor}
+                        decorateNode={this.decorateNode}
+                        className="editor-top-level"
+                        autoCorrect={false}
+                        autoFocus={true}
+                        placeholder="Write your note here.."
+                        style={styles}
+                        ref={editorRef => {
+                            this.editorRef = editorRef;
+                            this.props.parentApp.editorRef = editorRef;
+                        }}
+                    />
                 </div>
             </Slide>
         );
