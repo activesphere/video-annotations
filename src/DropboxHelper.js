@@ -3,10 +3,7 @@ import readBlobAsString from './utils/readBlobAsString';
 import pathJoin from './utils/pathJoin';
 import dropboxConfig from './dropboxConfig';
 
-const NOTES_FOLDER_PATH = pathJoin(
-    dropboxConfig.notesFolderParent === '/' ? '' : dropboxConfig.notesFolderParent,
-    dropboxConfig.notesFolderName
-);
+const NOTES_FOLDER_PATH = pathJoin(dropboxConfig.notesFolderParent, dropboxConfig.notesFolderName);
 
 // Helper class for saving and retrieving notes from dropbox.
 class DropboxHelper {
