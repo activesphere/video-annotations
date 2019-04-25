@@ -339,8 +339,8 @@ export default class EditorComponent extends Component {
                     break;
                 }
                 case 'saveNote': {
-                    this.saveCurrentNote();
-                    this.context.openSnackbar({ message: `Saved` });
+                    this.saveCurrentNote.callRightNow();
+                    this.context.openSnackbar({ message: `Saved`, autoHideDuration: 1000 });
                     break;
                 }
                 case 'videoForward': {
