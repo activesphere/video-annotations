@@ -8,7 +8,7 @@ import PropTypes from 'prop-types';
 import Prism from './prism_add_markdown_syntax';
 import AutoReplace from './slate-auto-replace-alt';
 import { saveNoteWithId, loadNoteWithId } from './LocalStorageHelper';
-import dropboxHelper from './DropboxHelper';
+import { save as saveNoteDbx } from './DropboxHelper';
 import Modal from 'react-modal';
 import isHotKey from 'is-hotkey';
 import keyMap from './keycodeMap';
@@ -47,7 +47,7 @@ export default class EditorComponent extends Component {
         };
 
         saveNoteWithId(videoId, noteData);
-        dropboxHelper.save(noteData).catch(error => {
+        saveNoteDbx(noteData).catch(error => {
             console.log(error);
             this.context.openSnackbar({
                 message: `Failed to upload to dropbox - ${error}`,

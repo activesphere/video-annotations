@@ -1,4 +1,4 @@
-import dropboxHelper from './DropboxHelper';
+import { save as saveNoteDbx, isInitialized, downloadAllNoteFiles } from './DropboxHelper';
 import unique from './utils/unique';
 
 // localStorage key for the full JSON object we are storing which contains *all* notes. Notes will
@@ -54,12 +54,12 @@ const batchDropboxUpload = async (notes, promiseFn, limit) => {
 
 // Update dropbox file or localstorage note depending on which one is older.
 export async function syncWithDropbox() {
-    if (!dropboxHelper.isInitialized()) {
+    if (!isInitialized()) {
         console.warn('Dropbox is not initialized while syncWithDropbox is called.');
         return;
     }
 
-    const contentsList = await dropboxHelper.downloadAllNoteFiles();
+    const contentsList = await downloadAllNoteFiles();
 
     const dbxNotes = contentsList.map(x => JSON.parse(x));
 
@@ -81,10 +81,6 @@ export async function syncWithDropbox() {
         }
     }
 
-    await batchDropboxUpload(
-        uploadNotes,
-        dropboxHelper.save.bind(dropboxHelper),
-        DROPBOX_UPLOAD_BATCH_LIMIT
-    );
+    await batchDropboxUpload(uploadNotes, saveNoteDbx, DROPBOX_UPLOAD_BATCH_LIMIT);
     flushToLocalStorage(idToNoteData);
 }

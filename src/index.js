@@ -10,8 +10,7 @@ import { MuiThemeProvider } from '@material-ui/core/styles';
 import { BrowserRouter, Switch, Route, Link, Redirect } from 'react-router-dom';
 import { SnackbarContextProvider } from './context/SnackbarContext';
 import DropboxLogin from './DropboxLogin';
-import { Dropbox } from 'dropbox';
-import dropboxHelper, { initDropboxHelper } from './DropboxHelper';
+import { isInitialized, initDropboxHelper } from './DropboxHelper';
 import { syncWithDropbox } from './LocalStorageHelper';
 
 import theme from './mui_theme';
@@ -22,19 +21,16 @@ const getTabValue = path => {
     return null;
 };
 
-// prettier-ignore
-console.log(`Dropbox Key = ${process.env.REACT_APP_DROPBOX_KEY}, Secret=${process.env.REACT_APP_DROPBOX_SECRET}`);
-
 const Main = ({ ytAPI }) => {
     const [lastVideoId, setLastVideoId] = useState(undefined);
 
-    const [dbxSetupState, setDbxSetupState] = useState('pending');
+    const [dbxSetupState, setDbxSetupState] = useState('init');
 
     const handleTokenSubmit = async accessToken => {
-        const dbx = new Dropbox({ accessToken, clientId: process.env.REACT_APP_DROPBOX_KEY });
+        setDbxSetupState('pending');
 
         try {
-            await initDropboxHelper(dbx);
+            await initDropboxHelper(accessToken);
             await syncWithDropbox();
             setDbxSetupState('complete');
         } catch (err) {
@@ -50,8 +46,7 @@ const Main = ({ ytAPI }) => {
                     render={() => {
                         if (dbxSetupState === 'complete') return <Redirect to="/editor" />;
 
-                        const syncFailed =
-                            dropboxHelper.isInitialized() && dbxSetupState === 'failed';
+                        const syncFailed = isInitialized() && dbxSetupState === 'failed';
 
                         return (
                             <DropboxLogin
