@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import slug from 'slug';
 import { Editor } from 'slate-react';
 import { Value, Mark } from 'slate';
 import Plain from 'slate-plain-serializer';
@@ -7,7 +8,6 @@ import PropTypes from 'prop-types';
 import Prism from './prism_add_markdown_syntax';
 import AutoReplace from './slate-auto-replace-alt';
 import * as LS from './LocalStorageHelper';
-import NoteData from './NoteData';
 import dropboxHelper from './DropboxHelper';
 import Modal from 'react-modal';
 import isHotKey from 'is-hotkey';
@@ -37,7 +37,15 @@ export default class EditorComponent extends Component {
     saveCurrentNote = debounce(() => {
         const jsonEditorValue = this.state.value.toJSON();
         const { videoId, videoTitle } = this.props.parentApp.currentVideoInfo();
-        const noteData = new NoteData(videoId, videoTitle, jsonEditorValue);
+
+        const noteData = {
+            videoId,
+            videoTitle,
+            noteName: `${slug(videoTitle || '')}-${videoId}.json`,
+            editorValueAsJson: jsonEditorValue,
+            timeOfSave: new Date() / 1000.0,
+        };
+
         LS.saveNoteWithId(LS.idToNoteData, videoId, noteData);
         dropboxHelper.save(noteData).catch(error => {
             console.log(error);
