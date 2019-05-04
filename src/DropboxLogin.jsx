@@ -41,7 +41,7 @@ const styles = theme => ({
 
 const defaultAccessToken = process.env.REACT_APP_DROPBOX_ACCESS_TOKEN || '';
 
-const DropboxLogin = ({ classes, handleTokenSubmit, idToNoteData }) => {
+const DropboxLogin = ({ classes, handleTokenSubmit }) => {
     const [inputToken, setInputToken] = useState(defaultAccessToken);
 
     return (
@@ -55,7 +55,7 @@ const DropboxLogin = ({ classes, handleTokenSubmit, idToNoteData }) => {
                     className={classes.form}
                     onSubmit={e => {
                         e.preventDefault();
-                        handleTokenSubmit && handleTokenSubmit(inputToken, idToNoteData);
+                        handleTokenSubmit && handleTokenSubmit(inputToken);
                     }}
                 >
                     <FormControl margin="normal" fullWidth>

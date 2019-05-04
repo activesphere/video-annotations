@@ -12,7 +12,7 @@ import { SnackbarContextProvider } from './context/SnackbarContext';
 import DropboxLogin from './DropboxLogin';
 import { Dropbox } from 'dropbox';
 import dropboxHelper, { initDropboxHelper } from './DropboxHelper';
-import * as LS from './LocalStorageHelper';
+import { syncWithDropbox } from './LocalStorageHelper';
 
 import theme from './mui_theme';
 
@@ -30,12 +30,12 @@ const Main = ({ ytAPI }) => {
 
     const [dbxSetupState, setDbxSetupState] = useState('pending');
 
-    const handleTokenSubmit = async (accessToken, idToNoteData) => {
+    const handleTokenSubmit = async accessToken => {
         const dbx = new Dropbox({ accessToken, clientId: process.env.REACT_APP_DROPBOX_KEY });
 
         try {
             await initDropboxHelper(dbx);
-            await LS.syncWithDropbox(LS.idToNoteData);
+            await syncWithDropbox();
             setDbxSetupState('complete');
         } catch (err) {
             setDbxSetupState('failed');
@@ -56,7 +56,6 @@ const Main = ({ ytAPI }) => {
                         return (
                             <DropboxLogin
                                 handleTokenSubmit={syncFailed ? null : handleTokenSubmit}
-                                idToNoteData={LS.idToNoteData}
                             />
                         );
                     }}

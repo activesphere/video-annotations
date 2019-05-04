@@ -7,7 +7,7 @@ import secondsToHhmmss from './utils/secondsToHhmmsss';
 import PropTypes from 'prop-types';
 import Prism from './prism_add_markdown_syntax';
 import AutoReplace from './slate-auto-replace-alt';
-import * as LS from './LocalStorageHelper';
+import { saveNoteWithId, loadNoteWithId } from './LocalStorageHelper';
 import dropboxHelper from './DropboxHelper';
 import Modal from 'react-modal';
 import isHotKey from 'is-hotkey';
@@ -46,7 +46,7 @@ export default class EditorComponent extends Component {
             timeOfSave: new Date() / 1000.0,
         };
 
-        LS.saveNoteWithId(LS.idToNoteData, videoId, noteData);
+        saveNoteWithId(videoId, noteData);
         dropboxHelper.save(noteData).catch(error => {
             console.log(error);
             this.context.openSnackbar({
@@ -290,7 +290,7 @@ export default class EditorComponent extends Component {
 
         console.log('Loading note for video', videoId);
 
-        const { editorValueAsJson } = LS.loadNoteWithId(LS.idToNoteData, videoId);
+        const { editorValueAsJson } = loadNoteWithId(videoId);
 
         if (!editorValueAsJson) {
             this.context.openSnackbar({

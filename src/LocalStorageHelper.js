@@ -17,7 +17,7 @@ const idToNoteData = readMapFromLocalStorage();
 
 export { idToNoteData };
 
-export const loadNoteWithId = (idToNoteData, videoId) => idToNoteData[videoId] || {};
+export const loadNoteWithId = videoId => idToNoteData[videoId] || {};
 
 export const deleteNoteWithId = videoId => {
     if (!idToNoteData[videoId]) return;
@@ -26,7 +26,7 @@ export const deleteNoteWithId = videoId => {
     flushToLocalStorage(idToNoteData);
 };
 
-export const saveNoteWithId = (idToNoteData, videoId, noteData) => {
+export const saveNoteWithId = (videoId, noteData) => {
     if (!videoId) return;
 
     idToNoteData[videoId] = noteData;
@@ -53,7 +53,7 @@ const batchDropboxUpload = async (notes, promiseFn, limit) => {
 };
 
 // Update dropbox file or localstorage note depending on which one is older.
-export async function syncWithDropbox(idToNoteData) {
+export async function syncWithDropbox() {
     if (!dropboxHelper.isInitialized()) {
         console.warn('Dropbox is not initialized while syncWithDropbox is called.');
         return;
