@@ -34,7 +34,7 @@ export default class EditorComponent extends Component {
 
     static contextType = SnackbarContext;
 
-    saveCurrentNote = debounce(() => {
+    saveCurrentNote = () => {
         const jsonEditorValue = this.state.value.toJSON();
         const { videoId, videoTitle } = this.props.parentApp.currentVideoInfo();
 
@@ -55,7 +55,9 @@ export default class EditorComponent extends Component {
         });
 
         return `Saved Note for video "${videoId}", title - "${videoTitle}"`;
-    }, 3000);
+    };
+
+    saveCurrentDebounced = debounce(this.saveCurrentNote, 3000);
 
     _putTimestampMarkIntoEditor = editor => {
         const { videoId, videoTime } = this.props.parentApp.currentVideoInfo();
@@ -190,7 +192,7 @@ export default class EditorComponent extends Component {
 
     onChange = ({ value }) => {
         if (value.document !== this.state.value.document) {
-            this.saveCurrentNote();
+            this.saveCurrentDebounced();
         }
 
         // Check if we are on the boundary of a timestamp mark. If so we
@@ -347,7 +349,7 @@ export default class EditorComponent extends Component {
                     break;
                 }
                 case 'saveNote': {
-                    this.saveCurrentNote.callRightNow();
+                    this.saveCurrentNote();
                     this.context.openSnackbar({ message: `Saved`, autoHideDuration: 1000 });
                     break;
                 }
