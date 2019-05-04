@@ -8,7 +8,6 @@ import PropTypes from 'prop-types';
 import Prism from './prism_add_markdown_syntax';
 import AutoReplace from './slate-auto-replace-alt';
 import { saveNoteWithId, loadNoteWithId } from './LocalStorageHelper';
-import { save as saveNoteDbx } from './DropboxHelper';
 import Modal from 'react-modal';
 import isHotKey from 'is-hotkey';
 import keyMap from './keycodeMap';
@@ -34,7 +33,7 @@ export default class EditorComponent extends Component {
 
     static contextType = SnackbarContext;
 
-    saveCurrentNote = () => {
+    saveCurrentNote = async () => {
         const jsonEditorValue = this.state.value.toJSON();
         const { videoId, videoTitle } = this.props.parentApp.currentVideoInfo();
 
@@ -46,13 +45,14 @@ export default class EditorComponent extends Component {
             timeOfSave: new Date() / 1000.0,
         };
 
-        saveNoteWithId(videoId, noteData);
-        saveNoteDbx(noteData).catch(error => {
-            console.log(error);
+        try {
+            await saveNoteWithId(videoId, noteData);
+        } catch (err) {
+            console.log(err);
             this.context.openSnackbar({
-                message: `Failed to upload to dropbox - ${error}`,
+                message: `Failed to upload to dropbox - ${err}`,
             });
-        });
+        }
 
         return `Saved Note for video "${videoId}", title - "${videoTitle}"`;
     };

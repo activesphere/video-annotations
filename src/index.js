@@ -10,7 +10,6 @@ import { MuiThemeProvider } from '@material-ui/core/styles';
 import { BrowserRouter, Switch, Route, Link, Redirect } from 'react-router-dom';
 import { SnackbarContextProvider } from './context/SnackbarContext';
 import DropboxLogin from './DropboxLogin';
-import { isInitialized, initDropboxHelper } from './DropboxHelper';
 import { syncWithDropbox } from './LocalStorageHelper';
 
 import theme from './mui_theme';
@@ -27,11 +26,8 @@ const Main = ({ ytAPI }) => {
     const [dbxSetupState, setDbxSetupState] = useState('init');
 
     const handleTokenSubmit = async accessToken => {
-        setDbxSetupState('pending');
-
         try {
-            await initDropboxHelper(accessToken);
-            await syncWithDropbox();
+            await syncWithDropbox(accessToken);
             setDbxSetupState('complete');
         } catch (err) {
             setDbxSetupState('failed');
@@ -44,15 +40,10 @@ const Main = ({ ytAPI }) => {
                 <Route
                     path="/dropbox_oauth"
                     render={() => {
-                        if (dbxSetupState === 'complete') return <Redirect to="/editor" />;
+                        if (['complete', 'failed'].includes(dbxSetupState))
+                            return <Redirect to="/editor" />;
 
-                        const syncFailed = isInitialized() && dbxSetupState === 'failed';
-
-                        return (
-                            <DropboxLogin
-                                handleTokenSubmit={syncFailed ? null : handleTokenSubmit}
-                            />
-                        );
+                        return <DropboxLogin handleTokenSubmit={handleTokenSubmit} />;
                     }}
                 />
                 <Route

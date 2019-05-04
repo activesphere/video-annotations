@@ -1,4 +1,4 @@
-import { save as saveNoteDbx, isInitialized, downloadAllNoteFiles } from './DropboxHelper';
+import * as dbx from './DropboxHelper';
 import unique from './utils/unique';
 
 // localStorage key for the full JSON object we are storing which contains *all* notes. Notes will
@@ -15,7 +15,21 @@ const readMapFromLocalStorage = () => {
 
 const idToNoteData = readMapFromLocalStorage();
 
-export { idToNoteData };
+const DROPBOX_UPLOAD_BATCH_LIMIT = 4;
+
+const flushToLocalStorage = idToNoteData => {
+    localStorage.setItem(VIDEO_ID_TO_NOTE_DATA, JSON.stringify(idToNoteData));
+};
+
+const batchDropboxUpload = async (notes, promiseFn, limit) => {
+    let remaining = [...notes];
+    while (remaining.length) {
+        const sliceLength = Math.min(limit, remaining.length);
+        const promises = remaining.slice(0, sliceLength).map(promiseFn);
+        await Promise.all(promises);
+        remaining = remaining.slice(sliceLength);
+    }
+};
 
 export const loadNoteWithId = videoId => idToNoteData[videoId] || {};
 
@@ -26,40 +40,29 @@ export const deleteNoteWithId = videoId => {
     flushToLocalStorage(idToNoteData);
 };
 
-export const saveNoteWithId = (videoId, noteData) => {
+export const saveNoteWithId = async (videoId, noteData) => {
     if (!videoId) return;
+
+    if (dbx.isInitialized()) {
+        await dbx.save(noteData);
+    }
 
     idToNoteData[videoId] = noteData;
     flushToLocalStorage(idToNoteData);
 };
 
-export const flushToLocalStorage = idToNoteData => {
-    localStorage.setItem(VIDEO_ID_TO_NOTE_DATA, JSON.stringify(idToNoteData));
-};
-
 export const getNoteMenuItemsForCards = () => Object.values(idToNoteData);
 
-const DROPBOX_UPLOAD_BATCH_LIMIT = 4;
-
-const batchDropboxUpload = async (notes, promiseFn, limit) => {
-    console.log('Notes to upload =', notes);
-    let remaining = [...notes];
-    while (remaining.length) {
-        const sliceLength = Math.min(limit, remaining.length);
-        const promises = remaining.slice(0, sliceLength).map(promiseFn);
-        await Promise.all(promises);
-        remaining = remaining.slice(sliceLength);
-    }
-};
-
 // Update dropbox file or localstorage note depending on which one is older.
-export async function syncWithDropbox() {
-    if (!isInitialized()) {
+export async function syncWithDropbox(accessToken) {
+    await dbx.init(accessToken);
+
+    if (!dbx.isInitialized()) {
         console.warn('Dropbox is not initialized while syncWithDropbox is called.');
         return;
     }
 
-    const contentsList = await downloadAllNoteFiles();
+    const contentsList = await dbx.downloadNotes();
 
     const dbxNotes = contentsList.map(x => JSON.parse(x));
 
@@ -81,6 +84,6 @@ export async function syncWithDropbox() {
         }
     }
 
-    await batchDropboxUpload(uploadNotes, saveNoteDbx, DROPBOX_UPLOAD_BATCH_LIMIT);
+    await batchDropboxUpload(uploadNotes, dbx.save, DROPBOX_UPLOAD_BATCH_LIMIT);
     flushToLocalStorage(idToNoteData);
 }

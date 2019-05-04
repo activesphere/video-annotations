@@ -36,7 +36,7 @@ export const save = async noteData => {
     });
 };
 
-export const batchDownloadNotes = async (notePaths, promiseFn) => {
+const batchDownloadNotes = async (notePaths, promiseFn) => {
     const { downloadsPerBatch } = dropboxConfig;
 
     while (notePaths.length !== 0) {
@@ -47,13 +47,12 @@ export const batchDownloadNotes = async (notePaths, promiseFn) => {
     }
 };
 
-export const downloadAllNoteFiles = async () => {
+export const downloadNotes = async () => {
     if (!isInitialized()) {
         console.warn('Dropbox NOT initialized.');
-        return undefined;
+        return;
     }
 
-    // Assumes notes folder already exists
     const listFolderResult = await dbx.filesListFolder({
         path: NOTES_FOLDER_PATH,
         recursive: true,
@@ -61,11 +60,7 @@ export const downloadAllNoteFiles = async () => {
 
     const notePaths = listFolderResult.entries
         .filter(x => x['.tag'] === 'file')
-        .map(entry => {
-            return entry.path_display;
-        });
-
-    console.log('notePaths =', notePaths);
+        .map(entry => entry.path_display);
 
     const contentList = [];
 
@@ -80,7 +75,7 @@ export const downloadAllNoteFiles = async () => {
     return contentList;
 };
 
-export const initDropboxHelper = async accessToken => {
+export const init = async accessToken => {
     const client = new Dropbox({ accessToken, clientId: process.env.REACT_APP_DROPBOX_KEY });
 
     dbx = client;
