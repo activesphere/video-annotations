@@ -1,18 +1,18 @@
 import React, { Component, Fragment } from 'react';
+import slug from 'slug';
 import { Editor } from 'slate-react';
 import { Value, Mark } from 'slate';
 import Plain from 'slate-plain-serializer';
-import { secondsToHhmmss } from './utils';
+import secondsToHhmmss from './utils/secondsToHhmmsss';
 import PropTypes from 'prop-types';
 import Prism from './prism_add_markdown_syntax';
 import AutoReplace from './slate-auto-replace-alt';
-import { noteStorageManager, NoteData } from './save_note';
+import { saveNoteWithId, loadNoteWithId } from './LocalStorageHelper';
 import Modal from 'react-modal';
 import isHotKey from 'is-hotkey';
 import keyMap from './keycodeMap';
 import { Slide } from '@material-ui/core';
 import { SnackbarContext } from './context/SnackbarContext';
-import ContextMenu from './editor/ContextMenu';
 import HoverMenu from './editor/HoverMenu';
 import TimestampMark from './editor/TimestampMark';
 import debounce from './utils/debounce';
@@ -25,8 +25,6 @@ function makeYoutubeTimestampMark(videoId, videoTime) {
     return Mark.create({ type: 'youtube_timestamp', data: { videoId, videoTime } });
 }
 
-const AUTOSAVE = true;
-
 export default class EditorComponent extends Component {
     static propTypes = {
         parentApp: PropTypes.object.isRequired,
@@ -35,15 +33,31 @@ export default class EditorComponent extends Component {
 
     static contextType = SnackbarContext;
 
-    saveCurrentNote = debounce(() => {
+    saveCurrentNote = async () => {
         const jsonEditorValue = this.state.value.toJSON();
         const { videoId, videoTitle } = this.props.parentApp.currentVideoInfo();
-        const noteData = new NoteData(videoId, videoTitle, jsonEditorValue);
-        noteStorageManager.saveNoteWithId(videoId, noteData);
-        this.props.parentApp.updateNoteMenu();
+
+        const noteData = {
+            videoId,
+            videoTitle,
+            noteName: `${slug(videoTitle || '')}-${videoId}.json`,
+            editorValueAsJson: jsonEditorValue,
+            timeOfSave: new Date() / 1000.0,
+        };
+
+        try {
+            await saveNoteWithId(videoId, noteData);
+        } catch (err) {
+            console.log(err);
+            this.context.openSnackbar({
+                message: `Failed to upload to dropbox - ${err}`,
+            });
+        }
 
         return `Saved Note for video "${videoId}", title - "${videoTitle}"`;
-    }, 1000);
+    };
+
+    saveCurrentDebounced = debounce(this.saveCurrentNote, 3000);
 
     _putTimestampMarkIntoEditor = editor => {
         const { videoId, videoTime } = this.props.parentApp.currentVideoInfo();
@@ -178,7 +192,7 @@ export default class EditorComponent extends Component {
 
     onChange = ({ value }) => {
         if (value.document !== this.state.value.document) {
-            this.saveCurrentNote();
+            this.saveCurrentDebounced();
         }
 
         // Check if we are on the boundary of a timestamp mark. If so we
@@ -270,17 +284,17 @@ export default class EditorComponent extends Component {
     loadNoteForVideo = videoId => {
         if (!videoId) {
             this.context.openSnackbar({
-                message: 'No video current playing. Not loading note.',
+                message: 'No video playing, not loading any note',
             });
         }
 
         console.log('Loading note for video', videoId);
 
-        const { jsonEditorValue } = noteStorageManager.loadNoteWithId(videoId);
+        const { editorValueAsJson } = loadNoteWithId(videoId);
 
-        if (!jsonEditorValue) {
+        if (!editorValueAsJson) {
             this.context.openSnackbar({
-                message: `No note previously saved for videoId = ${videoId}`,
+                message: `No previously saved note for video - ${videoId}`,
             });
             // Load empty editor value
             this.setState({
@@ -290,7 +304,7 @@ export default class EditorComponent extends Component {
         } else {
             this.setState({
                 ...this.state,
-                value: Value.fromJSON(jsonEditorValue),
+                value: Value.fromJSON(editorValueAsJson),
             });
         }
     };
@@ -335,9 +349,8 @@ export default class EditorComponent extends Component {
                     break;
                 }
                 case 'saveNote': {
-                    this.context.openSnackbar({
-                        message: this.saveCurrentNote(),
-                    });
+                    this.saveCurrentNote();
+                    this.context.openSnackbar({ message: `Saved`, autoHideDuration: 1000 });
                     break;
                 }
                 case 'videoForward': {
@@ -565,7 +578,7 @@ export default class EditorComponent extends Component {
     renderEditor = (props, editor, next) => {
         const children = next();
         return (
-            <React.Fragment>
+            <Fragment>
                 {children}
                 <HoverMenu
                     getRef={menu => {
@@ -573,7 +586,7 @@ export default class EditorComponent extends Component {
                     }}
                     editor={editor}
                 />
-            </React.Fragment>
+            </Fragment>
         );
     };
 
@@ -648,8 +661,6 @@ export default class EditorComponent extends Component {
     };
 
     render() {
-        const { videoId } = this.props.parentApp.currentVideoInfo();
-
         // Pick bg color of editor based on if it's on a timestamp or not.
         const styles = {
             backgroundColor: this.state.onTimestamp ? '#fff4f7' : '#fafaf0',
@@ -664,27 +675,25 @@ export default class EditorComponent extends Component {
                         this.editorContainerDiv = r;
                     }}
                 >
-                    <ContextMenu currentVideoId={videoId}>
-                        <Editor
-                            defaultValue={this.state.value}
-                            value={this.state.value}
-                            onChange={this.onChange}
-                            onKeyDown={this.onKeyDown}
-                            renderMark={this.renderMark}
-                            renderNode={this.renderNode}
-                            renderEditor={this.renderEditor}
-                            decorateNode={this.decorateNode}
-                            className="editor-top-level"
-                            autoCorrect={false}
-                            autoFocus={true}
-                            placeholder="Write your note here.."
-                            style={styles}
-                            ref={editorRef => {
-                                this.editorRef = editorRef;
-                                this.props.parentApp.editorRef = editorRef;
-                            }}
-                        />
-                    </ContextMenu>
+                    <Editor
+                        defaultValue={this.state.value}
+                        value={this.state.value}
+                        onChange={this.onChange}
+                        onKeyDown={this.onKeyDown}
+                        renderMark={this.renderMark}
+                        renderNode={this.renderNode}
+                        renderEditor={this.renderEditor}
+                        decorateNode={this.decorateNode}
+                        className="editor-top-level"
+                        autoCorrect={false}
+                        autoFocus={true}
+                        placeholder="Write your note here.."
+                        style={styles}
+                        ref={editorRef => {
+                            this.editorRef = editorRef;
+                            this.props.parentApp.editorRef = editorRef;
+                        }}
+                    />
                 </div>
             </Slide>
         );

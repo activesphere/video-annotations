@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 
 import './index.css';
@@ -9,6 +9,8 @@ import { Paper, Tabs, Tab } from '@material-ui/core';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import { BrowserRouter, Switch, Route, Link, Redirect } from 'react-router-dom';
 import { SnackbarContextProvider } from './context/SnackbarContext';
+import DropboxLogin from './DropboxLogin';
+import { syncWithDropbox } from './LocalStorageHelper';
 
 import theme from './mui_theme';
 
@@ -21,60 +23,93 @@ const getTabValue = path => {
 const Main = ({ ytAPI }) => {
     const [lastVideoId, setLastVideoId] = useState(undefined);
 
+    const [dbxSetupState, setDbxSetupState] = useState('init');
+
+    const handleTokenSubmit = async accessToken => {
+        try {
+            await syncWithDropbox(accessToken);
+            setDbxSetupState('complete');
+        } catch (err) {
+            setDbxSetupState('failed');
+        }
+    };
+
     return (
         <BrowserRouter>
-            <Route
-                path="/"
-                render={({ location }) => (
-                    <>
-                        <Paper elevation={0}>
-                            <Tabs
-                                indicatorColor="primary"
-                                textColor="primary"
-                                value={getTabValue(location.pathname)}
-                                centered
-                            >
-                                <Tab value="editor" label="Editor" component={Link} to="/editor" />
-                                <Tab
-                                    value="notes"
-                                    label="Saved notes"
-                                    component={Link}
-                                    to="/saved_notes"
+            <Switch>
+                <Route
+                    path="/dropbox_oauth"
+                    render={() => {
+                        if (['complete', 'failed'].includes(dbxSetupState))
+                            return <Redirect to="/editor" />;
+
+                        return <DropboxLogin handleTokenSubmit={handleTokenSubmit} />;
+                    }}
+                />
+                <Route
+                    path="/"
+                    render={({ location }) => (
+                        <>
+                            <Paper elevation={0}>
+                                <Tabs
+                                    indicatorColor="primary"
+                                    textColor="primary"
+                                    value={getTabValue(location.pathname)}
+                                    centered
+                                >
+                                    <Tab
+                                        value="editor"
+                                        label="Editor"
+                                        component={Link}
+                                        to="/editor"
+                                    />
+                                    <Tab
+                                        value="notes"
+                                        label="Saved notes"
+                                        component={Link}
+                                        to="/saved_notes"
+                                    />
+                                </Tabs>
+                            </Paper>
+                            <Switch>
+                                <Route path="/saved_notes" render={() => <NotesPage />} />
+                                <Route
+                                    path="/editor/:videoId"
+                                    render={({ match }) => {
+                                        const { videoId } = match.params;
+                                        if (videoId) {
+                                            setLastVideoId(videoId);
+                                        }
+
+                                        return (
+                                            <EditorPage
+                                                key={videoId}
+                                                ytAPI={ytAPI}
+                                                startingVideoId={videoId}
+                                            />
+                                        );
+                                    }}
                                 />
-                            </Tabs>
-                        </Paper>
-                        <Switch>
-                            <Route path="/saved_notes" component={NotesPage} />
-                            <Route
-                                path="/editor/:videoId"
-                                render={({ match }) => {
-                                    const { videoId } = match.params;
-                                    if (videoId) {
-                                        setLastVideoId(videoId);
-                                    }
+                                <Route
+                                    path="/editor"
+                                    render={() => {
+                                        if (lastVideoId)
+                                            return <Redirect to={`/editor/${lastVideoId}`} />;
 
-                                    return (
-                                        <EditorPage
-                                            key={videoId}
-                                            ytAPI={ytAPI}
-                                            startingVideoId={videoId}
-                                        />
-                                    );
-                                }}
-                            />
-                            <Route
-                                path="/editor"
-                                render={() => {
-                                    if (lastVideoId)
-                                        return <Redirect to={`/editor/${lastVideoId}`} />;
+                                        return <EditorPage ytAPI={ytAPI} />;
+                                    }}
+                                />
 
-                                    return <EditorPage ytAPI={ytAPI} />;
-                                }}
-                            />
-                        </Switch>
-                    </>
-                )}
-            />
+                                {/* Redirect to dropbox oauth token input page otherwise */}
+                                <Route
+                                    path="/"
+                                    render={props => <Redirect to={'/dropbox_oauth/'} />}
+                                />
+                            </Switch>
+                        </>
+                    )}
+                />
+            </Switch>
         </BrowserRouter>
     );
 };

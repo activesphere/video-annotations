@@ -2,13 +2,10 @@ import './Main.css';
 
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
 
 import EditorComponent from './EditorComponent';
 import VideoPathInput from './VideoPathInput';
 import getYoutubeTitle from 'get-youtube-title';
-import { noteStorageManager } from './save_note';
 import PropTypes from 'prop-types';
 import IFrameStyleWrapper from './IFrameStyleWrapper';
 import { SnackbarContext } from './context/SnackbarContext';
@@ -135,7 +132,6 @@ class EditorPage extends Component {
             infoText: undefined,
             infoLastTime: undefined,
             selectedOption: undefined,
-            noteMenuItems: noteStorageManager.getNoteMenuItems(),
             startingPopperMessage: this.props.startingPopperMessage,
         };
 
@@ -216,12 +212,6 @@ class EditorPage extends Component {
         this.editorContainerDiv = ref;
     };
 
-    // Called by editor component. Updates current note menu items
-    updateNoteMenu = () => {
-        const noteMenuItems = noteStorageManager.getNoteMenuItems();
-        this.setState({ noteMenuItems });
-    };
-
     tellEditorToLoadNote = videoId => {
         this.setState({
             editorCommand: {
@@ -236,13 +226,6 @@ class EditorPage extends Component {
         });
 
         this.context.openSnackbar({ message: `Loading video ${videoId}` });
-    };
-
-    handleNotemenuChange = e => {
-        const videoId = e.target.value;
-
-        const { history } = this.props;
-        history.push(`/editor/${videoId}`);
     };
 
     componentDidMount() {
@@ -290,25 +273,10 @@ class EditorPage extends Component {
     }
 
     render() {
-        const { match } = this.props;
-        const videoId = match.params.videoId;
-        const { noteMenuItems } = this.state;
-        console.log('noteMenuItems', videoId, this.state.noteMenuItems);
-
         return (
             <div className="two-panel-div">
                 <div className="left-panel">
                     <VideoPathInput />
-                    <Select
-                        value={videoId}
-                        onChange={this.handleNotemenuChange}
-                        placeholder="Saved notes..."
-                    >
-                        {noteMenuItems.map(item => (
-                            <MenuItem value={item.value}>{item.label}</MenuItem>
-                        ))}
-                    </Select>
-
                     <IFrameStyleWrapper>
                         <div ref={this.iframeRef} />
                     </IFrameStyleWrapper>
