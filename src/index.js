@@ -69,12 +69,10 @@ const Main = ({ ytAPI }) => {
                         }
                         // User didn't click submit token button
                         return (
-                            <>
-                                <DropboxLogin
-                                    handleTokenSubmit={handleTokenSubmit}
-                                    idToNoteData={LS.idToNoteData}
-                                />
-                            </>
+                            <DropboxLogin
+                                handleTokenSubmit={handleTokenSubmit}
+                                idToNoteData={LS.idToNoteData}
+                            />
                         );
                     }}
                 />
