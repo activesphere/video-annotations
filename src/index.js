@@ -28,30 +28,18 @@ console.log(`Dropbox Key = ${process.env.REACT_APP_DROPBOX_KEY}, Secret=${proces
 const Main = ({ ytAPI }) => {
     const [lastVideoId, setLastVideoId] = useState(undefined);
 
-    const [dropboxSetupComplete, setDropboxSetupComplete] = useState(false);
-    // ^ Means that we have initialized the dropbox api and also made sure the notes folder
-    // is available there and synced localstorage with dropbox.
+    const [dbxSetupState, setDbxSetupState] = useState('pending');
 
-    const [dropboxSetupFailed, setDropboxSetupFailed] = useState(false);
-
-    const handleTokenSubmit = (accessToken, idToNoteData) => {
+    const handleTokenSubmit = async (accessToken, idToNoteData) => {
         const dbx = new Dropbox({ accessToken, clientId: process.env.REACT_APP_DROPBOX_KEY });
-        const p = initDropboxHelper(dbx);
 
-        p.then(() => {
-            const p1 = LS.syncWithDropbox(LS.idToNoteData);
-            p1.then(() => {
-                console.log('setup dropbox complete');
-                setDropboxSetupComplete(true);
-                console.log('Dropbox setup complete');
-            }).catch(error => {
-                console.log('Failed to sync with dropbox - ', error);
-            });
-        }).catch(err => {
-            console.log(err);
-            setDropboxSetupFailed(true);
-            console.log('Failed to set up Dropbox');
-        });
+        try {
+            await initDropboxHelper(dbx);
+            await LS.syncWithDropbox(LS.idToNoteData);
+            setDbxSetupState('complete');
+        } catch (err) {
+            setDbxSetupState('failed');
+        }
     };
 
     return (
@@ -60,17 +48,14 @@ const Main = ({ ytAPI }) => {
                 <Route
                     path="/dropbox_oauth"
                     render={() => {
-                        if (dropboxSetupComplete) {
-                            return <Redirect to="/editor" />;
-                        } else if (dropboxHelper.isInitialized() && !dropboxSetupFailed) {
-                            // Means we have created the api but have not finished setting up the notes folder on dropbox side.
-                            // Disabling handleTokenSubmit.
-                            return <DropboxLogin idToNoteData={LS.idToNoteData} />;
-                        }
-                        // User didn't click submit token button
+                        if (dbxSetupState === 'complete') return <Redirect to="/editor" />;
+
+                        const syncFailed =
+                            dropboxHelper.isInitialized() && dbxSetupState === 'failed';
+
                         return (
                             <DropboxLogin
-                                handleTokenSubmit={handleTokenSubmit}
+                                handleTokenSubmit={syncFailed ? null : handleTokenSubmit}
                                 idToNoteData={LS.idToNoteData}
                             />
                         );
