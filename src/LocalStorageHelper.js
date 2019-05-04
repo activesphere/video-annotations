@@ -19,7 +19,7 @@ export { idToNoteData };
 
 export const loadNoteWithId = (idToNoteData, videoId) => idToNoteData[videoId] || {};
 
-export const deleteNoteWithId = (idToNoteData, videoId) => {
+export const deleteNoteWithId = videoId => {
     if (!idToNoteData[videoId]) return;
 
     delete idToNoteData[videoId];
@@ -37,7 +37,7 @@ export const flushToLocalStorage = idToNoteData => {
     localStorage.setItem(VIDEO_ID_TO_NOTE_DATA, JSON.stringify(idToNoteData));
 };
 
-export const getNoteMenuItemsForCards = idToNoteData => Object.values(idToNoteData);
+export const getNoteMenuItemsForCards = () => Object.values(idToNoteData);
 
 const DROPBOX_UPLOAD_BATCH_LIMIT = 4;
 
