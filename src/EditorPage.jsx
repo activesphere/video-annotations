@@ -278,7 +278,7 @@ class EditorPage extends Component {
                 <div className="left-panel">
                     <VideoPathInput />
                     <IFrameStyleWrapper>
-                        <div ref={this.iframeRef} />
+                        <div ref={this.iframeRef} id="__yt_iframe__" />
                     </IFrameStyleWrapper>
                 </div>
 

@@ -33,7 +33,7 @@ const renderMarkButton = (editor, type, markText) => {
 };
 
 const HoverMenu = ({ editor, className, getRef }) => {
-    const root = window.document.getElementById('root');
+    const root = window.document.getElementById('__vid_annot_root__');
 
     return ReactDOM.createPortal(
         <StyledMenu

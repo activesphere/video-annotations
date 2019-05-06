@@ -17,7 +17,7 @@ import HoverMenu from './editor/HoverMenu';
 import TimestampMark from './editor/TimestampMark';
 import debounce from './utils/debounce';
 
-Modal.setAppElement('#root');
+Modal.setAppElement('#__vid_annot_root__');
 
 const initialEditorValue = Plain.deserialize('');
 
