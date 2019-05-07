@@ -9,8 +9,8 @@ import { Paper, Tabs, Tab } from '@material-ui/core';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import { BrowserRouter, Switch, Route, Link, Redirect } from 'react-router-dom';
 import { SnackbarContextProvider } from './context/SnackbarContext';
-import DropboxLogin from './DropboxLogin';
 import { syncWithDropbox } from './LocalStorageHelper';
+import DropboxOauthButton from './DropboxOauthButton';
 
 import theme from './mui_theme';
 
@@ -26,6 +26,7 @@ const Main = ({ ytAPI }) => {
     const [dbxSetupState, setDbxSetupState] = useState('init');
 
     const handleTokenSubmit = async accessToken => {
+        console.log('Got token', accessToken);
         try {
             await syncWithDropbox(accessToken);
             setDbxSetupState('complete');
@@ -35,17 +36,12 @@ const Main = ({ ytAPI }) => {
     };
 
     return (
-        <BrowserRouter>
-            <Switch>
-                <Route
-                    path="/dropbox_oauth"
-                    render={() => {
-                        if (['complete', 'failed'].includes(dbxSetupState))
-                            return <Redirect to="/editor" />;
-
-                        return <DropboxLogin handleTokenSubmit={handleTokenSubmit} />;
-                    }}
-                />
+        <>
+            <DropboxOauthButton
+                getToken={handleTokenSubmit}
+                isAuthenticated={dbxSetupState === 'complete'}
+            />
+            <BrowserRouter>
                 <Route
                     path="/"
                     render={({ location }) => (
@@ -101,16 +97,13 @@ const Main = ({ ytAPI }) => {
                                 />
 
                                 {/* Redirect to dropbox oauth token input page otherwise */}
-                                <Route
-                                    path="/"
-                                    render={props => <Redirect to={'/dropbox_oauth/'} />}
-                                />
+                                <Route path="/" render={props => <Redirect to={'/editor/'} />} />
                             </Switch>
                         </>
                     )}
                 />
-            </Switch>
-        </BrowserRouter>
+            </BrowserRouter>
+        </>
     );
 };
 
