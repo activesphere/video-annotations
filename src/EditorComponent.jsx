@@ -203,10 +203,12 @@ export default class EditorComponent extends Component {
     };
 
     renderMark = (props, editor, next) => {
-        const { attributes, children } = props;
-        switch (props.mark.type) {
+        const { mark, attributes, children } = props;
+        switch (mark.type) {
             case 'youtube_timestamp':
-                return <TimestampMark {...props} parentApp={this.props.parentApp} />;
+                return (
+                    <TimestampMark {...props} parentApp={this.props.parentApp} {...attributes} />
+                );
 
             case 'bold':
                 return <strong {...attributes}>{props.children}</strong>;
@@ -353,6 +355,18 @@ export default class EditorComponent extends Component {
                     this.context.openSnackbar({ message: `Saved`, autoHideDuration: 1000 });
                     break;
                 }
+                case 'captureFrame': {
+                    const { videoId } = this.props.parentApp.currentVideoInfo();
+                    if (!videoId) {
+                        this.context.openSnackbar({
+                            message: 'No video currently playing',
+                            autoHideDuration: 1000,
+                        });
+                        return;
+                    }
+                    window.frames[0].postMessage({ type: 'VID_ANNOT_CAPTURE_CURRENT_FRAME' }, '*');
+                    break;
+                }
                 case 'videoForward': {
                     this.props.dispatch('addToCurrentTime', {
                         secondsToAdd: 10,
@@ -373,12 +387,23 @@ export default class EditorComponent extends Component {
             return true;
         }
 
+        let handled = false;
+
         if (!event.ctrlKey) {
             // return this.handleNonHotkey(event, editor, next);
             return next();
         }
 
-        let handled = false;
+        if (event.key === 'Enter') {
+            // When we are in an 'image' block, we don't want to split into two image blocks. The
+            // new block should just be a paragraph.
+            if (editor.value.startBlock.type === 'image') {
+                editor.splitBlock().setBlocks('paragraph');
+                handled = true;
+            } else {
+                return next();
+            }
+        }
 
         switch (event.key) {
             case 'b': {
@@ -527,6 +552,40 @@ export default class EditorComponent extends Component {
                 return <h6 {...props.attributes}>{props.children}</h6>;
             case 'list-item':
                 return <li {...props.attributes}>{props.children}</li>;
+
+            case 'image': {
+                const dataUrl = props.node.data.get('dataUrl');
+                const videoTime = props.node.data.get('videoTime');
+                // console.log('Renderin image node - dataUrl=', dataUrl);
+                // console.log('children =', props.children);
+                const { attributes, isSelected } = props;
+
+                const styles = {
+                    boxShadow: isSelected ? '3px 3px 2px 2px green' : '1px 1px 1px 1px purple',
+                    marginLeft: '2em',
+                    backgroundColor: '0xe6e6e6',
+                };
+
+                return (
+                    <>
+                        {props.children}
+                        <img
+                            src={dataUrl}
+                            {...attributes}
+                            alt={'Captured Frame'}
+                            style={styles}
+                            onClick={() => {
+                                if (videoTime) {
+                                    this.props.parentApp.doVideoCommand('seekToTime', {
+                                        videoTime,
+                                    });
+                                }
+                            }}
+                        />
+                    </>
+                );
+            }
+
             default:
                 return next();
         }
@@ -562,6 +621,14 @@ export default class EditorComponent extends Component {
 
     componentDidMount() {
         this.updateHoverMenu();
+        window.addEventListener('beforeunload', this.handleWindowClose);
+        window.addEventListener('message', this.handleFrameCapture, false);
+        console.log('window.addEventListener(this.handleFrameCapture)');
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('beforeunload', this.handleWindowClose);
+        window.removeEventListener('message', this.handleFrameCapture);
     }
 
     componentDidUpdate() {
@@ -574,6 +641,24 @@ export default class EditorComponent extends Component {
             newProps.editorCommand.resetCommand();
         }
     }
+
+    handleFrameCapture = e => {
+        if (e.data.type === 'VID_ANNOT_CAPTURED_FRAME') {
+            console.log('Received image data');
+            this.context.openSnackbar({
+                message: 'Received image data...',
+                autoHideDuration: 1000,
+            });
+
+            const { videoTime } = this.props.parentApp.currentVideoInfo();
+
+            this.editorRef.insertBlock({
+                type: 'image',
+                data: { dataUrl: e.data.dataUrl, videoTime },
+            });
+            //.insertBlock('paragraph');
+        }
+    };
 
     renderEditor = (props, editor, next) => {
         const children = next();
@@ -668,13 +753,7 @@ export default class EditorComponent extends Component {
 
         return (
             <Slide direction={'left'} in={true} mountOnEnter unmountOnExit>
-                <div
-                    id="__editor_container_div__"
-                    ref={r => {
-                        this.props.parentApp.getEditorContainerDiv(r);
-                        this.editorContainerDiv = r;
-                    }}
-                >
+                <div id="__editor_container_div__">
                     <Editor
                         defaultValue={this.state.value}
                         value={this.state.value}

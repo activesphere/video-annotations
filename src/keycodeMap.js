@@ -4,4 +4,5 @@ export default {
     'control+s': 'saveNote',
     'control+shift+right': 'videoForward',
     'control+shift+left': 'videoBackward',
+    'control+shift+i': 'captureFrame',
 };
