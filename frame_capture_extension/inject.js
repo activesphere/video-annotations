@@ -3,17 +3,17 @@
     const VID_ANNOT_ROOT_ID = '__vid_annot_root__';
     const CANVAS_ID = '__image_destination_canvas__';
 
-    console.log('Called inject.js');
-
     // Port to background script
     let port = null;
 
     // Canvas. Created only in the youtube iframe to store the current video frame and get a dataURI.
     let canvasRef = null;
 
+    let canvasContext = null;
+
     // Returns reference to the destination canvas used to store the image from the video. Creates
     // it if it isn't available.
-    function getCanvasElement(width = 400, height = 300) {
+    function initCanvas(width = 400, height = 300) {
         let canvas = document.getElementById(CANVAS_ID);
         if (!canvas) {
             canvas = document.createElement('canvas');
@@ -28,13 +28,11 @@
         canvas.width = width;
         canvas.height = height;
         canvasRef = canvas;
-        return canvas;
+        canvasContext = canvasRef.getContext('2d');
     }
 
-    function getCurrentFrameURI(canvasRef, videoElement) {
-        // TODO: perhaps create a single context and don't re-create over and over?
-        const C = canvasRef.getContext('2d');
-        C.drawImage(videoElement, 0, 0, canvasRef.width, canvasRef.height);
+    function getCurrentFrameURI(videoElement) {
+        canvasContext.drawImage(videoElement, 0, 0, canvasRef.width, canvasRef.height);
         const url = canvasRef.toDataURL('image/png');
         return url;
     }
@@ -44,13 +42,13 @@
         // that to work.
         const videoElement = document.querySelector(`video`);
 
-        const scriptIsInIframe = !!videoElement;
-
-        if (!scriptIsInIframe) {
+        if (!videoElement) {
             return;
         }
 
         console.log('Yeah bruh, content script is in frame');
+
+        initCanvas();
 
         // Listen for message from main app and do the corresponding thing.
         window.addEventListener(
@@ -61,7 +59,7 @@
 
                     // Send image back to app via postMessage
                     try {
-                        const dataUrl = getCurrentFrameURI(getCanvasElement(), videoElement);
+                        const dataUrl = getCurrentFrameURI(videoElement);
                         console.log('dataUrl =', dataUrl);
                         window.parent.postMessage(
                             { type: 'VID_ANNOT_CAPTURED_FRAME', dataUrl },
