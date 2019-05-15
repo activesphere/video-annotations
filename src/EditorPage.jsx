@@ -26,20 +26,20 @@ const ytNameOfPlayerState = {
 
 class YoutubePlayerController {
     constructor(YT, playerApi) {
-        console.assert(playerApi !== undefined);
+        console.assert(!!playerApi);
         this.YT = YT;
         this.playerApi = playerApi;
-        this.currentVideoId = undefined;
-        this.currentVideoTitle = undefined;
+        this.currentVideoId = null;
+        this.currentVideoTitle = null;
         this.currentPlayerState = 'unstarted';
     }
 
     setVideoTitle() {
-        if (this.currentVideoId === undefined) {
+        if (this.currentVideoId === null) {
             return;
         }
 
-        this.currentVideoTitle = undefined;
+        this.currentVideoTitle = null;
 
         getYoutubeTitle(this.currentVideoId, YOUTUBE_API_KEY, (err, title) => {
             if (!err) {
@@ -55,7 +55,7 @@ class YoutubePlayerController {
         return this.playerApi.getPlayerState();
     }
 
-    playVideo(videoId = undefined) {
+    playVideo(videoId = null) {
         console.log('playVideo', videoId);
         if (!videoId && !this.currentVideoId) {
             return;
@@ -69,7 +69,7 @@ class YoutubePlayerController {
 
     loadAndPlayVideo(videoId) {
         this.currentVideoId = videoId;
-        this.currentVideoTitle = undefined;
+        this.currentVideoTitle = null;
         console.log('this.playerApi =', this.playerApi);
         console.log('playVideo =', this.playerApi.playVideo);
         this.playerApi.cueVideoById(this.currentVideoId, 0);
@@ -90,7 +90,7 @@ class YoutubePlayerController {
             this.pauseVideo();
             return 'paused';
         }
-        return undefined;
+        return null;
     }
 
     addToCurrentTime(seconds) {
@@ -101,7 +101,7 @@ class YoutubePlayerController {
     getCurrentTime() {
         return this.playerApi && this.playerApi.getCurrentTime
             ? this.playerApi.getCurrentTime()
-            : undefined;
+            : null;
     }
 
     getVideoTitle() {
@@ -152,7 +152,7 @@ class EditorPage extends Component {
     };
 
     doVideoCommand(command, params) {
-        console.assert(this.ytPlayerController !== undefined);
+        console.assert(!!this.ytPlayerController);
         const currentTime = this.ytPlayerController.getCurrentTime();
 
         switch (command) {
@@ -194,7 +194,7 @@ class EditorPage extends Component {
     }
 
     currentVideoInfo() {
-        const info = { videoId: undefined, videoTime: undefined, videoTitle: undefined };
+        const info = { videoId: null, videoTime: null, videoTitle: null };
         if (this.ytPlayerController) {
             info.videoId = this.ytPlayerController.currentVideoId;
             info.videoTime = this.ytPlayerController.getCurrentTime();
@@ -210,7 +210,7 @@ class EditorPage extends Component {
                 name: 'loadNoteForVideo',
                 videoId: videoId,
                 resetCommand: () => {
-                    this.setState({ editorCommand: undefined });
+                    this.setState({ editorCommand: null });
                     const { history } = this.props;
                     history.push(`/editor/${videoId}`);
                 },
@@ -223,7 +223,7 @@ class EditorPage extends Component {
     componentDidMount() {
         const { ytAPI } = this.props;
         if (this.iframeRef.current) {
-            let ytPlayerApi = undefined;
+            let ytPlayerApi = null;
 
             const { startingVideoId } = this.props;
 
@@ -255,7 +255,7 @@ class EditorPage extends Component {
             console.log('Showing starting popper message');
             this.context.openSnackbar({ message: this.state.startingPopperMessage });
             setTimeout(() => {
-                this.setState({ startingPopperMessage: undefined });
+                this.setState({ startingPopperMessage: null });
             });
         }
     }

@@ -32,9 +32,12 @@
     }
 
     function getCurrentFrameURI(videoElement) {
+        if (!canvasContext) {
+            initCanvas();
+        }
+
         canvasContext.drawImage(videoElement, 0, 0, canvasRef.width, canvasRef.height);
-        const url = canvasRef.toDataURL('image/png');
-        return url;
+        return canvasRef.toDataURL('image/png');
     }
 
     function main() {
@@ -46,21 +49,14 @@
             return;
         }
 
-        console.log('Yeah bruh, content script is in frame');
-
-        initCanvas();
-
         // Listen for message from main app and do the corresponding thing.
         window.addEventListener(
             'message',
             e => {
                 if (e.data.type === 'VID_ANNOT_CAPTURE_CURRENT_FRAME') {
-                    console.log('Content script received message requesting current frame');
-
                     // Send image back to app via postMessage
                     try {
                         const dataUrl = getCurrentFrameURI(videoElement);
-                        console.log('dataUrl =', dataUrl);
                         window.parent.postMessage(
                             { type: 'VID_ANNOT_CAPTURED_FRAME', dataUrl },
                             '*'
@@ -71,7 +67,6 @@
                 }
 
                 if (e.data.type == 'VID_ANNOT_REMOVE_PAUSE_OVERLAY') {
-                    console.log('Content script received message to remove pause overlay');
                     const elements = document.getElementsByClassName('ytp-pause-overlay');
                     for (const element of elements) {
                         element.parentNode.removeChild(element);

@@ -185,9 +185,9 @@ export default class EditorComponent extends Component {
             onTimestamp: false,
         };
 
-        this.editorRef = undefined;
+        this.editorRef = null;
 
-        this.hoverMenuRef = undefined;
+        this.hoverMenuRef = null;
     }
 
     onChange = ({ value }) => {
@@ -556,8 +556,6 @@ export default class EditorComponent extends Component {
             case 'image': {
                 const dataUrl = props.node.data.get('dataUrl');
                 const videoTime = props.node.data.get('videoTime');
-                // console.log('Renderin image node - dataUrl=', dataUrl);
-                // console.log('children =', props.children);
                 const { attributes, isSelected } = props;
 
                 const styles = {
@@ -596,8 +594,6 @@ export default class EditorComponent extends Component {
         if (!menu) {
             return;
         }
-
-        // console.log('menu =', menu);
 
         const { value } = this.state;
         const { fragment, selection } = value;
@@ -644,7 +640,6 @@ export default class EditorComponent extends Component {
 
     handleFrameCapture = e => {
         if (e.data.type === 'VID_ANNOT_CAPTURED_FRAME') {
-            console.log('Received image data');
             this.context.openSnackbar({
                 message: 'Received image data...',
                 autoHideDuration: 1000,
@@ -656,7 +651,6 @@ export default class EditorComponent extends Component {
                 type: 'image',
                 data: { dataUrl: e.data.dataUrl, videoTime },
             });
-            //.insertBlock('paragraph');
         }
     };
 
