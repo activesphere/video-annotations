@@ -389,11 +389,6 @@ export default class EditorComponent extends Component {
 
         let handled = false;
 
-        if (!event.ctrlKey) {
-            // return this.handleNonHotkey(event, editor, next);
-            return next();
-        }
-
         if (event.key === 'Enter') {
             // When we are in an 'image' block, we don't want to split into two image blocks. The
             // new block should just be a paragraph.
@@ -403,6 +398,11 @@ export default class EditorComponent extends Component {
             } else {
                 return next();
             }
+        }
+
+        if (!event.ctrlKey) {
+            // return this.handleNonHotkey(event, editor, next);
+            return next();
         }
 
         switch (event.key) {
