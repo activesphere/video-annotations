@@ -11,7 +11,6 @@ import IFrameStyleWrapper from './IFrameStyleWrapper';
 import { SnackbarContext } from './context/SnackbarContext';
 
 const YOUTUBE_API_KEY = process.env.REACT_APP_YOUTUBE_API_KEY;
-
 if (!YOUTUBE_API_KEY) {
     console.assert('REACT_APP_YOUTUBE_API_KEY required in .env file');
 }
@@ -27,20 +26,20 @@ const ytNameOfPlayerState = {
 
 class YoutubePlayerController {
     constructor(YT, playerApi) {
-        console.assert(playerApi !== undefined);
+        console.assert(!!playerApi);
         this.YT = YT;
         this.playerApi = playerApi;
-        this.currentVideoId = undefined;
-        this.currentVideoTitle = undefined;
+        this.currentVideoId = null;
+        this.currentVideoTitle = null;
         this.currentPlayerState = 'unstarted';
     }
 
     setVideoTitle() {
-        if (this.currentVideoId === undefined) {
+        if (this.currentVideoId === null) {
             return;
         }
 
-        this.currentVideoTitle = undefined;
+        this.currentVideoTitle = null;
 
         getYoutubeTitle(this.currentVideoId, YOUTUBE_API_KEY, (err, title) => {
             if (!err) {
@@ -56,7 +55,7 @@ class YoutubePlayerController {
         return this.playerApi.getPlayerState();
     }
 
-    playVideo(videoId = undefined) {
+    playVideo(videoId = null) {
         console.log('playVideo', videoId);
         if (!videoId && !this.currentVideoId) {
             return;
@@ -70,7 +69,7 @@ class YoutubePlayerController {
 
     loadAndPlayVideo(videoId) {
         this.currentVideoId = videoId;
-        this.currentVideoTitle = undefined;
+        this.currentVideoTitle = null;
         console.log('this.playerApi =', this.playerApi);
         console.log('playVideo =', this.playerApi.playVideo);
         this.playerApi.cueVideoById(this.currentVideoId, 0);
@@ -82,12 +81,16 @@ class YoutubePlayerController {
         this.playerApi.pauseVideo(this.currentVideoId);
     }
 
+    // Returns state after toggle
     togglePause() {
         if (this.currentPlayerState === 'paused') {
             this.playVideo();
+            return 'playing';
         } else if (this.currentPlayerState === 'playing') {
             this.pauseVideo();
+            return 'paused';
         }
+        return null;
     }
 
     addToCurrentTime(seconds) {
@@ -98,7 +101,7 @@ class YoutubePlayerController {
     getCurrentTime() {
         return this.playerApi && this.playerApi.getCurrentTime
             ? this.playerApi.getCurrentTime()
-            : undefined;
+            : null;
     }
 
     getVideoTitle() {
@@ -127,6 +130,7 @@ class EditorPage extends Component {
 
     constructor(props) {
         super(props);
+
         this.state = {
             editorCommand: undefined,
             infoText: undefined,
@@ -135,24 +139,20 @@ class EditorPage extends Component {
             startingPopperMessage: this.props.startingPopperMessage,
         };
 
-        // Editor ref, set by the child component
-        this.editorRef = undefined;
-        this.editorContainerDiv = undefined;
-
-        this.popoverRef = undefined;
-
-        // We keep a handle to the youtube player (the player API, not the dom element itself).
+        // We keep a handle to the youtube player. This is the player API object, not the dom
+        // element itself.
         this.ytPlayerController = undefined;
-
         this.doVideoCommand = this.doVideoCommand.bind(this);
 
         this.iframeRef = React.createRef();
     }
 
-    // TODO(rksht) - perhaps break these into multiple functions instead of sending command objects,
-    // which is a leftover from the previous style.
+    tellPluginToRemovePauseOverlay = () => {
+        window.frames[0].postMessage({ type: 'VID_ANNOT_REMOVE_PAUSE_OVERLAY' }, '*');
+    };
+
     doVideoCommand(command, params) {
-        console.assert(this.ytPlayerController !== undefined);
+        console.assert(!!this.ytPlayerController);
         const currentTime = this.ytPlayerController.getCurrentTime();
 
         switch (command) {
@@ -162,6 +162,7 @@ class EditorPage extends Component {
 
             case 'pauseVideo':
                 this.ytPlayerController.pauseVideo();
+                this.tellPluginToRemovePauseOverlay();
                 break;
 
             case 'restartVideo':
@@ -169,7 +170,10 @@ class EditorPage extends Component {
                 break;
 
             case 'togglePause':
-                this.ytPlayerController.togglePause();
+                const playState = this.ytPlayerController.togglePause();
+                if (playState === 'paused') {
+                    this.tellPluginToRemovePauseOverlay();
+                }
                 break;
 
             case 'addToCurrentTime':
@@ -177,15 +181,7 @@ class EditorPage extends Component {
                 break;
 
             case 'seekToTime':
-                if (
-                    !params.videoId ||
-                    (!params.videoTime !== undefined && params.videoTime !== 0)
-                ) {
-                    // Check if currently playing videoId is the same as sent as params, if not we
-                    // will load the given video
-                    if (this.ytPlayerController.currentVideoId !== params.videoId) {
-                        this.ytPlayerController.loadAndPlayVideo(params.videoId);
-                    }
+                if (params.videoTime) {
                     this.ytPlayerController.seekTo(params.videoTime);
                 }
                 break;
@@ -198,7 +194,7 @@ class EditorPage extends Component {
     }
 
     currentVideoInfo() {
-        const info = { videoId: undefined, videoTime: undefined, videoTitle: undefined };
+        const info = { videoId: null, videoTime: null, videoTitle: null };
         if (this.ytPlayerController) {
             info.videoId = this.ytPlayerController.currentVideoId;
             info.videoTime = this.ytPlayerController.getCurrentTime();
@@ -208,17 +204,13 @@ class EditorPage extends Component {
         return info;
     }
 
-    getEditorContainerDiv = ref => {
-        this.editorContainerDiv = ref;
-    };
-
     tellEditorToLoadNote = videoId => {
         this.setState({
             editorCommand: {
                 name: 'loadNoteForVideo',
                 videoId: videoId,
                 resetCommand: () => {
-                    this.setState({ editorCommand: undefined });
+                    this.setState({ editorCommand: null });
                     const { history } = this.props;
                     history.push(`/editor/${videoId}`);
                 },
@@ -231,9 +223,9 @@ class EditorPage extends Component {
     componentDidMount() {
         const { ytAPI } = this.props;
         if (this.iframeRef.current) {
-            let ytPlayerApi = undefined;
+            let ytPlayerApi = null;
 
-            const startingVideoId = this.props.startingVideoId;
+            const { startingVideoId } = this.props;
 
             ytPlayerApi = new ytAPI.Player(this.iframeRef.current, {
                 height: '100%',
@@ -263,29 +255,28 @@ class EditorPage extends Component {
             console.log('Showing starting popper message');
             this.context.openSnackbar({ message: this.state.startingPopperMessage });
             setTimeout(() => {
-                this.setState({ startingPopperMessage: undefined });
+                this.setState({ startingPopperMessage: null });
             });
         }
     }
 
-    componentWillUnmount() {
-        if (this.ytPlayerController) this.ytPlayerController.pauseVideo();
-    }
-
     render() {
+        const { match } = this.props;
+        const videoId = match.params.videoId || '';
+
         return (
             <div className="two-panel-div">
                 <div className="left-panel">
-                    <VideoPathInput />
+                    <VideoPathInput currentVideoId={videoId} />
                     <IFrameStyleWrapper>
-                        <div ref={this.iframeRef} />
+                        <div ref={this.iframeRef} id="__yt_iframe__" />
                     </IFrameStyleWrapper>
                 </div>
-
                 <EditorComponent
                     parentApp={this}
                     dispatch={this.doVideoCommand}
                     editorCommand={this.state.editorCommand}
+                    showInfo={this.props.showInfo}
                 />
             </div>
         );
