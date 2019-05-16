@@ -21,3 +21,8 @@ formulas into editor as the user types is a complicated due to the way these edi
 
 On every change of cursor, check if the cursor is on a timestamp mark. If so, toggle away the
 timestamp mark from currently activated timestamp.
+
+
+#### Extension
+
+If user clicks the extension button more than once, there's multiple inject scripts running. Each does the same work per message - like capturing the same frame and sending it to app. This needs to be fixed.
