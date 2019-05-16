@@ -16,6 +16,7 @@ import { SnackbarContext } from './context/SnackbarContext';
 import HoverMenu from './editor/HoverMenu';
 import TimestampMark from './editor/TimestampMark';
 import debounce from './utils/debounce';
+import AppConfig from './AppConfig';
 
 Modal.setAppElement('#__vid_annot_root__');
 
@@ -364,7 +365,10 @@ export default class EditorComponent extends Component {
                         });
                         return;
                     }
-                    window.frames[0].postMessage({ type: 'VID_ANNOT_CAPTURE_CURRENT_FRAME' }, '*');
+                    window.frames[0].postMessage(
+                        { type: AppConfig.CaptureCurrentFrameMessage },
+                        '*'
+                    );
                     break;
                 }
                 case 'videoForward': {
@@ -639,7 +643,7 @@ export default class EditorComponent extends Component {
     }
 
     handleFrameCapture = e => {
-        if (e.data.type === 'VID_ANNOT_CAPTURED_FRAME') {
+        if (e.data.type === AppConfig.CaptureCurrentFrameResponse) {
             this.context.openSnackbar({
                 message: 'Received image data...',
                 autoHideDuration: 1000,

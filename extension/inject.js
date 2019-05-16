@@ -1,5 +1,9 @@
+import AppConfig from '../src/AppConfig';
+
+// The inject script is wrapped in an immediately called function so that it can be clicked multiple
+// times in the same page and JS doesn't complain about redefining the same variable. The user can
+// after all click multiple times by mistake.
 (function() {
-    const YOUTUBE_IFRAME_ID = '__yt_iframe__';
     const VID_ANNOT_ROOT_ID = '__vid_annot_root__';
     const CANVAS_ID = '__image_destination_canvas__';
 
@@ -11,6 +15,8 @@
 
     let canvasContext = null;
 
+    let isInVidAnnotApp = false;
+
     // Returns reference to the destination canvas used to store the image from the video. Creates
     // it if it isn't available.
     function initCanvas(width = 400, height = 300) {
@@ -19,7 +25,6 @@
             canvas = document.createElement('canvas');
             canvas.id = CANVAS_ID;
 
-            // Just for now. Will not be showing the canvas to user.
             canvas.style.position = 'fixed';
             canvas.style.top = 0;
             canvas.style.right = 0;
@@ -53,12 +58,12 @@
         window.addEventListener(
             'message',
             e => {
-                if (e.data.type === 'VID_ANNOT_CAPTURE_CURRENT_FRAME') {
+                if (e.data.type === AppConfig.CaptureCurrentFrameMessage) {
                     // Send image back to app via postMessage
                     try {
                         const dataUrl = getCurrentFrameURI(videoElement);
                         window.parent.postMessage(
-                            { type: 'VID_ANNOT_CAPTURED_FRAME', dataUrl },
+                            { type: AppConfig.CaptureCurrentFrameResponse, dataUrl },
                             '*'
                         );
                     } catch (e) {
@@ -66,7 +71,7 @@
                     }
                 }
 
-                if (e.data.type == 'VID_ANNOT_REMOVE_PAUSE_OVERLAY') {
+                if (e.data.type == AppConfig.RemovePauseOverlayMessage) {
                     const elements = document.getElementsByClassName('ytp-pause-overlay');
                     for (const element of elements) {
                         element.parentNode.removeChild(element);

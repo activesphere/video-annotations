@@ -9,6 +9,7 @@ import getYoutubeTitle from 'get-youtube-title';
 import PropTypes from 'prop-types';
 import IFrameStyleWrapper from './IFrameStyleWrapper';
 import { SnackbarContext } from './context/SnackbarContext';
+import AppConfig from './AppConfig';
 
 const YOUTUBE_API_KEY = process.env.REACT_APP_YOUTUBE_API_KEY;
 if (!YOUTUBE_API_KEY) {
@@ -148,7 +149,7 @@ class EditorPage extends Component {
     }
 
     tellPluginToRemovePauseOverlay = () => {
-        window.frames[0].postMessage({ type: 'VID_ANNOT_REMOVE_PAUSE_OVERLAY' }, '*');
+        window.frames[0].postMessage({ type: AppConfig.RemovePauseOverlayMessage }, '*');
     };
 
     doVideoCommand(command, params) {
@@ -269,7 +270,7 @@ class EditorPage extends Component {
                 <div className="left-panel">
                     <VideoPathInput currentVideoId={videoId} />
                     <IFrameStyleWrapper>
-                        <div ref={this.iframeRef} id="__yt_iframe__" />
+                        <div ref={this.iframeRef} id={AppConfig.YoutubeIframeId} />
                     </IFrameStyleWrapper>
                 </div>
                 <EditorComponent
