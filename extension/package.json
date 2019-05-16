@@ -4,6 +4,7 @@
 	"description": "Extension providing extra functionaloty to the main app",
 	"license": "MIT",
 	"dependencies": {
+		"copy-webpack-plugin": "^5.0.3",
 		"webpack": "^4.31.0",
 		"webpack-cli": "^3.3.2"
 	},
