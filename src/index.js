@@ -11,6 +11,7 @@ import { BrowserRouter, Switch, Route, Link, Redirect } from 'react-router-dom';
 import { SnackbarContextProvider } from './context/SnackbarContext';
 import DropboxLogin from './DropboxLogin';
 import { syncWithDropbox } from './LocalStorageHelper';
+import AppConfig from './AppConfig';
 
 import theme from './mui_theme';
 
@@ -132,4 +133,4 @@ const App = () => (
     </MuiThemeProvider>
 );
 
-ReactDOM.render(<App />, document.getElementById('__vid_annot_root__'));
+ReactDOM.render(<App />, document.getElementById(AppConfig.VidAnnotRootId));
