@@ -5,7 +5,7 @@
 	"description": "Capture video frame from youtube iframe, and send to video-annotations app",
 	"homepage_url": "http://example.com",
 	"background": {
-		"scripts": ["background.js"],
+		"scripts": ["background.bundled.js"],
 		"persistent": true
 	},
 	"browser_action": {

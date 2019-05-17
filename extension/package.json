@@ -9,6 +9,6 @@
 		"webpack-cli": "^3.3.2"
 	},
 	"scripts": {
-		"build": "webpack"
+		"build": "webpack -w"
 	}
 }

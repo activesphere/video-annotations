@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 
 import './index.css';
@@ -115,22 +115,24 @@ const Main = ({ ytAPI }) => {
     );
 };
 
-const App = () => (
-    <MuiThemeProvider theme={theme}>
-        <SnackbarContextProvider>
-            <LoadYouTubeIFrameAPI>
-                {({ ytAPI }) =>
-                    ytAPI ? (
-                        <div className="app">
-                            <Main ytAPI={ytAPI} />
-                        </div>
-                    ) : (
-                        <div>Couldn't load YouTube API</div>
-                    )
-                }
-            </LoadYouTubeIFrameAPI>
-        </SnackbarContextProvider>
-    </MuiThemeProvider>
-);
+const App = () => {
+    return (
+        <MuiThemeProvider theme={theme}>
+            <SnackbarContextProvider>
+                <LoadYouTubeIFrameAPI>
+                    {({ ytAPI }) =>
+                        ytAPI ? (
+                            <div className="app">
+                                <Main ytAPI={ytAPI} />
+                            </div>
+                        ) : (
+                            <div>Couldn't load YouTube API</div>
+                        )
+                    }
+                </LoadYouTubeIFrameAPI>
+            </SnackbarContextProvider>
+        </MuiThemeProvider>
+    );
+};
 
 ReactDOM.render(<App />, document.getElementById(AppConfig.VidAnnotRootId));

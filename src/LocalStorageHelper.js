@@ -43,9 +43,11 @@ export const deleteNoteWithId = videoId => {
 export const saveNoteWithId = async (videoId, noteData) => {
     if (!videoId) return;
 
+    /*
     if (dbx.isInitialized()) {
         await dbx.save(noteData);
     }
+    */
 
     idToNoteData[videoId] = noteData;
     flushToLocalStorage(idToNoteData);
