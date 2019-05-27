@@ -1,8 +1,6 @@
 import ns from './browser_namespace';
 import AppConfig from '../src/AppConfig';
 
-console.log('control.js: Loaded');
-
 const State = {
     port: null,
 };
@@ -30,20 +28,15 @@ function main() {
     console.log('control.js: main()');
     const root = document.getElementById(AppConfig.VidAnnotRootId);
     if (!root) {
-        console.log('va-extension: control.js - Page is not vid-annot app. So not doing anything.');
         return;
     }
 
     if (markPageAsInspected()) {
-        console.log('va-extension: control.js - Page is already marked. Not doing anything.');
         return;
     }
 
-    console.log('va-extension: control.js - Marked page. Loading worker.js');
-
     window.addEventListener('message', m => {
         if (m.data.type === AppConfig.LoadInjectScriptMessage) {
-            console.log('control.js: Telling bg script to load inject script');
             State.port.postMessage({ command: 'SHOULD_LOAD_INJECT_SCRIPT' });
         }
     });

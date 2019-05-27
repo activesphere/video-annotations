@@ -1,8 +1,6 @@
 import ns from './browser_namespace.js';
 import AppConfig from '../src/AppConfig';
 
-console.log('worker.js: Loading inject script...');
-
 // The inject script is wrapped in an immediately called function so that it can be clicked multiple
 // times in the same page and JS doesn't complain about redefining the same variable. The user can
 // after all click multiple times by mistake.
@@ -44,17 +42,13 @@ function getCurrentFrameURI(videoElement) {
 }
 
 function main() {
-    console.log('worker.js: main');
     // Get the <video> element. A more specific query would be 'better', but I can't seem to get
     // that to work.
     const videoElement = document.querySelector(`video`);
 
     if (!videoElement) {
-        console.log('worker.js video element not found');
         return;
     }
-
-    console.log('worker.js: Found video element');
 
     // Listen for message from main app and do the corresponding thing.
     window.addEventListener(
