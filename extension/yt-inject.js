@@ -19,8 +19,6 @@ const toDataURL = video => {
 
 const sendVideoDataURL = () => {
     try {
-        // Get the <video> element. A more specific query would be 'better', but I can't seem to get
-        // that to work.
         const video = document.querySelector(`video`);
         if (!video) return;
 
