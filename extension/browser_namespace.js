@@ -1,13 +1,7 @@
 let namespace = null;
 
-if (typeof chrome !== 'undefined') {
-    if (typeof browser !== 'undefined') {
-        namespace = browser;
-    } else {
-        namespace = chrome;
-    }
-} else {
-    throw `Not chrome or firefox`;
+if (typeof chrome === 'undefined') {
+    throw new Error('Only chrome and firefox browsers are supported');
 }
 
-export default namespace;
+export default (typeof browser === 'undefined' ? chrome : browser);
