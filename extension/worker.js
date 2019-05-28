@@ -1,81 +1,56 @@
 import ns from './browser_namespace.js';
 import AppConfig from '../src/AppConfig';
 
-// The inject script is wrapped in an immediately called function so that it can be clicked multiple
-// times in the same page and JS doesn't complain about redefining the same variable. The user can
-// after all click multiple times by mistake.
-const VID_ANNOT_ROOT_ID = '__vid_annot_root__';
-const CANVAS_ID = '__image_destination_canvas__';
+const toDataURL = video => {
+    const { offsetWidth: width, offsetHeight: height } = video;
+    const c = document.createElement('canvas');
+    c.style.position = 'fixed';
+    c.style.top = 0;
+    c.style.right = 0;
+    c.width = width;
+    c.height = height;
+    const canvasContext = c.getContext('2d');
+    canvasContext.drawImage(video, 0, 0, width, height);
 
-// Port to background script
-let port = null;
-// Canvas. Created only in the youtube iframe to store the current video frame and get a dataURI.
-let canvasRef = null;
-let canvasContext = null;
+    const dataURL = c.toDataURL('image/png');
 
-// Returns reference to the destination canvas used to store the image from the video. Creates
-// it if it isn't available.
-function initCanvas(width = 400, height = 300) {
-    let canvas = document.getElementById(CANVAS_ID);
-    if (!canvas) {
-        canvas = document.createElement('canvas');
-        canvas.id = CANVAS_ID;
+    c.remove();
+    return dataURL;
+};
 
-        canvas.style.position = 'fixed';
-        canvas.style.top = 0;
-        canvas.style.right = 0;
-        // document.body.appendChild(canvas);
+const sendVideoDataURL = () => {
+    try {
+        // Get the <video> element. A more specific query would be 'better', but I can't seem to get
+        // that to work.
+        const video = document.querySelector(`video`);
+        if (!video) return;
+
+        window.parent.postMessage(
+            { type: AppConfig.CaptureCurrentFrameResponse, dataUrl: toDataURL(video) },
+            '*'
+        );
+    } catch (e) {
+        console.log(e);
     }
-    canvas.width = width;
-    canvas.height = height;
-    canvasRef = canvas;
-    canvasContext = canvasRef.getContext('2d');
-}
+};
 
-function getCurrentFrameURI(videoElement) {
-    if (!canvasContext) {
-        initCanvas();
+const removeVideoOverlay = () => {
+    const elements = document.getElementsByClassName('ytp-pause-overlay');
+    for (const element of elements) {
+        element.parentNode.removeChild(element);
     }
+};
 
-    canvasContext.drawImage(videoElement, 0, 0, canvasRef.width, canvasRef.height);
-    return canvasRef.toDataURL('image/png');
-}
-
-function main() {
-    // Get the <video> element. A more specific query would be 'better', but I can't seem to get
-    // that to work.
-    const videoElement = document.querySelector(`video`);
-
-    if (!videoElement) {
-        return;
+const onMessage = e => {
+    switch (e.data.type) {
+        case AppConfig.CaptureCurrentFrameMessage:
+            sendVideoDataURL();
+            break;
+        case AppConfig.RemovePauseOverlayMessage:
+            removeVideoOverlay();
+            break;
+        default:
     }
+};
 
-    // Listen for message from main app and do the corresponding thing.
-    window.addEventListener(
-        'message',
-        e => {
-            if (e.data.type === AppConfig.CaptureCurrentFrameMessage) {
-                // Send image back to app via postMessage
-                try {
-                    const dataUrl = getCurrentFrameURI(videoElement);
-                    window.parent.postMessage(
-                        { type: AppConfig.CaptureCurrentFrameResponse, dataUrl },
-                        '*'
-                    );
-                } catch (e) {
-                    console.log(e);
-                }
-            }
-
-            if (e.data.type == AppConfig.RemovePauseOverlayMessage) {
-                const elements = document.getElementsByClassName('ytp-pause-overlay');
-                for (const element of elements) {
-                    element.parentNode.removeChild(element);
-                }
-            }
-        },
-        false
-    );
-}
-
-main();
+window.addEventListener('message', onMessage, false);
