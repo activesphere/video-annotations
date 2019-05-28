@@ -7,7 +7,7 @@
   "content_scripts": [{
      "matches": ["*://*.youtube.com/*"],
      "all_frames": true,
-     "js": ["worker.bundled.js"]
+     "js": ["yt-inject.bundled.js"]
   }],
 	"browser_action": {
 		"default_title": "YouTube snapshot as message"

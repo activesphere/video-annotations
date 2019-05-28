@@ -3,7 +3,7 @@ const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
     entry: {
-        worker: './worker.js',
+        'yt-inject': './yt-inject.js',
     },
     output: {
         path: path.resolve(__dirname, 'dist'),
