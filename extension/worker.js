@@ -1,4 +1,3 @@
-import ns from './browser_namespace.js';
 import AppConfig from '../src/AppConfig';
 
 const toDataURL = video => {

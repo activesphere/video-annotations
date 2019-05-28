@@ -247,9 +247,6 @@ class EditorPage extends Component {
                             const videoId = this.props.startingVideoId;
                             this.tellEditorToLoadNote(videoId);
                         }
-
-                        console.log('EditorPage - telling control script to load inject script');
-                        window.postMessage({ type: AppConfig.LoadInjectScriptMessage }, '*');
                     },
                 },
             });

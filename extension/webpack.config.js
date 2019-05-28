@@ -4,8 +4,6 @@ const CopyPlugin = require('copy-webpack-plugin');
 module.exports = {
     entry: {
         worker: './worker.js',
-        control: './control.js',
-        background: './background.js',
     },
     output: {
         path: path.resolve(__dirname, 'dist'),
