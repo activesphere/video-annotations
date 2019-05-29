@@ -1,15 +1,16 @@
 {
-	"name": "va-inject-to-yt",
-	"version": "0.0.1",
+	"name": "youtube-snapshot",
+	"version": "0.0.2",
 	"manifest_version": 2,
-	"description": "Capture video frame from youtube iframe, and send to video-annotations app",
+	"description": "Capture video frame from YouTube IFrame, and send to parent window as a message",
 	"homepage_url": "http://example.com",
-	"background": {
-		"scripts": ["background.bundled.js"],
-		"persistent": true
-	},
+  "content_scripts": [{
+     "matches": ["*://*.youtube.com/*"],
+     "all_frames": true,
+     "js": ["yt-inject.bundled.js"]
+  }],
 	"browser_action": {
-		"default_title": "VA Inject into Iframe"
+		"default_title": "YouTube snapshot as message"
 	},
 	"permissions": ["<all_urls>", "tabs"],
 
