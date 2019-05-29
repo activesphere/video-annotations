@@ -19,7 +19,7 @@ const toDataURL = video => {
 
 const sendVideoDataURL = () => {
     try {
-        const video = document.querySelector(`video`);
+        const video = document.querySelector('video');
         if (!video) return;
 
         window.parent.postMessage(

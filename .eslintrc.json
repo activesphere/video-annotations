@@ -1,0 +1,17 @@
+{
+	"extends": ["react-app", "prettier"],
+	"plugins": ["react"],
+	"rules": {
+		"indent": [
+			"error",
+			4,
+			{
+				"SwitchCase": 1
+			}
+		],
+		"linebreak-style": ["error", "unix"],
+		"quotes": ["error", "single"],
+		"semi": ["error", "always"],
+		"no-undefined": "error"
+	}
+}

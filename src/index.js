@@ -22,7 +22,7 @@ const getTabValue = path => {
 };
 
 const Main = ({ ytAPI }) => {
-    const [lastVideoId, setLastVideoId] = useState(undefined);
+    const [lastVideoId, setLastVideoId] = useState(null);
 
     const [dbxSetupState, setDbxSetupState] = useState('init');
 

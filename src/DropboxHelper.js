@@ -87,6 +87,6 @@ export const init = async accessToken => {
     );
 
     if (!notesFolderExists) {
-        const folderMetadata = await dbx.filesCreateFolder({ path: NOTES_FOLDER_PATH });
+        await dbx.filesCreateFolder({ path: NOTES_FOLDER_PATH });
     }
 };
