@@ -1,6 +1,5 @@
-@import url('https://fonts.googleapis.com/css?family=Noto+Sans');
-@import url('https://fonts.googleapis.com/css?family=Noto+Mono');
-@import url('https://fonts.googleapis.com/css?family=Cutive+Mono');
+@import url('https://fonts.googleapis.com/css?family=Roboto');
+@import url('https://fonts.googleapis.com/css?family=Roboto+Mono');
 
 body,
 html {
@@ -38,10 +37,10 @@ html {
 .editor-top-level {
     grid-column-start: 2;
     grid-column-end: 3;
-    background-color: #fafaf0;
+    background-color: #fafafa;
     border: 3px #fcfaff;
     border-style: 2px solid purple;
-    font-family: 'Noto Mono', sans-serif;
+    font-family: 'Roboto', sans-serif;
     font-size: 16px;
     color: #090920;
     overflow-y: scroll;
@@ -53,15 +52,34 @@ html {
 }
 
 .editor-top-level code {
-    font-family: 'Cutive Mono', monospace;
+    font-family: 'Roboto Mono', monospace;
     font-family: 16px;
     background-color: #f0f0ea;
 }
 
-.editor-top-level h1 {
-    font-family: 'Noto Mono', monospace;
+.title {
+    font-family: 'Roboto', sans-serif;
+    font-size: 2rem;
+    color: #008080;
+}
+
+.heading1 {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1.5rem;
+    color: #008080;
+}
+
+.heading2 {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1.2rem;
+    color: #008080;
+    background-color: #f0f0ea;
+}
+
+.heading3 {
+    font-family: 'Roboto', sans-serif;
     font-size: 1rem;
-    background-color: #f0f0ff;
+    color: #008080;
 }
 
 .editor-top-level h2 {
@@ -94,7 +112,7 @@ html {
 }
 
 .inline-youtube-timestamp {
-    color: #ff497d;
+    color: #008080;
     font-style: underline;
 }
 
