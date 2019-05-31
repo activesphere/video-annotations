@@ -1,10 +1,10 @@
 import { createMuiTheme } from '@material-ui/core/styles';
-import { purple, lightBlue } from '@material-ui/core/colors';
+import { purple, teal } from '@material-ui/core/colors';
 
 // Material-UI theme
 export default createMuiTheme({
     palette: {
-        primary: lightBlue,
+        primary: teal,
         secondary: purple,
     },
     typography: {
