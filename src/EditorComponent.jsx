@@ -49,7 +49,6 @@ export default class EditorComponent extends Component {
         try {
             await saveNoteWithId(videoId, noteData);
         } catch (err) {
-            console.log(err);
             this.context.openSnackbar({
                 message: `Failed to upload to dropbox - ${err}`,
             });
@@ -127,8 +126,6 @@ export default class EditorComponent extends Component {
             change.insertText(secondsToHhmmss(videoTime));
             change.toggleMark(timeStampMark);
             this.props.parentApp.doVideoCommand(videoCommandName);
-
-            console.log(change);
         };
 
         // Put video timestamp and play (or continue playing) video
@@ -165,8 +162,6 @@ export default class EditorComponent extends Component {
                     const unit = groups[4] === 's' ? 1 : 60;
                     const sign = groups[2] === '-' ? -1 : 1;
                     const deltaTimeInSeconds = sign * amount * unit;
-
-                    console.log('addToCurrentTime', deltaTimeInSeconds, ' seconds');
 
                     this.props.parentApp.doVideoCommand('addToCurrentTime', {
                         secondsToAdd: deltaTimeInSeconds,
@@ -291,8 +286,6 @@ export default class EditorComponent extends Component {
             });
         }
 
-        console.log('Loading note for video', videoId);
-
         const { editorValueAsJson } = loadNoteWithId(videoId);
 
         if (!editorValueAsJson) {
@@ -384,7 +377,7 @@ export default class EditorComponent extends Component {
                     break;
                 }
                 default:
-                    console.error('Key map error', keyMap, action);
+                    console.error('Key map error', keyMap, action); // eslint-disable-line no-console
                     break;
             }
 
@@ -444,9 +437,6 @@ export default class EditorComponent extends Component {
                             videoTime: mark.data.get('videoTime'),
                         };
 
-                        // prettier-ignore
-                        console.log(`Seeking video ${params.videoId} to time ${secondsToHhmmss(params.videoTime)}`);
-
                         this.props.parentApp.doVideoCommand('seekToTime', params);
                     }
                 }
@@ -460,15 +450,10 @@ export default class EditorComponent extends Component {
             case '/': {
                 let selection = editor.value.selection;
 
-                console.log('Pressed Ctrl + \\');
-
                 if (selection.isCollapsed) {
-                    console.log('Selection is collapsed');
                     handled = false;
                     break;
                 }
-
-                console.log('Selection not collapsed');
 
                 const { videoId, videoTime } = this.props.parentApp.currentVideoInfo();
 
@@ -502,8 +487,9 @@ export default class EditorComponent extends Component {
             // Log the editor state
             case 'y': {
                 const valueJson = this.state.value.toJSON();
-                console.log(valueJson);
                 handled = true;
+
+                console.log('valueJson =', valueJson); // eslint-disable-line no-console
 
                 break;
             }
@@ -513,7 +499,6 @@ export default class EditorComponent extends Component {
                 const timestampMarks = this.getTimestampMarkIfAny(editor);
 
                 for (let mark of timestampMarks) {
-                    console.log('Toggling timeStampMark');
                     editor.toggleMark(mark);
                 }
 
@@ -621,7 +606,6 @@ export default class EditorComponent extends Component {
         this.updateHoverMenu();
         window.addEventListener('beforeunload', this.handleWindowClose);
         window.addEventListener('message', this.handleFrameCapture, false);
-        console.log('window.addEventListener(this.handleFrameCapture)');
     }
 
     componentWillUnmount() {

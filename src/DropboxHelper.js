@@ -12,12 +12,11 @@ export const isInitialized = () => !!dbx;
 
 export const save = async noteData => {
     if (!dbx) {
-        console.log('dropbox was not initialized. so not saving.');
         return null;
     }
 
     if (!noteData.videoId || !noteData.videoTitle) {
-        console.warn('No videoId or videoTitle given');
+        // console.warn('No videoId or videoTitle given');
         return null;
     }
 
@@ -49,7 +48,7 @@ const batchDownloadNotes = async (notePaths, promiseFn) => {
 
 export const downloadNotes = async () => {
     if (!isInitialized()) {
-        console.warn('Dropbox NOT initialized.');
+        console.warn('Dropbox NOT initialized.'); // eslint-disable-line no-console
         return;
     }
 
@@ -65,7 +64,7 @@ export const downloadNotes = async () => {
     const contentList = [];
 
     await batchDownloadNotes(notePaths, async path => {
-        console.log('downloading note', path);
+        // console.log('downloading note', path);
         const downloadInfo = await dbx.filesDownload({ path });
         const { fileBlob } = downloadInfo;
         const content = await readBlobAsString(fileBlob);

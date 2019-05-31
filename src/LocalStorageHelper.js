@@ -60,7 +60,6 @@ export async function syncWithDropbox(accessToken) {
     await dbx.init(accessToken);
 
     if (!dbx.isInitialized()) {
-        console.warn('Dropbox is not initialized while syncWithDropbox is called.');
         return;
     }
 

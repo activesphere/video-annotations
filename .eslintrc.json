@@ -12,6 +12,7 @@
 		"linebreak-style": ["error", "unix"],
 		"quotes": ["error", "single"],
 		"semi": ["error", "always"],
-		"no-undefined": "error"
+		"no-undefined": "error",
+		"no-console": "warn"
 	}
 }

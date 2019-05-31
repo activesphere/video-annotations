@@ -13,7 +13,7 @@ import AppConfig from './AppConfig';
 
 const YOUTUBE_API_KEY = process.env.REACT_APP_YOUTUBE_API_KEY;
 if (!YOUTUBE_API_KEY) {
-    console.assert('REACT_APP_YOUTUBE_API_KEY required in .env file');
+    alert('REACT_APP_YOUTUBE_API_KEY required in .env file');
 }
 
 const ytNameOfPlayerState = {
@@ -27,7 +27,9 @@ const ytNameOfPlayerState = {
 
 class YoutubePlayerController {
     constructor(YT, playerApi) {
-        console.assert(!!playerApi);
+        if (!playerApi) {
+            throw new Error('playerApi is null');
+        }
         this.YT = YT;
         this.playerApi = playerApi;
         this.currentVideoId = null;
@@ -48,7 +50,6 @@ class YoutubePlayerController {
             } else {
                 return new Error(`Failed to retrive title of video - ${this.currentVideoId}`);
             }
-            console.log('Title = ', title, 'Error =', err);
         });
     }
 
@@ -57,22 +58,18 @@ class YoutubePlayerController {
     }
 
     playVideo(videoId = null) {
-        console.log('playVideo', videoId);
         if (!videoId && !this.currentVideoId) {
             return;
         }
 
         this.currentVideoId = videoId ? videoId : this.currentVideoId;
 
-        console.log('playVideo', this.currentVideoId);
         this.playerApi.playVideo(this.currentVideoId);
     }
 
     loadAndPlayVideo(videoId) {
         this.currentVideoId = videoId;
         this.currentVideoTitle = null;
-        console.log('this.playerApi =', this.playerApi);
-        console.log('playVideo =', this.playerApi.playVideo);
         this.playerApi.cueVideoById(this.currentVideoId, 0);
         this.playerApi.playVideo(this.currentVideoId);
         this.setVideoTitle();
@@ -110,7 +107,6 @@ class YoutubePlayerController {
     }
 
     seekTo(timeInSeconds) {
-        console.log('seekTo', timeInSeconds, 'seconds');
         this.playerApi.seekTo(timeInSeconds);
     }
 }
@@ -153,7 +149,6 @@ class EditorPage extends Component {
     };
 
     doVideoCommand(command, params) {
-        console.assert(!!this.ytPlayerController);
         const currentTime = this.ytPlayerController.getCurrentTime();
 
         switch (command) {
@@ -188,7 +183,7 @@ class EditorPage extends Component {
                 break;
 
             default:
-                console.warn('Received unknown command from editor', command, params);
+                break;
         }
 
         return currentTime;
@@ -233,7 +228,6 @@ class EditorPage extends Component {
                 width: '100%',
                 events: {
                     onStateChange: newState => {
-                        console.log('Setting state ', ytNameOfPlayerState[newState.data]);
                         this.ytPlayerController.currentPlayerState =
                             ytNameOfPlayerState[newState.data];
                     },
@@ -242,8 +236,7 @@ class EditorPage extends Component {
                         this.ytPlayerController = new YoutubePlayerController(ytAPI, ytPlayerApi);
                         if (startingVideoId) {
                             this.ytPlayerController.loadAndPlayVideo(startingVideoId);
-                            console.log('Loading video and note for ', this.props.startingVideoId);
-                            console.log('Loading video and note for ', this.props.startingVideoId);
+                            // console.log('Loading video and note for ', this.props.startingVideoId);
                             const videoId = this.props.startingVideoId;
                             this.tellEditorToLoadNote(videoId);
                         }
@@ -253,7 +246,6 @@ class EditorPage extends Component {
         }
 
         if (this.state.startingPopperMessage) {
-            console.log('Showing starting popper message');
             this.context.openSnackbar({ message: this.state.startingPopperMessage });
             setTimeout(() => {
                 this.setState({ startingPopperMessage: null });

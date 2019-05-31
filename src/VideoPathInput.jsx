@@ -36,7 +36,6 @@ const VideoPathInput = ({ classes, currentVideoId = null }) => {
     }, [isValidVideoId]);
 
     if (isValidVideoId) {
-        console.log('Is valid video id');
         return <Redirect to={`/editor/${text}`} />;
     }
 
