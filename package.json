@@ -46,7 +46,7 @@
 		"slug": "^1.1.0"
 	},
 	"scripts": {
-		"eslint": "eslint \"src/**/*.js\" && eslint \"extension/*.js\"",
+		"eslint": "eslint \"src/**/*.js{,x}\" && eslint \"extension/*.js\"",
 		"start": "yarn eslint && react-scripts start",
 		"build": "yarn eslint && react-scripts build",
 		"test": "yarn eslint && react-scripts test",

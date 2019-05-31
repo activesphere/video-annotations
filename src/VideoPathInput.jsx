@@ -13,7 +13,7 @@ const styles = {
     },
 };
 
-const VideoPathInput = ({ classes, currentVideoId = undefined }) => {
+const VideoPathInput = ({ classes, currentVideoId = null }) => {
     const [text, setText] = useState(currentVideoId || '');
     const [isValidVideoId, setIsValidVideoId] = useState(false);
 
@@ -33,7 +33,7 @@ const VideoPathInput = ({ classes, currentVideoId = undefined }) => {
         if (isValidVideoId) {
             setIsValidVideoId(false);
         }
-    }, [isValidVideoId])
+    }, [isValidVideoId]);
 
     if (isValidVideoId) {
         console.log('Is valid video id');

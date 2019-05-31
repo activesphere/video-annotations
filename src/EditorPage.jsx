@@ -123,8 +123,8 @@ class EditorPage extends Component {
     };
 
     static defaultProps = {
-        startingVideoId: undefined,
-        startingPopperMessage: undefined,
+        startingVideoId: null,
+        startingPopperMessage: null,
     };
 
     static contextType = SnackbarContext;
@@ -133,16 +133,16 @@ class EditorPage extends Component {
         super(props);
 
         this.state = {
-            editorCommand: undefined,
-            infoText: undefined,
-            infoLastTime: undefined,
-            selectedOption: undefined,
+            editorCommand: null,
+            infoText: null,
+            infoLastTime: null,
+            selectedOption: null,
             startingPopperMessage: this.props.startingPopperMessage,
         };
 
         // We keep a handle to the youtube player. This is the player API object, not the dom
         // element itself.
-        this.ytPlayerController = undefined;
+        this.ytPlayerController = null;
         this.doVideoCommand = this.doVideoCommand.bind(this);
 
         this.iframeRef = React.createRef();

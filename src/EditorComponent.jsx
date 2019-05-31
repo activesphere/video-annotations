@@ -88,7 +88,7 @@ export default class EditorComponent extends Component {
                     this.props.parentApp.doVideoCommand('playVideo');
                     setTimeout(() => {
                         this.context.openSnackbar({
-                            message: `Playing`,
+                            message: 'Playing',
                         });
                     });
                 },
@@ -105,7 +105,7 @@ export default class EditorComponent extends Component {
                     this.props.parentApp.doVideoCommand('pauseVideo');
                     setTimeout(() => {
                         this.context.openSnackbar({
-                            message: `Paused`,
+                            message: 'Paused',
                         });
                     });
                 },
@@ -353,7 +353,7 @@ export default class EditorComponent extends Component {
                 }
                 case 'saveNote': {
                     this.saveCurrentNote();
-                    this.context.openSnackbar({ message: `Saved`, autoHideDuration: 1000 });
+                    this.context.openSnackbar({ message: 'Saved', autoHideDuration: 1000 });
                     break;
                 }
                 case 'captureFrame': {
@@ -445,9 +445,7 @@ export default class EditorComponent extends Component {
                         };
 
                         // prettier-ignore
-                        console.log(
-                                `Seeking video ${params.videoId} to time ${secondsToHhmmss(params.videoTime)}`
-                            );
+                        console.log(`Seeking video ${params.videoId} to time ${secondsToHhmmss(params.videoTime)}`);
 
                         this.props.parentApp.doVideoCommand('seekToTime', params);
                     }

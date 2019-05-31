@@ -107,7 +107,7 @@ export class SnackbarContextProvider extends React.Component<{ children: React.N
                     autoHideDuration={
                         this.state.autoHide
                             ? this.state.autoHideDuration || defaultAutoHideDuration
-                            : undefined
+                            : null
                     }
                     onClose={this.closeSnackbar}
                     ContentProps={{
