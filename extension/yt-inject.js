@@ -19,7 +19,7 @@ const toDataURL = video => {
 
 const sendVideoDataURL = () => {
     try {
-        const video = document.querySelector(`video`);
+        const video = document.querySelector('video');
         if (!video) return;
 
         window.parent.postMessage(
@@ -27,7 +27,7 @@ const sendVideoDataURL = () => {
             '*'
         );
     } catch (e) {
-        console.log(e);
+        console.log(e); // eslint-disable-line no-console
     }
 };
 
