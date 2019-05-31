@@ -184,6 +184,8 @@ export default class EditorComponent extends Component {
         this.editorRef = null;
 
         this.hoverMenuRef = null;
+
+        this._makePlugins();
     }
 
     onChange = ({ value }) => {
@@ -737,6 +739,7 @@ export default class EditorComponent extends Component {
                     <Editor
                         defaultValue={this.state.value}
                         value={this.state.value}
+                        plugins={this.plugins}
                         onChange={this.onChange}
                         onKeyDown={this.onKeyDown}
                         renderMark={this.renderMark}
