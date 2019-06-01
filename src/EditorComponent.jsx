@@ -20,6 +20,14 @@ import AppConfig from './AppConfig';
 
 Modal.setAppElement('#__vid_annot_root__');
 
+const schema = {
+    blocks: {
+        image: {
+            isVoid: true,
+        },
+    },
+};
+
 const initialEditorValue = Plain.deserialize('');
 
 function makeYoutubeTimestampMark(videoId, videoTime) {
@@ -49,6 +57,7 @@ export default class EditorComponent extends Component {
         try {
             await saveNoteWithId(videoId, noteData);
         } catch (err) {
+            console.log(err); // eslint-disable-line no-console
             this.context.openSnackbar({
                 message: `Failed to upload to dropbox - ${err}`,
             });
@@ -184,6 +193,8 @@ export default class EditorComponent extends Component {
         this.editorRef = null;
 
         this.hoverMenuRef = null;
+
+        this._makePlugins();
     }
 
     onChange = ({ value }) => {
@@ -191,8 +202,8 @@ export default class EditorComponent extends Component {
             this.saveCurrentDebounced();
         }
 
-        // Check if we are on the boundary of a timestamp mark. If so we
-        // will toggle away that mark state.
+        // Check if we are on the boundary of a timestamp mark. If so we will toggle away that mark
+        // state.
         const onTimestamp = value.marks.some(({ type }) => type === 'youtube_timestamp');
 
         this.setState({ onTimestamp, value });
@@ -221,6 +232,38 @@ export default class EditorComponent extends Component {
             case 'title': {
                 return (
                     <span {...attributes} className="title">
+                        {children}
+                    </span>
+                );
+            }
+
+            case 'heading1': {
+                return (
+                    <span {...attributes} className="heading1">
+                        {children}
+                    </span>
+                );
+            }
+
+            case 'heading2': {
+                return (
+                    <span {...attributes} className="heading2">
+                        {children}
+                    </span>
+                );
+            }
+
+            case 'heading3': {
+                return (
+                    <span {...attributes} className="heading3">
+                        {children}
+                    </span>
+                );
+            }
+
+            case 'heading4': {
+                return (
+                    <span {...attributes} className="heading3">
                         {children}
                     </span>
                 );
@@ -386,6 +429,7 @@ export default class EditorComponent extends Component {
 
         let handled = false;
 
+        /* -- Testing inline image node
         if (event.key === 'Enter') {
             // When we are in an 'image' block, we don't want to split into two image blocks. The
             // new block should just be a paragraph.
@@ -396,6 +440,7 @@ export default class EditorComponent extends Component {
                 return next();
             }
         }
+        */
 
         if (!event.ctrlKey) {
             // return this.handleNonHotkey(event, editor, next);
@@ -489,7 +534,7 @@ export default class EditorComponent extends Component {
                 const valueJson = this.state.value.toJSON();
                 handled = true;
 
-                console.log('valueJson =', valueJson); // eslint-disable-line no-console
+                console.log(valueJson); // eslint-disable-line no-console
 
                 break;
             }
@@ -546,9 +591,10 @@ export default class EditorComponent extends Component {
                 const { attributes, isSelected } = props;
 
                 const styles = {
-                    boxShadow: isSelected ? '3px 3px 2px 2px green' : '1px 1px 1px 1px purple',
-                    marginLeft: '2em',
-                    backgroundColor: '0xe6e6e6',
+                    display: 'block',
+                    boxShadow: isSelected ? '0px 0px 2px 2px lightgrey' : 'none',
+                    margin: '0 auto',
+                    border: '1px solid gray',
                 };
 
                 return (
@@ -633,10 +679,13 @@ export default class EditorComponent extends Component {
 
             const { videoTime } = this.props.parentApp.currentVideoInfo();
 
-            this.editorRef.insertBlock({
+            this.editorRef.insertInline({
                 type: 'image',
                 data: { dataUrl: e.data.dataUrl, videoTime },
+                isVoid: true,
             });
+
+            this.editorRef.moveToStartOfNextText().focus();
         }
     };
 
@@ -696,6 +745,9 @@ export default class EditorComponent extends Component {
 
             while (available < remaining) {
                 endText = texts.shift();
+                if (!endText) {
+                    break;
+                }
                 remaining = length - available;
                 available = endText.text.length;
                 endOffset = remaining;
@@ -728,15 +780,17 @@ export default class EditorComponent extends Component {
     render() {
         // Pick bg color of editor based on if it's on a timestamp or not.
         const styles = {
-            backgroundColor: this.state.onTimestamp ? '#fff4f7' : '#fafaf0',
+            backgroundColor: this.state.onTimestamp ? '#fff4f7' : '#fafafa',
         };
 
         return (
             <Slide direction={'left'} in={true} mountOnEnter unmountOnExit>
                 <div id="__editor_container_div__">
                     <Editor
+                        schema={schema}
                         defaultValue={this.state.value}
                         value={this.state.value}
+                        plugins={this.plugins}
                         onChange={this.onChange}
                         onKeyDown={this.onKeyDown}
                         renderMark={this.renderMark}
