@@ -591,9 +591,10 @@ export default class EditorComponent extends Component {
                 const { attributes, isSelected } = props;
 
                 const styles = {
-                    boxShadow: isSelected ? '3px 3px 2px 2px green' : '1px 1px 1px 1px purple',
-                    marginLeft: '2em',
-                    backgroundColor: '0xe6e6e6',
+                    display: 'block',
+                    boxShadow: isSelected ? '0px 0px 2px 2px lightgrey' : 'none',
+                    margin: '0 auto',
+                    border: '1px solid gray',
                 };
 
                 return (
