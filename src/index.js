@@ -41,6 +41,10 @@ const Main = ({ ytAPI }) => {
                 <Route
                     path="/dropbox_oauth"
                     render={() => {
+                        if (process.env.REACT_APP_DISABLE_DROPBOX) {
+                            return <Redirect to={'/editor/'} />;
+                        }
+
                         if (['complete', 'failed'].includes(dbxSetupState))
                             return <Redirect to="/editor" />;
 

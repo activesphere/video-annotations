@@ -1,814 +1,216 @@
-import React, { Component, Fragment } from 'react';
-import slug from 'slug';
-import { Editor } from 'slate-react';
-import { Value, Mark } from 'slate';
-import Plain from 'slate-plain-serializer';
+import React, { useRef, useEffect } from 'react';
+import { EditorState, Plugin } from 'prosemirror-state';
+import { EditorView } from 'prosemirror-view';
+import { Schema, DOMParser } from 'prosemirror-model';
+import { schema as BasicSchema } from 'prosemirror-schema-basic';
+import { exampleSetup } from 'prosemirror-example-setup';
+import { keymap } from 'prosemirror-keymap';
+import { InputRule, inputRules } from 'prosemirror-inputrules';
+import { toggleMark } from 'prosemirror-commands';
+
 import secondsToHhmmss from './utils/secondsToHhmmsss';
-import PropTypes from 'prop-types';
-import Prism from './prism_add_markdown_syntax';
-import AutoReplace from './slate-auto-replace-alt';
-import { saveNoteWithId, loadNoteWithId } from './LocalStorageHelper';
-import Modal from 'react-modal';
-import isHotKey from 'is-hotkey';
-import keyMap from './keycodeMap';
-import { Slide } from '@material-ui/core';
-import { SnackbarContext } from './context/SnackbarContext';
-import HoverMenu from './editor/HoverMenu';
-import TimestampMark from './editor/TimestampMark';
-import debounce from './utils/debounce';
-import AppConfig from './AppConfig';
 
-Modal.setAppElement('#__vid_annot_root__');
+// Schema. Extends the basic schema with timestamps.
+const EditorSchema = new Schema({
+    nodes: BasicSchema.spec.nodes,
 
-const schema = {
-    blocks: {
-        image: {
-            isVoid: true,
+    marks: BasicSchema.spec.marks.append({
+        timestamp: {
+            attrs: {
+                videoTime: 0,
+            },
+
+            toDOM: node => {
+                return ['timestamp', {}];
+            },
+
+            parseDOM: [
+                {
+                    tag: 'timestamp',
+                    getAttrs: dom => {
+                        return { href: dom.href };
+                    },
+                },
+            ],
+
+            inclusive: false,
         },
-    },
+    }),
+});
+
+// Helper function to get the underlying timestamp value from current selection, if one exists in
+// the selection.
+function getTimestampValueUnderCursor(state) {
+    const { selection } = state;
+
+    const { $from, $to } = selection;
+    const marks = [...$from.marks(), ...$to.marks()];
+
+    const times = [];
+
+    for (const mark of marks) {
+        if (mark.type.name === 'timestamp') {
+            times.push(mark.attrs.videoTime);
+        }
+    }
+
+    return {
+        haveTimestamp: times.length !== 0,
+        videoTime: Math.floor(times[0]),
+    };
+}
+
+// Test tooltip image. Will remove and use image associated with the timestamp.
+// const tooltipImageSrc = 'https://i.imgur.com/cD5ATL8.jpg';
+const tooltipImageSrc = 'https://images-na.ssl-images-amazon.com/images/I/41vIWnj-QsL._UX395_.jpg';
+
+class TimestampImagePlugin {
+    constructor(view) {
+        this.tooltip = document.createElement('div');
+        this.tooltip.className = 'timestamp-tooltip';
+        view.dom.parentNode.appendChild(this.tooltip);
+
+        this.imageElement = document.createElement('img');
+        this.imageElement.setAttribute('src', tooltipImageSrc);
+
+        this.tooltip.appendChild(this.imageElement);
+
+        this.update(view, null);
+    }
+
+    update(view, lastState) {
+        let state = view.state;
+
+        // Don't do anything if the document/selection didn't change
+        if (lastState && lastState.doc.eq(state.doc) && lastState.selection.eq(state.selection)) {
+            return;
+        }
+
+        if (state.selection.empty) {
+            this.tooltip.style.display = 'none';
+            return;
+        }
+
+        const { haveTimestamp } = getTimestampValueUnderCursor(state);
+
+        if (!haveTimestamp) {
+            this.tooltip.style.display = 'none';
+            return;
+        }
+
+        this.tooltip.style.display = '';
+
+        const { from } = state.selection;
+
+        const start = view.coordsAtPos(from);
+
+        this.tooltip.style.left = `${start.left + 10}px`;
+        this.tooltip.style.top = `${start.top + 20}px`;
+    }
+
+    destroy() {
+        this.tooltip.remove();
+    }
+}
+
+const EditorComponent = props => {
+    const editorView = useRef(null);
+
+    const { doCommand } = props;
+
+    // Creates the editor on mount
+    useEffect(() => {
+        const timestemapImagePlugin = new Plugin({
+            view: editorView => new TimestampImagePlugin(editorView),
+        });
+
+        // Prosemirror command that toggles the selected text to be marked a timestamp.
+        const toggleTimestampMark = (state, dispatch) => {
+            const { selection } = state;
+
+            if (selection.empty) {
+                return false;
+            }
+
+            const videoTime = doCommand('currentTime');
+
+            if (Number.isNaN(videoTime)) {
+                return true;
+            }
+
+            return toggleMark(EditorSchema.marks.timestamp, { videoTime: Math.floor(videoTime) })(
+                state,
+                dispatch
+            );
+        };
+
+        // Prosemirror command that retrieves underlying timestamp value from the selection.
+        const seekToTimestamp = (state, dispatch) => {
+            const { haveTimestamp, videoTime } = getTimestampValueUnderCursor(state);
+
+            if (haveTimestamp) {
+                doCommand('seekToTime', { videoTime });
+            }
+
+            return true;
+        };
+
+        const putTimestampText = (state, dispatch) => {
+            const videoTime = doCommand('currentTime');
+
+            if (Number.isNaN(videoTime)) {
+                return true;
+            }
+
+            // Create text node with the timestamp mark
+            const mark = EditorSchema.marks.timestamp.create({ videoTime });
+            const text = EditorSchema.text(secondsToHhmmss(videoTime), [mark]);
+
+            if (dispatch) {
+                dispatch(state.tr.replaceSelectionWith(text, false));
+            }
+
+            return true;
+        };
+
+        // Pause input rule. Typing "#." will toggle pause.
+        const ToggleVideoPauseInputRule = new InputRule(/#\.$/, (state, match, start, end) => {
+            doCommand('togglePause');
+            return state.tr.insertText('', start, end);
+        });
+
+        const content = document.getElementById('__content__');
+
+        const editorElement = document.getElementById('__editor__');
+
+        // create editor
+        editorView.current = new EditorView(editorElement, {
+            state: EditorState.create({
+                doc: DOMParser.fromSchema(EditorSchema).parse(content),
+                plugins: [
+                    keymap({
+                        'Ctrl-t': toggleTimestampMark,
+                        'Ctrl-g': seekToTimestamp,
+                        'Ctrl-Shift-t': putTimestampText,
+                    }),
+
+                    timestemapImagePlugin,
+
+                    inputRules({ rules: [ToggleVideoPauseInputRule] }),
+                    ...exampleSetup({ schema: EditorSchema }),
+                ],
+            }),
+        });
+    }, [doCommand]);
+
+    return (
+        <>
+            <div id="__editor__" />
+            <div id="__content__">
+                <p>Hello, World!</p>
+            </div>
+        </>
+    );
 };
 
-const initialEditorValue = Plain.deserialize('');
-
-function makeYoutubeTimestampMark(videoId, videoTime) {
-    return Mark.create({ type: 'youtube_timestamp', data: { videoId, videoTime } });
-}
-
-export default class EditorComponent extends Component {
-    static propTypes = {
-        parentApp: PropTypes.object.isRequired,
-        editorCommand: PropTypes.object,
-    };
-
-    static contextType = SnackbarContext;
-
-    saveCurrentNote = async () => {
-        const jsonEditorValue = this.state.value.toJSON();
-        const { videoId, videoTitle } = this.props.parentApp.currentVideoInfo();
-
-        const noteData = {
-            videoId,
-            videoTitle,
-            noteName: `${slug(videoTitle || '')}-${videoId}.json`,
-            editorValueAsJson: jsonEditorValue,
-            timeOfSave: new Date() / 1000.0,
-        };
-
-        try {
-            await saveNoteWithId(videoId, noteData);
-        } catch (err) {
-            console.log(err); // eslint-disable-line no-console
-            this.context.openSnackbar({
-                message: `Failed to upload to dropbox - ${err}`,
-            });
-        }
-
-        return `Saved Note for video "${videoId}", title - "${videoTitle}"`;
-    };
-
-    saveCurrentDebounced = debounce(this.saveCurrentNote, 3000);
-
-    _putTimestampMarkIntoEditor = editor => {
-        const { videoId, videoTime } = this.props.parentApp.currentVideoInfo();
-        if (!videoId) {
-            return false;
-        }
-        if (!videoTime && videoTime !== 0) {
-            return false;
-        }
-
-        const timeStampMark = makeYoutubeTimestampMark(videoId, videoTime);
-        editor.toggleMark(timeStampMark);
-        editor.insertText(secondsToHhmmss(videoTime));
-        editor.toggleMark(timeStampMark);
-        return true;
-    };
-
-    _makePlugins = () => {
-        this.plugins = [];
-
-        this.plugins.push(
-            AutoReplace({
-                trigger: '.',
-                before: /[^#]?(#)$/,
-                change: change => {
-                    change.insertText('');
-                    this.props.parentApp.doVideoCommand('playVideo');
-                    setTimeout(() => {
-                        this.context.openSnackbar({
-                            message: 'Playing',
-                        });
-                    });
-                },
-            })
-        );
-
-        // Pause video key-sequence
-        this.plugins.push(
-            AutoReplace({
-                trigger: '/',
-                before: /[^#]?(#)$/,
-                change: change => {
-                    change.insertText('');
-                    this.props.parentApp.doVideoCommand('pauseVideo');
-                    setTimeout(() => {
-                        this.context.openSnackbar({
-                            message: 'Paused',
-                        });
-                    });
-                },
-            })
-        );
-
-        // Puts a timestamp mark. Used by the following AutoReplace plugins
-        const putTimestampMark = (change, videoCommandName) => {
-            const { videoId, videoTime } = this.props.parentApp.currentVideoInfo();
-            if (!videoId) {
-                return;
-            }
-            if (!videoTime && videoTime !== 0) {
-                return;
-            }
-
-            const timeStampMark = makeYoutubeTimestampMark(videoId, videoTime);
-            change.toggleMark(timeStampMark);
-            change.insertText(secondsToHhmmss(videoTime));
-            change.toggleMark(timeStampMark);
-            this.props.parentApp.doVideoCommand(videoCommandName);
-        };
-
-        // Put video timestamp and play (or continue playing) video
-        this.plugins.push(
-            AutoReplace({
-                trigger: '.',
-                before: /[^#]?(#t)$/,
-                change: change => {
-                    putTimestampMark(change, 'playVideo');
-                },
-            })
-        );
-
-        // Put video timestamp and pause video
-        this.plugins.push(
-            AutoReplace({
-                trigger: '/',
-                before: /[^#]?(#t)$/,
-                change: change => {
-                    putTimestampMark(change, 'pauseVideo');
-                },
-            })
-        );
-
-        // Seek to time. The format of input is /#-?[0-9]+(s|m)s/. So input #, then -10s, then s,
-        // and you go back 10 seconds. The full sequence is #-10ss.
-        this.plugins.push(
-            AutoReplace({
-                trigger: 's',
-                before: /[^#]?(#(-?)([0-9]+)(s|m))$/,
-                change: (change, event, matches) => {
-                    const groups = matches.before;
-                    const amount = +groups[3];
-                    const unit = groups[4] === 's' ? 1 : 60;
-                    const sign = groups[2] === '-' ? -1 : 1;
-                    const deltaTimeInSeconds = sign * amount * unit;
-
-                    this.props.parentApp.doVideoCommand('addToCurrentTime', {
-                        secondsToAdd: deltaTimeInSeconds,
-                    });
-                    change.insertText('');
-                },
-            })
-        );
-    };
-
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            value: initialEditorValue,
-            showGetTimestampTitle: false,
-            onTimestamp: false,
-        };
-
-        this.editorRef = null;
-
-        this.hoverMenuRef = null;
-
-        this._makePlugins();
-    }
-
-    onChange = ({ value }) => {
-        if (value.document !== this.state.value.document) {
-            this.saveCurrentDebounced();
-        }
-
-        // Check if we are on the boundary of a timestamp mark. If so we will toggle away that mark
-        // state.
-        const onTimestamp = value.marks.some(({ type }) => type === 'youtube_timestamp');
-
-        this.setState({ onTimestamp, value });
-    };
-
-    renderMark = (props, editor, next) => {
-        const { mark, attributes, children } = props;
-        switch (mark.type) {
-            case 'youtube_timestamp':
-                return (
-                    <TimestampMark {...props} parentApp={this.props.parentApp} {...attributes} />
-                );
-
-            case 'bold':
-                return <strong {...attributes}>{props.children}</strong>;
-
-            case 'italic':
-                return <em {...attributes}>{children}</em>;
-
-            case 'underline':
-                return <u {...attributes}>{children}</u>;
-
-            case 'code':
-                return <code {...attributes}>{children}</code>;
-
-            case 'title': {
-                return (
-                    <span {...attributes} className="title">
-                        {children}
-                    </span>
-                );
-            }
-
-            case 'heading1': {
-                return (
-                    <span {...attributes} className="heading1">
-                        {children}
-                    </span>
-                );
-            }
-
-            case 'heading2': {
-                return (
-                    <span {...attributes} className="heading2">
-                        {children}
-                    </span>
-                );
-            }
-
-            case 'heading3': {
-                return (
-                    <span {...attributes} className="heading3">
-                        {children}
-                    </span>
-                );
-            }
-
-            case 'heading4': {
-                return (
-                    <span {...attributes} className="heading3">
-                        {children}
-                    </span>
-                );
-            }
-
-            case 'url': {
-                return (
-                    <a {...attributes} className="url">
-                        {children}
-                    </a>
-                );
-            }
-
-            case 'punctuation': {
-                return (
-                    <span {...attributes} style={{ opacity: 0.2 }}>
-                        {children}
-                    </span>
-                );
-            }
-
-            case 'list': {
-                return (
-                    <span {...attributes} className="bulleted-list">
-                        {children}
-                    </span>
-                );
-            }
-
-            case 'hr': {
-                return (
-                    <span
-                        {...attributes}
-                        style={{
-                            borderBottom: '2px solid #000',
-                            display: 'block',
-                            opacity: 0.2,
-                        }}
-                    >
-                        {children}
-                    </span>
-                );
-            }
-
-            case 'inlinemath': {
-                return (
-                    <span {...attributes} className="inlinemath">
-                        {children}
-                    </span>
-                );
-            }
-
-            default: {
-                return next();
-            }
-        }
-    };
-
-    loadNoteForVideo = videoId => {
-        if (!videoId) {
-            this.context.openSnackbar({
-                message: 'No video playing, not loading any note',
-            });
-        }
-
-        const { editorValueAsJson } = loadNoteWithId(videoId);
-
-        if (!editorValueAsJson) {
-            this.context.openSnackbar({
-                message: `No previously saved note for video - ${videoId}`,
-            });
-            // Load empty editor value
-            this.setState({
-                ...this.state,
-                value: initialEditorValue,
-            });
-        } else {
-            this.setState({
-                ...this.state,
-                value: Value.fromJSON(editorValueAsJson),
-            });
-        }
-    };
-
-    // Returns a list of all marks within current selection
-    getTimestampMarkIfAny = editor => {
-        const marks = editor.value.marks;
-
-        const timestampMarks = [];
-
-        for (let mark of marks) {
-            if (mark.type === 'youtube_timestamp') {
-                timestampMarks.push(
-                    makeYoutubeTimestampMark(mark.data.get('videoId'), mark.data.get('videoTime'))
-                );
-            }
-        }
-
-        return timestampMarks;
-    };
-
-    onKeyDown = (event, editor, next) => {
-        // Special handling of TAB key. Put 4 spaces.
-        if (event.keyCode === 9) {
-            editor.insertText('    ');
-            event.preventDefault();
-            return true;
-        }
-
-        const actionKey = Object.keys(keyMap).find(k => isHotKey(k, event));
-        const action = keyMap[actionKey];
-
-        if (action) {
-            event.preventDefault();
-            switch (action) {
-                case 'togglePause': {
-                    this.props.dispatch('togglePause');
-                    break;
-                }
-                case 'putTimestamp': {
-                    this._putTimestampMarkIntoEditor(editor);
-                    break;
-                }
-                case 'saveNote': {
-                    this.saveCurrentNote();
-                    this.context.openSnackbar({ message: 'Saved', autoHideDuration: 1000 });
-                    break;
-                }
-                case 'captureFrame': {
-                    const { videoId } = this.props.parentApp.currentVideoInfo();
-                    if (!videoId) {
-                        this.context.openSnackbar({
-                            message: 'No video currently playing',
-                            autoHideDuration: 1000,
-                        });
-                        return;
-                    }
-                    window.frames[0].postMessage(
-                        { type: AppConfig.CaptureCurrentFrameMessage },
-                        '*'
-                    );
-                    break;
-                }
-                case 'videoForward': {
-                    this.props.dispatch('addToCurrentTime', {
-                        secondsToAdd: 10,
-                    });
-                    break;
-                }
-                case 'videoBackward': {
-                    this.props.dispatch('addToCurrentTime', {
-                        secondsToAdd: -10,
-                    });
-                    break;
-                }
-                default:
-                    console.error('Key map error', keyMap, action); // eslint-disable-line no-console
-                    break;
-            }
-
-            return true;
-        }
-
-        let handled = false;
-
-        /* -- Testing inline image node
-        if (event.key === 'Enter') {
-            // When we are in an 'image' block, we don't want to split into two image blocks. The
-            // new block should just be a paragraph.
-            if (editor.value.startBlock.type === 'image') {
-                editor.splitBlock().setBlocks('paragraph');
-                handled = true;
-            } else {
-                return next();
-            }
-        }
-        */
-
-        if (!event.ctrlKey) {
-            // return this.handleNonHotkey(event, editor, next);
-            return next();
-        }
-
-        switch (event.key) {
-            case 'b': {
-                editor.toggleMark('bold');
-                handled = true;
-                break;
-            }
-
-            case 'i': {
-                editor.toggleMark('italic');
-                handled = true;
-                break;
-            }
-
-            case 'u': {
-                editor.toggleMark('underline');
-                handled = true;
-                break;
-            }
-
-            case 'd': {
-                if (!editor.value.selection.isCollapsed) {
-                    break;
-                }
-
-                // Get mark under cursor. It's a list, as there can be multiple marks applied to
-                // overlapping ranges I guess.
-                const marks = editor.value.marks;
-
-                for (let mark of marks) {
-                    if (mark.type === 'youtube_timestamp') {
-                        const params = {
-                            videoId: mark.data.get('videoId'),
-                            videoTime: mark.data.get('videoTime'),
-                        };
-
-                        this.props.parentApp.doVideoCommand('seekToTime', params);
-                    }
-                }
-
-                handled = true;
-
-                break;
-            }
-
-            // Associate a mark at the current selected text
-            case '/': {
-                let selection = editor.value.selection;
-
-                if (selection.isCollapsed) {
-                    handled = false;
-                    break;
-                }
-
-                const { videoId, videoTime } = this.props.parentApp.currentVideoInfo();
-
-                if (!videoId) {
-                    handled = false;
-                    break;
-                }
-
-                const timeStampMark = makeYoutubeTimestampMark(videoId, videoTime);
-                editor.addMarkAtRange(selection, timeStampMark);
-
-                handled = true;
-                break;
-            }
-
-            // Ctrl + l will load most recently saved version of this video from local storage
-            case 'l': {
-                const { videoId } = this.props.parentApp.currentVideoInfo();
-                this.loadNoteForVideo(videoId);
-                handled = true;
-                break;
-            }
-
-            // Ctrl + o will open the saved notes list
-            case 'o': {
-                this.setState({ ...this.state });
-                handled = true;
-                break;
-            }
-
-            // Log the editor state
-            case 'y': {
-                const valueJson = this.state.value.toJSON();
-                handled = true;
-
-                console.log(valueJson); // eslint-disable-line no-console
-
-                break;
-            }
-
-            // Toggle the timestamp at current selection
-            case '-': {
-                const timestampMarks = this.getTimestampMarkIfAny(editor);
-
-                for (let mark of timestampMarks) {
-                    editor.toggleMark(mark);
-                }
-
-                handled = true;
-                break;
-            }
-
-            default:
-                break;
-        }
-
-        event.preventDefault();
-
-        if (handled) {
-            return true;
-        }
-
-        return next();
-    };
-
-    renderNode = (props, editor, next) => {
-        switch (props.node.type) {
-            case 'block-quote':
-                return <blockquote {...props.attributes}>{props.children}</blockquote>;
-            case 'bulleted-list':
-                return <ul {...props.attributes}>{props.children}</ul>;
-            case 'heading-one':
-                return <h1 {...props.attributes}>{props.children}</h1>;
-            case 'heading-two':
-                return <h2 {...props.attributes}>{props.children}</h2>;
-            case 'heading-three':
-                return <h3 {...props.attributes}>{props.children}</h3>;
-            case 'heading-four':
-                return <h4 {...props.attributes}>{props.children}</h4>;
-            case 'heading-five':
-                return <h5 {...props.attributes}>{props.children}</h5>;
-            case 'heading-six':
-                return <h6 {...props.attributes}>{props.children}</h6>;
-            case 'list-item':
-                return <li {...props.attributes}>{props.children}</li>;
-
-            case 'image': {
-                const dataUrl = props.node.data.get('dataUrl');
-                const videoTime = props.node.data.get('videoTime');
-                const { attributes, isSelected } = props;
-
-                const styles = {
-                    display: 'block',
-                    boxShadow: isSelected ? '0px 0px 2px 2px lightgrey' : 'none',
-                    margin: '0 auto',
-                    border: '1px solid gray',
-                };
-
-                return (
-                    <>
-                        {props.children}
-                        <img
-                            src={dataUrl}
-                            {...attributes}
-                            alt={'Captured Frame'}
-                            style={styles}
-                            onClick={() => {
-                                if (videoTime) {
-                                    this.props.parentApp.doVideoCommand('seekToTime', {
-                                        videoTime,
-                                    });
-                                }
-                            }}
-                        />
-                    </>
-                );
-            }
-
-            default:
-                return next();
-        }
-    };
-
-    updateHoverMenu = () => {
-        const menu = this.hoverMenuRef;
-        if (!menu) {
-            return;
-        }
-
-        const { value } = this.state;
-        const { fragment, selection } = value;
-
-        if (selection.isBlurred || selection.isCollapsed || fragment.text === '') {
-            menu.removeAttribute('style');
-            return;
-        }
-
-        const native = window.getSelection();
-        const range = native.getRangeAt(0);
-        const rect = range.getBoundingClientRect();
-        menu.style.opacity = 1;
-        menu.style.top = `${rect.top + window.pageYOffset - menu.offsetHeight}px`;
-
-        menu.style.left = `${rect.left +
-            window.pageXOffset -
-            menu.offsetWidth / 2 +
-            rect.width / 2}px`;
-    };
-
-    componentDidMount() {
-        this.updateHoverMenu();
-        window.addEventListener('beforeunload', this.handleWindowClose);
-        window.addEventListener('message', this.handleFrameCapture, false);
-    }
-
-    componentWillUnmount() {
-        window.removeEventListener('beforeunload', this.handleWindowClose);
-        window.removeEventListener('message', this.handleFrameCapture);
-    }
-
-    componentDidUpdate() {
-        this.updateHoverMenu();
-    }
-
-    componentWillReceiveProps(newProps) {
-        if (newProps.editorCommand && newProps.editorCommand.name === 'loadNoteForVideo') {
-            this.loadNoteForVideo(newProps.editorCommand.videoId);
-            newProps.editorCommand.resetCommand();
-        }
-    }
-
-    handleFrameCapture = e => {
-        if (e.data.type === AppConfig.CaptureCurrentFrameResponse) {
-            this.context.openSnackbar({
-                message: 'Received image data...',
-                autoHideDuration: 1000,
-            });
-
-            const { videoTime } = this.props.parentApp.currentVideoInfo();
-
-            this.editorRef.insertInline({
-                type: 'image',
-                data: { dataUrl: e.data.dataUrl, videoTime },
-                isVoid: true,
-            });
-
-            this.editorRef.moveToStartOfNextText().focus();
-        }
-    };
-
-    renderEditor = (props, editor, next) => {
-        const children = next();
-        return (
-            <Fragment>
-                {children}
-                <HoverMenu
-                    getRef={menu => {
-                        this.hoverMenuRef = menu;
-                    }}
-                    editor={editor}
-                />
-            </Fragment>
-        );
-    };
-
-    decorateNode = (node, editor, next) => {
-        const others = next() || [];
-        if (node.object !== 'block') {
-            return others;
-        }
-
-        const string = node.text;
-        const texts = node.getTexts().toArray();
-        const grammar = Prism.languages.markdown;
-        const tokens = Prism.tokenize(string, grammar);
-        const decorations = [];
-        let startText = texts.shift();
-        let endText = startText;
-        let startOffset = 0;
-        let endOffset = 0;
-        let start = 0;
-
-        function getLength(token) {
-            if (typeof token == 'string') {
-                return token.length;
-            } else if (typeof token.content == 'string') {
-                return token.content.length;
-            } else {
-                return token.content.reduce((l, t) => l + getLength(t), 0);
-            }
-        }
-
-        for (const token of tokens) {
-            startText = endText;
-            startOffset = endOffset;
-
-            const length = getLength(token);
-            const end = start + length;
-
-            let available = startText.text.length - startOffset;
-            let remaining = length;
-
-            endOffset = startOffset + remaining;
-
-            while (available < remaining) {
-                endText = texts.shift();
-                if (!endText) {
-                    break;
-                }
-                remaining = length - available;
-                available = endText.text.length;
-                endOffset = remaining;
-            }
-
-            if (typeof token !== 'string') {
-                const dec = {
-                    anchor: {
-                        key: startText.key,
-                        offset: startOffset,
-                    },
-                    focus: {
-                        key: endText.key,
-                        offset: endOffset,
-                    },
-                    mark: {
-                        type: token.type,
-                    },
-                };
-
-                decorations.push(dec);
-            }
-
-            start = end;
-        }
-
-        return [...others, ...decorations];
-    };
-
-    render() {
-        // Pick bg color of editor based on if it's on a timestamp or not.
-        const styles = {
-            backgroundColor: this.state.onTimestamp ? '#fff4f7' : '#fafafa',
-        };
-
-        return (
-            <Slide direction={'left'} in={true} mountOnEnter unmountOnExit>
-                <div id="__editor_container_div__">
-                    <Editor
-                        schema={schema}
-                        defaultValue={this.state.value}
-                        value={this.state.value}
-                        plugins={this.plugins}
-                        onChange={this.onChange}
-                        onKeyDown={this.onKeyDown}
-                        renderMark={this.renderMark}
-                        renderNode={this.renderNode}
-                        renderEditor={this.renderEditor}
-                        decorateNode={this.decorateNode}
-                        className="editor-top-level"
-                        autoCorrect={false}
-                        autoFocus={true}
-                        placeholder="Write your note here.."
-                        style={styles}
-                        ref={editorRef => {
-                            this.editorRef = editorRef;
-                            this.props.parentApp.editorRef = editorRef;
-                        }}
-                    />
-                </div>
-            </Slide>
-        );
-    }
-}
+export default EditorComponent;
