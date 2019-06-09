@@ -13,26 +13,16 @@ import secondsToHhmmss from './utils/secondsToHhmmsss';
 // Schema. Extends the basic schema with timestamps.
 const EditorSchema = new Schema({
     nodes: BasicSchema.spec.nodes,
-
     marks: BasicSchema.spec.marks.append({
         timestamp: {
-            attrs: {
-                videoTime: 0,
-            },
-
-            toDOM: node => {
-                return ['timestamp', {}];
-            },
-
+            attrs: { videoTime: 0 },
+            toDOM: node => ['timestamp', {}],
             parseDOM: [
                 {
                     tag: 'timestamp',
-                    getAttrs: dom => {
-                        return { href: dom.href };
-                    },
+                    getAttrs: dom => ({ href: dom.href }),
                 },
             ],
-
             inclusive: false,
         },
     }),
