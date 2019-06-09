@@ -182,6 +182,9 @@ class EditorPage extends Component {
                 }
                 break;
 
+            case 'currentTime':
+                break;
+
             default:
                 break;
         }
@@ -267,7 +270,7 @@ class EditorPage extends Component {
                 </div>
                 <EditorComponent
                     parentApp={this}
-                    dispatch={this.doVideoCommand}
+                    doCommand={this.doVideoCommand}
                     editorCommand={this.state.editorCommand}
                     showInfo={this.props.showInfo}
                 />
