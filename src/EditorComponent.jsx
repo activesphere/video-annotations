@@ -7,12 +7,18 @@ import { exampleSetup } from 'prosemirror-example-setup';
 import { keymap } from 'prosemirror-keymap';
 import { InputRule, inputRules } from 'prosemirror-inputrules';
 import { toggleMark } from 'prosemirror-commands';
+import AppConfig from './AppConfig';
 
 import secondsToHhmmss from './utils/secondsToHhmmsss';
+
+function floorOrZero(n) {
+    return Number.isNaN(n) ? 0 : Math.floor(n);
+}
 
 const ImageNodeSpec = {
     attrs: {
         src: '',
+        videoTime: 0,
     },
 
     inline: true,
@@ -34,13 +40,8 @@ const ImageNodeSpec = {
             tag: 'img.inline-image',
             getAttrs: domNode => {
                 const src = domNode.getAttribute('src');
-                if (!src) {
-                    console.warn(
-                        'parseDOM inline-image, src attribute was not present in image element',
-                        src
-                    );
-                }
-                return { src };
+                const videoTime = domNode.getAttribute('videoTime');
+                return { src, videoTime };
             },
         },
     ],
@@ -139,28 +140,12 @@ class TimestampImagePlugin {
     }
 }
 
-function insertInlineImage() {
-    const ImageNodeType = EditorSchema.nodes['inlineImage'];
-
-    return (state, dispatch) => {
-        const { $from } = state.selection;
-        const index = $from.index;
-        if (!$from.parent.canReplaceWith(index, index, ImageNodeType)) {
-            return false;
-        }
-
-        if (dispatch) {
-            dispatch(state.tr.replaceSelectionWith(ImageNodeType.create({ src: tooltipImageSrc })));
-        }
-
-        return true;
-    };
-}
+const ImageNodeType = EditorSchema.nodes['inlineImage'];
 
 const EditorComponent = props => {
     const editorView = useRef(null);
 
-    const { doCommand } = props;
+    const { doCommand, parentApp } = props;
 
     // Creates the editor on mount
     useEffect(() => {
@@ -217,6 +202,53 @@ const EditorComponent = props => {
             return true;
         };
 
+        // Editor command that simply tells the extension to capture the current frame. Does not apply any
+        // transaction to the state.
+        const tellExtensionToCaptureFrame = (state, dispatch) => {
+            const { videoId } = parentApp.currentVideoInfo();
+
+            if (!videoId) {
+                return false;
+            }
+
+            window.frames[0].postMessage({ type: AppConfig.CaptureCurrentFrameMessage }, '*');
+
+            return true;
+        };
+
+        // Listener that checks receiving the data url from extension.
+        const gotResponseFromExtension = e => {
+            if (!editorView.current) {
+                return;
+            }
+
+            if (e.data.type === AppConfig.CaptureCurrentFrameResponse) {
+                const videoTime = floorOrZero(doCommand('currentTime'));
+
+                const view = editorView.current;
+
+                const { state } = view;
+
+                const { $from } = state.selection;
+
+                const index = $from.index;
+
+                if (!$from.parent.canReplaceWith(index, index, ImageNodeType)) {
+                    return false;
+                }
+
+                const newState = state.apply(
+                    state.tr.replaceSelectionWith(
+                        ImageNodeType.create({ src: e.data.dataUrl, videoTime })
+                    )
+                );
+
+                view.updateState(newState);
+            }
+        };
+
+        window.addEventListener('message', gotResponseFromExtension, false);
+
         // Pause input rule. Typing "#." will toggle pause.
         const ToggleVideoPauseInputRule = new InputRule(/#\.$/, (state, match, start, end) => {
             doCommand('togglePause');
@@ -236,7 +268,7 @@ const EditorComponent = props => {
                         'Ctrl-t': toggleTimestampMark,
                         'Ctrl-g': seekToTimestamp,
                         'Ctrl-Shift-t': putTimestampText,
-                        'Ctrl-i': insertInlineImage(),
+                        'Ctrl-i': tellExtensionToCaptureFrame,
                     }),
 
                     timestemapImagePlugin,
@@ -246,7 +278,7 @@ const EditorComponent = props => {
                 ],
             }),
         });
-    }, [doCommand]);
+    }, [doCommand, parentApp]);
 
     return (
         <>
