@@ -213,6 +213,10 @@ timestamp {
     font-style: underline;
 }
 
+.inline-image {
+    border: 1px solid silver;
+}
+
 .timestamp-tooltip {
     position: absolute;
     pointer-events: none;
