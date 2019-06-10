@@ -134,6 +134,7 @@ class EditorPage extends Component {
             infoLastTime: null,
             selectedOption: null,
             startingPopperMessage: this.props.startingPopperMessage,
+            videoId: null,
         };
 
         // We keep a handle to the youtube player. This is the player API object, not the dom
@@ -204,6 +205,7 @@ class EditorPage extends Component {
     }
 
     tellEditorToLoadNote = videoId => {
+        /*
         this.setState({
             editorCommand: {
                 name: 'loadNoteForVideo',
@@ -215,6 +217,9 @@ class EditorPage extends Component {
                 },
             },
         });
+        */
+
+        this.setState({ videoId });
 
         this.context.openSnackbar({ message: `Loading video ${videoId}` });
     };
@@ -273,6 +278,7 @@ class EditorPage extends Component {
                     doCommand={this.doVideoCommand}
                     editorCommand={this.state.editorCommand}
                     showInfo={this.props.showInfo}
+                    videoId={videoId}
                 />
             </div>
         );
