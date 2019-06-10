@@ -10,9 +10,45 @@ import { toggleMark } from 'prosemirror-commands';
 
 import secondsToHhmmss from './utils/secondsToHhmmsss';
 
+const ImageNodeSpec = {
+    attrs: {
+        src: '',
+    },
+
+    inline: true,
+
+    group: 'inline',
+
+    draggable: true,
+
+    toDOM: node => [
+        'img',
+        {
+            src: node.attrs.src,
+            class: 'inline-image',
+        },
+    ],
+
+    parseDOM: [
+        {
+            tag: 'img.inline-image',
+            getAttrs: domNode => {
+                const src = domNode.getAttribute('src');
+                if (!src) {
+                    console.warn(
+                        'parseDOM inline-image, src attribute was not present in image element',
+                        src
+                    );
+                }
+                return { src };
+            },
+        },
+    ],
+};
+
 // Schema. Extends the basic schema with timestamps.
 const EditorSchema = new Schema({
-    nodes: BasicSchema.spec.nodes,
+    nodes: BasicSchema.spec.nodes.addBefore('image', 'inlineImage', ImageNodeSpec),
     marks: BasicSchema.spec.marks.append({
         timestamp: {
             attrs: { videoTime: 0 },
@@ -103,6 +139,24 @@ class TimestampImagePlugin {
     }
 }
 
+function insertInlineImage() {
+    const ImageNodeType = EditorSchema.nodes['inlineImage'];
+
+    return (state, dispatch) => {
+        const { $from } = state.selection;
+        const index = $from.index;
+        if (!$from.parent.canReplaceWith(index, index, ImageNodeType)) {
+            return false;
+        }
+
+        if (dispatch) {
+            dispatch(state.tr.replaceSelectionWith(ImageNodeType.create({ src: tooltipImageSrc })));
+        }
+
+        return true;
+    };
+}
+
 const EditorComponent = props => {
     const editorView = useRef(null);
 
@@ -182,6 +236,7 @@ const EditorComponent = props => {
                         'Ctrl-t': toggleTimestampMark,
                         'Ctrl-g': seekToTimestamp,
                         'Ctrl-Shift-t': putTimestampText,
+                        'Ctrl-i': insertInlineImage(),
                     }),
 
                     timestemapImagePlugin,
