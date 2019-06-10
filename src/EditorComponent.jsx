@@ -15,13 +15,9 @@ const floorOrZero = n => (Number.isNaN(n) ? 0 : Math.floor(n));
 
 const ImageNodeSpec = {
     attrs: { src: '', videoTime: 0 },
-
     inline: true,
-
     group: 'inline',
-
     draggable: true,
-
     toDOM: node => [
         'img',
         {
@@ -29,7 +25,6 @@ const ImageNodeSpec = {
             class: 'inline-image',
         },
     ],
-
     parseDOM: [
         {
             tag: 'img.inline-image',
