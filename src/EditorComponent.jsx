@@ -11,15 +11,10 @@ import AppConfig from './AppConfig';
 
 import secondsToHhmmss from './utils/secondsToHhmmsss';
 
-function floorOrZero(n) {
-    return Number.isNaN(n) ? 0 : Math.floor(n);
-}
+const floorOrZero = n => (Number.isNaN(n) ? 0 : Math.floor(n));
 
 const ImageNodeSpec = {
-    attrs: {
-        src: '',
-        videoTime: 0,
-    },
+    attrs: { src: '', videoTime: 0 },
 
     inline: true,
 
@@ -204,47 +199,39 @@ const EditorComponent = props => {
 
         // Editor command that simply tells the extension to capture the current frame. Does not apply any
         // transaction to the state.
-        const tellExtensionToCaptureFrame = (state, dispatch) => {
+        const tellExtensionToCaptureFrame = (_state, _dispatch) => {
             const { videoId } = parentApp.currentVideoInfo();
-
-            if (!videoId) {
-                return false;
+            if (videoId) {
+                window.frames[0].postMessage({ type: AppConfig.CaptureCurrentFrameMessage }, '*');
             }
-
-            window.frames[0].postMessage({ type: AppConfig.CaptureCurrentFrameMessage }, '*');
-
             return true;
         };
 
         // Listener that checks receiving the data url from extension.
         const gotResponseFromExtension = e => {
-            if (!editorView.current) {
+            if (e.data.type !== AppConfig.CaptureCurrentFrameResponse || !editorView.current) {
                 return;
             }
 
-            if (e.data.type === AppConfig.CaptureCurrentFrameResponse) {
-                const videoTime = floorOrZero(doCommand('currentTime'));
+            const view = editorView.current;
+            const { state } = view;
 
-                const view = editorView.current;
+            const { $from } = state.selection;
+            const index = $from.index;
 
-                const { state } = view;
-
-                const { $from } = state.selection;
-
-                const index = $from.index;
-
-                if (!$from.parent.canReplaceWith(index, index, ImageNodeType)) {
-                    return false;
-                }
-
-                const newState = state.apply(
-                    state.tr.replaceSelectionWith(
-                        ImageNodeType.create({ src: e.data.dataUrl, videoTime })
-                    )
-                );
-
-                view.updateState(newState);
+            if (!$from.parent.canReplaceWith(index, index, ImageNodeType)) {
+                return;
             }
+
+            const videoTime = floorOrZero(doCommand('currentTime'));
+
+            const newState = state.apply(
+                state.tr.replaceSelectionWith(
+                    ImageNodeType.create({ src: e.data.dataUrl, videoTime })
+                )
+            );
+
+            view.updateState(newState);
         };
 
         window.addEventListener('message', gotResponseFromExtension, false);
