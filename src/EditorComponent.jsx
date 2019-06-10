@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { EditorState, Plugin } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
-import { Schema, DOMParser, DOMSerializer, Node } from 'prosemirror-model';
+import { Schema, DOMParser, Node } from 'prosemirror-model';
 import { schema as BasicSchema } from 'prosemirror-schema-basic';
 import { exampleSetup } from 'prosemirror-example-setup';
 import { keymap } from 'prosemirror-keymap';
@@ -152,8 +152,6 @@ class AutosavePlugin {
             timeOfSave: Date.now() / 1000.0,
         };
 
-        console.log('Saving note -', this.videoId, docJSON);
-
         debouncedSaveNote(this.videoId, noteData);
     }
 
@@ -274,8 +272,7 @@ const EditorComponent = props => {
         const editorElement = document.getElementById('__editor__');
 
         const { docJSON } = LS.loadNoteWithId(videoId);
-        // const doc = DOMParser.fromSchema(EditorSchema).parse(content);
-        // const doc = DOMParser.fromSchema(EditorSchema).parse(content);
+
         const doc = !docJSON
             ? DOMParser.fromSchema(EditorSchema).parse(content)
             : Node.fromJSON(EditorSchema, docJSON);
