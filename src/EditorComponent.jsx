@@ -7,12 +7,39 @@ import { exampleSetup } from 'prosemirror-example-setup';
 import { keymap } from 'prosemirror-keymap';
 import { InputRule, inputRules } from 'prosemirror-inputrules';
 import { toggleMark } from 'prosemirror-commands';
+import AppConfig from './AppConfig';
 
 import secondsToHhmmss from './utils/secondsToHhmmsss';
 
+const floorOrZero = n => (Number.isNaN(n) ? 0 : Math.floor(n));
+
+const ImageNodeSpec = {
+    attrs: { src: '', videoTime: 0 },
+    inline: true,
+    group: 'inline',
+    draggable: true,
+    toDOM: node => [
+        'img',
+        {
+            src: node.attrs.src,
+            class: 'inline-image',
+        },
+    ],
+    parseDOM: [
+        {
+            tag: 'img.inline-image',
+            getAttrs: domNode => {
+                const src = domNode.getAttribute('src');
+                const videoTime = domNode.getAttribute('videoTime');
+                return { src, videoTime };
+            },
+        },
+    ],
+};
+
 // Schema. Extends the basic schema with timestamps.
 const EditorSchema = new Schema({
-    nodes: BasicSchema.spec.nodes,
+    nodes: BasicSchema.spec.nodes.addBefore('image', 'inlineImage', ImageNodeSpec),
     marks: BasicSchema.spec.marks.append({
         timestamp: {
             attrs: { videoTime: 0 },
@@ -103,10 +130,12 @@ class TimestampImagePlugin {
     }
 }
 
+const ImageNodeType = EditorSchema.nodes['inlineImage'];
+
 const EditorComponent = props => {
     const editorView = useRef(null);
 
-    const { doCommand } = props;
+    const { doCommand, parentApp } = props;
 
     // Creates the editor on mount
     useEffect(() => {
@@ -163,6 +192,45 @@ const EditorComponent = props => {
             return true;
         };
 
+        // Editor command that simply tells the extension to capture the current frame. Does not apply any
+        // transaction to the state.
+        const tellExtensionToCaptureFrame = (_state, _dispatch) => {
+            const { videoId } = parentApp.currentVideoInfo();
+            if (videoId) {
+                window.frames[0].postMessage({ type: AppConfig.CaptureCurrentFrameMessage }, '*');
+            }
+            return true;
+        };
+
+        // Listener that checks receiving the data url from extension.
+        const gotResponseFromExtension = e => {
+            if (e.data.type !== AppConfig.CaptureCurrentFrameResponse || !editorView.current) {
+                return;
+            }
+
+            const view = editorView.current;
+            const { state } = view;
+
+            const { $from } = state.selection;
+            const index = $from.index;
+
+            if (!$from.parent.canReplaceWith(index, index, ImageNodeType)) {
+                return;
+            }
+
+            const videoTime = floorOrZero(doCommand('currentTime'));
+
+            const newState = state.apply(
+                state.tr.replaceSelectionWith(
+                    ImageNodeType.create({ src: e.data.dataUrl, videoTime })
+                )
+            );
+
+            view.updateState(newState);
+        };
+
+        window.addEventListener('message', gotResponseFromExtension, false);
+
         // Pause input rule. Typing "#." will toggle pause.
         const ToggleVideoPauseInputRule = new InputRule(/#\.$/, (state, match, start, end) => {
             doCommand('togglePause');
@@ -182,6 +250,7 @@ const EditorComponent = props => {
                         'Ctrl-t': toggleTimestampMark,
                         'Ctrl-g': seekToTimestamp,
                         'Ctrl-Shift-t': putTimestampText,
+                        'Ctrl-i': tellExtensionToCaptureFrame,
                     }),
 
                     timestemapImagePlugin,
@@ -191,7 +260,7 @@ const EditorComponent = props => {
                 ],
             }),
         });
-    }, [doCommand]);
+    }, [doCommand, parentApp]);
 
     return (
         <>
