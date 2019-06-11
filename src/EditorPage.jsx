@@ -204,26 +204,6 @@ class EditorPage extends Component {
         return info;
     }
 
-    tellEditorToLoadNote = videoId => {
-        /*
-        this.setState({
-            editorCommand: {
-                name: 'loadNoteForVideo',
-                videoId: videoId,
-                resetCommand: () => {
-                    this.setState({ editorCommand: null });
-                    const { history } = this.props;
-                    history.push(`/editor/${videoId}`);
-                },
-            },
-        });
-        */
-
-        this.setState({ videoId });
-
-        // this.context.openSnackbar({ message: `Loading video ${videoId}` });
-    };
-
     componentDidMount() {
         const { ytAPI } = this.props;
         if (this.iframeRef.current) {
@@ -246,7 +226,13 @@ class EditorPage extends Component {
                             this.ytPlayerController.loadAndPlayVideo(startingVideoId);
                             // console.log('Loading video and note for ', this.props.startingVideoId);
                             const videoId = this.props.startingVideoId;
-                            this.tellEditorToLoadNote(videoId);
+
+                            this.context.openSnackbar({
+                                message: `Loading video: ${videoId}`,
+                                autoHideDuration: 1000,
+                            });
+
+                            this.setState({ videoId });
                         }
                     },
                 },

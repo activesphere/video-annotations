@@ -234,6 +234,7 @@ class TimestampImagePlugin {
 }
 
 const debouncedSaveNote = debounce((videoId, noteData) => {
+    console.log('Saving note', videoId);
     LS.saveNoteWithId(videoId, noteData);
 }, 3000);
 
@@ -266,164 +267,172 @@ const EditorComponent = props => {
 
     const { doCommand, parentApp, videoId } = props;
 
-    // Prosemirror command that toggles the selected text to be marked a timestamp.
-    const toggleTimestampMark = (state, dispatch) => {
-        const { selection } = state;
+    useEffect(
+        () => {
+            if (!videoId) {
+                return;
+            }
 
-        if (selection.empty) {
-            return false;
-        }
+            const timestemapImagePlugin = new Plugin({
+                view: editorView => new TimestampImagePlugin(editorView),
+            });
 
-        const videoTime = doCommand('currentTime');
+            const autosavePlugin = new Plugin({
+                view: editorView => new AutosavePlugin(editorView, videoId),
+            });
 
-        if (Number.isNaN(videoTime)) {
-            return true;
-        }
+            // Prosemirror command that toggles the selected text to be marked a timestamp.
+            const toggleTimestampMark = (state, dispatch) => {
+                const { selection } = state;
 
-        return toggleMark(EditorSchema.marks.timestamp, { videoTime: Math.floor(videoTime) })(
-            state,
-            dispatch
-        );
-    };
+                if (selection.empty) {
+                    return false;
+                }
 
-    // Prosemirror command that retrieves underlying timestamp value from the selection.
-    const seekToTimestamp = (state, dispatch) => {
-        const { haveTimestamp, videoTime } = getTimestampValueUnderCursor(state);
+                const videoTime = doCommand('currentTime');
 
-        if (haveTimestamp) {
-            doCommand('seekToTime', { videoTime });
-        }
+                if (Number.isNaN(videoTime)) {
+                    return true;
+                }
 
-        return true;
-    };
+                return toggleMark(EditorSchema.marks.timestamp, {
+                    videoTime: Math.floor(videoTime),
+                })(state, dispatch);
+            };
 
-    const putTimestampText = (state, dispatch) => {
-        const videoTime = doCommand('currentTime');
+            // Prosemirror command that retrieves underlying timestamp value from the selection.
+            const seekToTimestamp = (state, dispatch) => {
+                const { haveTimestamp, videoTime } = getTimestampValueUnderCursor(state);
 
-        if (Number.isNaN(videoTime)) {
-            return true;
-        }
+                if (haveTimestamp) {
+                    doCommand('seekToTime', { videoTime });
+                }
 
-        // Create text node with the timestamp mark
-        const mark = EditorSchema.marks.timestamp.create({ videoTime });
-        const text = EditorSchema.text(secondsToHhmmss(videoTime), [mark]);
+                return true;
+            };
 
-        if (dispatch) {
-            dispatch(state.tr.replaceSelectionWith(text, false));
-        }
+            const putTimestampText = (state, dispatch) => {
+                const videoTime = doCommand('currentTime');
 
-        return true;
-    };
+                if (Number.isNaN(videoTime)) {
+                    return true;
+                }
 
-    // Editor command that simply tells the extension to capture the current frame. Does not apply any
-    // transaction to the state.
-    const tellExtensionToCaptureFrame = (_state, _dispatch) => {
-        const { videoId } = parentApp.currentVideoInfo();
-        if (videoId) {
-            window.frames[0].postMessage({ type: AppConfig.CaptureCurrentFrameMessage }, '*');
-        }
-        return true;
-    };
+                // Create text node with the timestamp mark
+                const mark = EditorSchema.marks.timestamp.create({ videoTime });
+                const text = EditorSchema.text(secondsToHhmmss(videoTime), [mark]);
 
-    // Listener that checks receiving the data url from extension.
-    const gotResponseFromExtension = e => {
-        if (e.data.type !== AppConfig.CaptureCurrentFrameResponse || !editorView.current) {
-            return;
-        }
+                if (dispatch) {
+                    dispatch(state.tr.replaceSelectionWith(text, false));
+                }
 
-        const { data } = e;
-        const { dataURL: source, width: origWidth, height: origHeight } = data;
+                return true;
+            };
 
-        // Initial width is same as that of original image width
-        const outerWidth = `${origWidth}px`;
+            // Editor command that simply tells the extension to capture the current frame. Does not apply any
+            // transaction to the state.
+            const tellExtensionToCaptureFrame = (_state, _dispatch) => {
+                const { videoId } = parentApp.currentVideoInfo();
+                if (videoId) {
+                    window.frames[0].postMessage(
+                        { type: AppConfig.CaptureCurrentFrameMessage },
+                        '*'
+                    );
+                }
+                return true;
+            };
 
-        const view = editorView.current;
-        const { state } = view;
+            // Listener that checks receiving the data url from extension.
+            const gotResponseFromExtension = e => {
+                if (e.data.type !== AppConfig.CaptureCurrentFrameResponse || !editorView.current) {
+                    return;
+                }
 
-        const { $from } = state.selection;
-        const index = $from.index;
+                const { data } = e;
+                const { dataURL: source, width: origWidth, height: origHeight } = data;
 
-        if (!$from.parent.canReplaceWith(index, index, ImageNodeType)) {
-            return;
-        }
+                // Initial width is same as that of original image width
+                const outerWidth = `${origWidth}px`;
 
-        const videoTime = floorOrZero(doCommand('currentTime'));
+                const view = editorView.current;
+                const { state } = view;
 
-        const newState = state.apply(
-            state.tr.replaceSelectionWith(
-                ImageNodeType.create({
-                    source,
-                    outerWidth,
-                    videoTime,
-                    origWidth,
-                    origHeight,
-                })
-            )
-        );
+                const { $from } = state.selection;
+                const index = $from.index;
 
-        view.updateState(newState);
-    };
+                if (!$from.parent.canReplaceWith(index, index, ImageNodeType)) {
+                    return;
+                }
 
-    useEffect(() => {
-        const timestemapImagePlugin = new Plugin({
-            view: editorView => new TimestampImagePlugin(editorView),
-        });
+                const videoTime = floorOrZero(doCommand('currentTime'));
 
-        const autosavePlugin = new Plugin({
-            view: editorView =>
-                new AutosavePlugin(editorView, parentApp.currentVideoInfo().videoId),
-        });
+                const newState = state.apply(
+                    state.tr.replaceSelectionWith(
+                        ImageNodeType.create({
+                            source,
+                            outerWidth,
+                            videoTime,
+                            origWidth,
+                            origHeight,
+                        })
+                    )
+                );
 
-        window.addEventListener('message', gotResponseFromExtension, false);
+                view.updateState(newState);
+            };
 
-        // Pause input rule. Typing "#." will toggle pause.
-        const ToggleVideoPauseInputRule = new InputRule(/#\.$/, (state, match, start, end) => {
-            doCommand('togglePause');
-            return state.tr.insertText('', start, end);
-        });
+            window.addEventListener('message', gotResponseFromExtension, false);
 
-        const content = document.getElementById('__content__');
+            // Pause input rule. Typing "#." will toggle pause.
+            const ToggleVideoPauseInputRule = new InputRule(/#\.$/, (state, match, start, end) => {
+                doCommand('togglePause');
+                return state.tr.insertText('', start, end);
+            });
 
-        const editorElement = document.getElementById('__editor__');
+            const content = document.getElementById('__content__');
 
-        const { docJSON } = LS.loadNoteWithId(videoId);
+            const editorElement = document.getElementById('__editor__');
 
-        const doc = !docJSON
-            ? DOMParser.fromSchema(EditorSchema).parse(content)
-            : Node.fromJSON(EditorSchema, docJSON);
+            const { docJSON } = LS.loadNoteWithId(videoId);
 
-        editorView.current = new EditorView(editorElement, {
-            state: EditorState.create({
-                doc,
-                plugins: [
-                    keymap({
-                        'Ctrl-t': toggleTimestampMark,
-                        'Ctrl-g': seekToTimestamp,
-                        'Ctrl-Shift-t': putTimestampText,
-                        'Ctrl-i': tellExtensionToCaptureFrame,
-                    }),
+            const doc = !docJSON
+                ? DOMParser.fromSchema(EditorSchema).parse(content)
+                : Node.fromJSON(EditorSchema, docJSON);
 
-                    timestemapImagePlugin,
+            editorView.current = new EditorView(editorElement, {
+                state: EditorState.create({
+                    doc,
+                    plugins: [
+                        keymap({
+                            'Ctrl-t': toggleTimestampMark,
+                            'Ctrl-g': seekToTimestamp,
+                            'Ctrl-Shift-t': putTimestampText,
+                            'Ctrl-i': tellExtensionToCaptureFrame,
+                        }),
 
-                    autosavePlugin,
+                        timestemapImagePlugin,
 
-                    inputRules({ rules: [ToggleVideoPauseInputRule] }),
-                    ...exampleSetup({ schema: EditorSchema }),
-                ],
-            }),
+                        autosavePlugin,
 
-            nodeViews: {
-                inlineImage: (node, view, getPos) => {
-                    return new ImageNodeView(node, view, getPos);
+                        inputRules({ rules: [ToggleVideoPauseInputRule] }),
+                        ...exampleSetup({ schema: EditorSchema }),
+                    ],
+                }),
+
+                nodeViews: {
+                    inlineImage: (node, view, getPos) => {
+                        return new ImageNodeView(node, view, getPos);
+                    },
                 },
-            },
-        });
+            });
 
-        return () => {
-            window.removeEventListener('message', gotResponseFromExtension);
-            editorView.current.destroy();
-        };
-    });
+            return () => {
+                window.removeEventListener('message', gotResponseFromExtension);
+                editorView.current.destroy();
+            };
+        },
+        [doCommand, parentApp, videoId]
+    );
 
     return (
         <>
