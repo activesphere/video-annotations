@@ -13,27 +13,47 @@ import secondsToHhmmss from './utils/secondsToHhmmsss';
 import * as LS from './LocalStorageHelper';
 import debounce from './utils/debounce';
 
+// Test tooltip image. Will remove and use image associated with the timestamp.
+
+const tooltipImageSrc = 'https://i.imgur.com/cD5ATL8.jpg';
+
 const floorOrZero = n => (Number.isNaN(n) ? 0 : Math.floor(n));
 
 const ImageNodeSpec = {
-    attrs: { src: '', videoTime: 0 },
+    attrs: {
+        source: '',
+
+        videoTime: { default: 0 },
+
+        origWidth: 100,
+        origHeight: 100,
+        // ^ In pixels. Original dimensions of the image as received from extension. Not using these two *yet*.
+
+        outerWidth: '10px',
+    },
     inline: true,
     group: 'inline',
     draggable: true,
+
+    // toDOM is not used
     toDOM: node => [
-        'img',
+        'span',
         {
-            src: node.attrs.src,
-            class: 'inline-image',
+            style: `width: ${node.attrs.outerWidth}`,
+            ...node.attrs,
         },
     ],
     parseDOM: [
         {
             tag: 'img.inline-image',
             getAttrs: domNode => {
-                const src = domNode.getAttribute('src');
-                const videoTime = domNode.getAttribute('videoTime');
-                return { src, videoTime };
+                return {
+                    source: domNode.getAttribute('source'),
+                    videoTime: domNode.getAttribute('videoTime'),
+                    outerWidth: domNode.getAttribute('outerWidth'),
+                    origWidth: domNode.getAttribute('origWidth'),
+                    origHeight: domNode.getAttribute('origHeight'),
+                };
             },
         },
     ],
@@ -79,9 +99,90 @@ function getTimestampValueUnderCursor(state) {
     };
 }
 
-// Test tooltip image. Will remove and use image associated with the timestamp.
-// const tooltipImageSrc = 'https://i.imgur.com/cD5ATL8.jpg';
-const tooltipImageSrc = 'https://images-na.ssl-images-amazon.com/images/I/41vIWnj-QsL._UX395_.jpg';
+// Custom node view that allows you to resize images.
+class ImageNodeView {
+    constructor(node, view, getPos) {
+        const outerDOM = document.createElement('span');
+        outerDOM.style.position = 'relative';
+        outerDOM.style.width = node.attrs.outerWidth;
+        outerDOM.style.display = 'inline-block';
+        // outerDOM.style.lineHeight = '0';
+
+        const img = document.createElement('img');
+        img.setAttribute('src', node.attrs.source);
+        img.setAttribute('videoTime', node.attrs.videoTime);
+        img.style.width = '100%';
+
+        const resizeHandleDOM = document.createElement('span');
+        resizeHandleDOM.style.position = 'absolute';
+        resizeHandleDOM.style.bottom = '0px';
+        resizeHandleDOM.style.right = '0px';
+        resizeHandleDOM.style.width = '10px';
+        resizeHandleDOM.style.height = '10px';
+        resizeHandleDOM.style.border = '3px solid black';
+        resizeHandleDOM.style.borderTop = 'none';
+        resizeHandleDOM.style.borderLeft = 'none';
+        resizeHandleDOM.style.display = 'none';
+        resizeHandleDOM.style.cursor = 'nwse-resize';
+
+        resizeHandleDOM.onmousedown = e => {
+            e.preventDefault();
+
+            const startX = e.pageX;
+
+            const startWidth = floorOrZero(parseFloat(node.attrs.outerWidth.match(/(.+)px/)[1]));
+
+            let newWidthInPixels = startWidth;
+
+            const onMouseMove = e => {
+                const currentX = e.pageX;
+
+                // Don't want resizing to more than original width
+                const diffInPixels = currentX - startX;
+                newWidthInPixels = diffInPixels + startWidth;
+                outerDOM.style.width = `${newWidthInPixels}px`;
+            };
+
+            const onMouseUp = e => {
+                e.preventDefault();
+
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+
+                const tr = view.state.tr
+                    .setNodeMarkup(getPos(), null, {
+                        source: node.attrs.source,
+                        outerWidth: outerDOM.style.width,
+                        origWidth: node.attrs.origWidth,
+                        origHeight: node.attrs.origHeight,
+                    })
+                    .setSelection(view.state.selection);
+
+                view.dispatch(tr);
+            };
+
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        };
+
+        outerDOM.appendChild(resizeHandleDOM);
+        outerDOM.appendChild(img);
+
+        this.dom = outerDOM;
+        this.resizeHandleDOM = resizeHandleDOM;
+        this.img = img;
+    }
+
+    selectNode() {
+        this.img.classList.add('ProseMirror-selectednode');
+        this.resizeHandleDOM.style.display = '';
+    }
+
+    deselectNode() {
+        this.img.classList.remove('ProseMirror-selectednode');
+        this.resizeHandleDOM.style.display = 'none';
+    }
+}
 
 class TimestampImagePlugin {
     constructor(view) {
@@ -230,6 +331,12 @@ const EditorComponent = props => {
             return;
         }
 
+        const { data } = e;
+        const { dataURL: source, width: origWidth, height: origHeight } = data;
+
+        // Initial width is same as that of original image width
+        const outerWidth = `${origWidth}px`;
+
         const view = editorView.current;
         const { state } = view;
 
@@ -243,7 +350,15 @@ const EditorComponent = props => {
         const videoTime = floorOrZero(doCommand('currentTime'));
 
         const newState = state.apply(
-            state.tr.replaceSelectionWith(ImageNodeType.create({ src: e.data.dataUrl, videoTime }))
+            state.tr.replaceSelectionWith(
+                ImageNodeType.create({
+                    source,
+                    outerWidth,
+                    videoTime,
+                    origWidth,
+                    origHeight,
+                })
+            )
         );
 
         view.updateState(newState);
@@ -296,6 +411,12 @@ const EditorComponent = props => {
                     ...exampleSetup({ schema: EditorSchema }),
                 ],
             }),
+
+            nodeViews: {
+                inlineImage: (node, view, getPos) => {
+                    return new ImageNodeView(node, view, getPos);
+                },
+            },
         });
 
         return () => {

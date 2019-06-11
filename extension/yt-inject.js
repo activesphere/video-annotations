@@ -1,6 +1,6 @@
 import AppConfig from '../src/AppConfig';
 
-const toDataURL = video => {
+const toImageData = video => {
     const { offsetWidth: width, offsetHeight: height } = video;
     const c = document.createElement('canvas');
     c.style.position = 'fixed';
@@ -14,7 +14,7 @@ const toDataURL = video => {
     const dataURL = c.toDataURL('image/png');
 
     c.remove();
-    return dataURL;
+    return { dataURL, width, height };
 };
 
 const sendVideoDataURL = () => {
@@ -23,7 +23,7 @@ const sendVideoDataURL = () => {
         if (!video) return;
 
         window.parent.postMessage(
-            { type: AppConfig.CaptureCurrentFrameResponse, dataUrl: toDataURL(video) },
+            { type: AppConfig.CaptureCurrentFrameResponse, ...toImageData(video) },
             '*'
         );
     } catch (e) {
