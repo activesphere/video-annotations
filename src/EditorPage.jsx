@@ -221,7 +221,7 @@ class EditorPage extends Component {
 
         this.setState({ videoId });
 
-        this.context.openSnackbar({ message: `Loading video ${videoId}` });
+        // this.context.openSnackbar({ message: `Loading video ${videoId}` });
     };
 
     componentDidMount() {
