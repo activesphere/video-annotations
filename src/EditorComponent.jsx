@@ -1,15 +1,17 @@
 import React, { useRef, useEffect } from 'react';
 import { EditorState, Plugin } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
-import { Schema, DOMParser } from 'prosemirror-model';
+import { Schema, DOMParser, Node } from 'prosemirror-model';
 import { schema as BasicSchema } from 'prosemirror-schema-basic';
 import { exampleSetup } from 'prosemirror-example-setup';
 import { keymap } from 'prosemirror-keymap';
 import { InputRule, inputRules } from 'prosemirror-inputrules';
 import { toggleMark } from 'prosemirror-commands';
-import AppConfig from './AppConfig';
 
+import AppConfig from './AppConfig';
 import secondsToHhmmss from './utils/secondsToHhmmsss';
+import * as LS from './LocalStorageHelper';
+import debounce from './utils/debounce';
 
 const floorOrZero = n => (Number.isNaN(n) ? 0 : Math.floor(n));
 
@@ -130,104 +132,132 @@ class TimestampImagePlugin {
     }
 }
 
+const debouncedSaveNote = debounce((videoId, noteData) => {
+    LS.saveNoteWithId(videoId, noteData);
+}, 3000);
+
+class AutosavePlugin {
+    constructor(view, videoId) {
+        this.view = view;
+        this.videoId = videoId;
+        this.update(view, null);
+    }
+
+    update() {
+        const docJSON = this.view.state.doc.toJSON();
+
+        const noteData = {
+            videoId: this.videoId,
+            docJSON,
+            timeOfSave: Date.now() / 1000.0,
+        };
+
+        debouncedSaveNote(this.videoId, noteData);
+    }
+
+    destroy() {}
+}
+
 const ImageNodeType = EditorSchema.nodes['inlineImage'];
 
 const EditorComponent = props => {
     const editorView = useRef(null);
 
-    const { doCommand, parentApp } = props;
+    const { doCommand, parentApp, videoId } = props;
 
-    // Creates the editor on mount
+    // Prosemirror command that toggles the selected text to be marked a timestamp.
+    const toggleTimestampMark = (state, dispatch) => {
+        const { selection } = state;
+
+        if (selection.empty) {
+            return false;
+        }
+
+        const videoTime = doCommand('currentTime');
+
+        if (Number.isNaN(videoTime)) {
+            return true;
+        }
+
+        return toggleMark(EditorSchema.marks.timestamp, { videoTime: Math.floor(videoTime) })(
+            state,
+            dispatch
+        );
+    };
+
+    // Prosemirror command that retrieves underlying timestamp value from the selection.
+    const seekToTimestamp = (state, dispatch) => {
+        const { haveTimestamp, videoTime } = getTimestampValueUnderCursor(state);
+
+        if (haveTimestamp) {
+            doCommand('seekToTime', { videoTime });
+        }
+
+        return true;
+    };
+
+    const putTimestampText = (state, dispatch) => {
+        const videoTime = doCommand('currentTime');
+
+        if (Number.isNaN(videoTime)) {
+            return true;
+        }
+
+        // Create text node with the timestamp mark
+        const mark = EditorSchema.marks.timestamp.create({ videoTime });
+        const text = EditorSchema.text(secondsToHhmmss(videoTime), [mark]);
+
+        if (dispatch) {
+            dispatch(state.tr.replaceSelectionWith(text, false));
+        }
+
+        return true;
+    };
+
+    // Editor command that simply tells the extension to capture the current frame. Does not apply any
+    // transaction to the state.
+    const tellExtensionToCaptureFrame = (_state, _dispatch) => {
+        const { videoId } = parentApp.currentVideoInfo();
+        if (videoId) {
+            window.frames[0].postMessage({ type: AppConfig.CaptureCurrentFrameMessage }, '*');
+        }
+        return true;
+    };
+
+    // Listener that checks receiving the data url from extension.
+    const gotResponseFromExtension = e => {
+        if (e.data.type !== AppConfig.CaptureCurrentFrameResponse || !editorView.current) {
+            return;
+        }
+
+        const view = editorView.current;
+        const { state } = view;
+
+        const { $from } = state.selection;
+        const index = $from.index;
+
+        if (!$from.parent.canReplaceWith(index, index, ImageNodeType)) {
+            return;
+        }
+
+        const videoTime = floorOrZero(doCommand('currentTime'));
+
+        const newState = state.apply(
+            state.tr.replaceSelectionWith(ImageNodeType.create({ src: e.data.dataUrl, videoTime }))
+        );
+
+        view.updateState(newState);
+    };
+
     useEffect(() => {
         const timestemapImagePlugin = new Plugin({
             view: editorView => new TimestampImagePlugin(editorView),
         });
 
-        // Prosemirror command that toggles the selected text to be marked a timestamp.
-        const toggleTimestampMark = (state, dispatch) => {
-            const { selection } = state;
-
-            if (selection.empty) {
-                return false;
-            }
-
-            const videoTime = doCommand('currentTime');
-
-            if (Number.isNaN(videoTime)) {
-                return true;
-            }
-
-            return toggleMark(EditorSchema.marks.timestamp, { videoTime: Math.floor(videoTime) })(
-                state,
-                dispatch
-            );
-        };
-
-        // Prosemirror command that retrieves underlying timestamp value from the selection.
-        const seekToTimestamp = (state, dispatch) => {
-            const { haveTimestamp, videoTime } = getTimestampValueUnderCursor(state);
-
-            if (haveTimestamp) {
-                doCommand('seekToTime', { videoTime });
-            }
-
-            return true;
-        };
-
-        const putTimestampText = (state, dispatch) => {
-            const videoTime = doCommand('currentTime');
-
-            if (Number.isNaN(videoTime)) {
-                return true;
-            }
-
-            // Create text node with the timestamp mark
-            const mark = EditorSchema.marks.timestamp.create({ videoTime });
-            const text = EditorSchema.text(secondsToHhmmss(videoTime), [mark]);
-
-            if (dispatch) {
-                dispatch(state.tr.replaceSelectionWith(text, false));
-            }
-
-            return true;
-        };
-
-        // Editor command that simply tells the extension to capture the current frame. Does not apply any
-        // transaction to the state.
-        const tellExtensionToCaptureFrame = (_state, _dispatch) => {
-            const { videoId } = parentApp.currentVideoInfo();
-            if (videoId) {
-                window.frames[0].postMessage({ type: AppConfig.CaptureCurrentFrameMessage }, '*');
-            }
-            return true;
-        };
-
-        // Listener that checks receiving the data url from extension.
-        const gotResponseFromExtension = e => {
-            if (e.data.type !== AppConfig.CaptureCurrentFrameResponse || !editorView.current) {
-                return;
-            }
-
-            const view = editorView.current;
-            const { state } = view;
-
-            const { $from } = state.selection;
-            const index = $from.index;
-
-            if (!$from.parent.canReplaceWith(index, index, ImageNodeType)) {
-                return;
-            }
-
-            const videoTime = floorOrZero(doCommand('currentTime'));
-
-            const newState = state.apply(
-                state.tr.replaceSelectionWith(
-                    ImageNodeType.create({ src: e.data.dataUrl, videoTime })
-                )
-            );
-
-            view.updateState(newState);
-        };
+        const autosavePlugin = new Plugin({
+            view: editorView =>
+                new AutosavePlugin(editorView, parentApp.currentVideoInfo().videoId),
+        });
 
         window.addEventListener('message', gotResponseFromExtension, false);
 
@@ -241,10 +271,15 @@ const EditorComponent = props => {
 
         const editorElement = document.getElementById('__editor__');
 
-        // create editor
+        const { docJSON } = LS.loadNoteWithId(videoId);
+
+        const doc = !docJSON
+            ? DOMParser.fromSchema(EditorSchema).parse(content)
+            : Node.fromJSON(EditorSchema, docJSON);
+
         editorView.current = new EditorView(editorElement, {
             state: EditorState.create({
-                doc: DOMParser.fromSchema(EditorSchema).parse(content),
+                doc,
                 plugins: [
                     keymap({
                         'Ctrl-t': toggleTimestampMark,
@@ -255,12 +290,19 @@ const EditorComponent = props => {
 
                     timestemapImagePlugin,
 
+                    autosavePlugin,
+
                     inputRules({ rules: [ToggleVideoPauseInputRule] }),
                     ...exampleSetup({ schema: EditorSchema }),
                 ],
             }),
         });
-    }, [doCommand, parentApp]);
+
+        return () => {
+            window.removeEventListener('message', gotResponseFromExtension);
+            editorView.current.destroy();
+        };
+    });
 
     return (
         <>
