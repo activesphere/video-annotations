@@ -6,6 +6,7 @@ import { exampleSetup } from 'prosemirror-example-setup';
 import { keymap } from 'prosemirror-keymap';
 import { InputRule, inputRules } from 'prosemirror-inputrules';
 import { toggleMark } from 'prosemirror-commands';
+import { DOMParser } from 'prosemirror-model';
 
 import EditorSchema, { ImageNodeType } from './prosemirror-plugins/Schema';
 import ImageNodeView from './prosemirror-plugins/ImageNodeView';
