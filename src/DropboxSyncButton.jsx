@@ -70,6 +70,7 @@ const DropboxSyncButton = () => {
         {showTokenInput && (
           <Grid item>
             <TextField
+              autoComplete="dropbox-access-token"
               onChange={e => setToken(e.target.value)}
               id="input-with-icon-grid"
               label="Dropbox access token"
