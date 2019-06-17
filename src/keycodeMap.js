@@ -4,6 +4,7 @@ const keycodeOfCommandName = {
   put_timestamp: 'Ctrl-Shift-t',
   seek_to_timestamp: 'Ctrl-g',
   capture_frame: 'Ctrl-i',
+  place_interval_widget: 'Ctrl-s', // Remove and add menu item instead.
 };
 
 const commandNameOfKeycode = Object.fromEntries(

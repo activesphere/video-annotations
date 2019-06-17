@@ -8,8 +8,9 @@ import { InputRule, inputRules } from 'prosemirror-inputrules';
 import { toggleMark } from 'prosemirror-commands';
 import { DOMParser } from 'prosemirror-model';
 
-import EditorSchema, { ImageNodeType } from './prosemirror-plugins/Schema';
+import EditorSchema, { ImageNodeType, IntervalSliderNodeType } from './prosemirror-plugins/Schema';
 import ImageNodeView from './prosemirror-plugins/ImageNodeView';
+import IntervalSliderNodeView from './prosemirror-plugins/IntervalSliderNodeView.jsx';
 import TimestampImagePlugin, {
   getTimestampValueUnderCursor,
 } from './prosemirror-plugins/TimestampImagePlugin';
@@ -144,12 +145,37 @@ const EditorComponent = props => {
       return state.tr.insertText('', start, end);
     });
 
+    const placeIntervalWidget = (state, dispatch) => {
+      const { $from } = state.selection;
+      const index = $from.index();
+
+      console.log('placeIntervalWidget');
+
+      if (!$from.parent.canReplaceWith(index, index, IntervalSliderNodeType)) {
+        console.log('canReplaceWith = false');
+        return false;
+      }
+
+      if (dispatch) {
+        console.log('dispatch');
+        const node = IntervalSliderNodeType.create({
+          onChange: newDelta => {
+            console.log('newDelta =', newDelta);
+          },
+        });
+        dispatch(state.tr.replaceSelectionWith(node));
+      }
+
+      return true;
+    };
+
     const commandFunctions = {
       toggle_pause: () => doCommand('togglePause'),
       mark_selection_as_timestamp: toggleTimestampMark,
       put_timestamp: putTimestampText,
       seek_to_timestamp: seekToTimestamp,
       capture_frame: tellExtensionToCaptureFrame,
+      place_interval_widget: placeIntervalWidget,
     };
 
     const keymapObject = Object.fromEntries(
@@ -187,6 +213,10 @@ const EditorComponent = props => {
       nodeViews: {
         inlineImage: (node, view, getPos) => {
           return new ImageNodeView(node, view, getPos);
+        },
+
+        intervalSlider: (node, view, getPos) => {
+          return new IntervalSliderNodeView(node, view, getPos);
         },
       },
     });
