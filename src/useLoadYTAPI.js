@@ -10,13 +10,20 @@ const appendYouTubeScript = cb => {
     window.onYouTubeIframeAPIReady = () => cb(window.YT);
 };
 
-const LoadYouTubeIFrameAPI = ({ children }) => {
+const useLoadYTAPI = () => {
     const [ytAPI, setAPI] = useState();
+    const [isLoading, setLoading] = useState(true);
+
+    const onLoad = api => {
+        setLoading(false);
+        setAPI(api);
+    };
+
     useEffect(() => {
-        appendYouTubeScript(setAPI);
+        appendYouTubeScript(onLoad);
     }, []);
 
-    return children({ ytAPI });
+    return { ytAPI, isLoading };
 };
 
-export default LoadYouTubeIFrameAPI;
+export default useLoadYTAPI;
