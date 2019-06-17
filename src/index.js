@@ -4,7 +4,6 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import EditorPage from './EditorPage';
 import NotesPage from './NotesPage';
-import LoadYouTubeIFrameAPI from './LoadYouTubeIFrameAPI';
 import { Paper, Tabs, Tab } from '@material-ui/core';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import { BrowserRouter, Switch, Route, Link, Redirect } from 'react-router-dom';
@@ -14,6 +13,7 @@ import { syncWithDropbox } from './LocalStorageHelper';
 import AppConfig from './AppConfig';
 
 import theme from './mui_theme';
+import useLoadYTAPI from './useLoadYTAPI';
 
 const getTabValue = path => {
     if (path.indexOf('/editor') === 0) return 'editor';
@@ -21,10 +21,13 @@ const getTabValue = path => {
     return null;
 };
 
-const Main = ({ ytAPI }) => {
+const Main = () => {
     const [lastVideoId, setLastVideoId] = useState(null);
 
     const [dbxSetupState, setDbxSetupState] = useState('init');
+    const { ytAPI, isLoading } = useLoadYTAPI();
+
+    if (isLoading || !ytAPI) return null;
 
     const handleTokenSubmit = async accessToken => {
         try {
@@ -122,17 +125,7 @@ const Main = ({ ytAPI }) => {
 const App = () => (
     <MuiThemeProvider theme={theme}>
         <SnackbarContextProvider>
-            <LoadYouTubeIFrameAPI>
-                {({ ytAPI }) =>
-                    ytAPI ? (
-                        <div className="app">
-                            <Main ytAPI={ytAPI} />
-                        </div>
-                    ) : (
-                        <div>Couldn't load YouTube API</div>
-                    )
-                }
-            </LoadYouTubeIFrameAPI>
+            <Main />
         </SnackbarContextProvider>
     </MuiThemeProvider>
 );
