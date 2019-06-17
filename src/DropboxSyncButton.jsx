@@ -22,7 +22,7 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const DropboxSyncButton = () => {
+const DropboxSyncButton = ({ onSyncComplete = () => {} }) => {
   const [dbxSetupState, setDbxSetupState] = useState('init');
   const [showTokenInput, setTokenInput] = useState(false);
   const [token, setToken] = useState(null);
@@ -38,6 +38,7 @@ const DropboxSyncButton = () => {
     try {
       await syncWithDropbox(token);
       setDbxSetupState('complete');
+      onSyncComplete();
     } catch (err) {
       setDbxSetupState('failed');
     }
