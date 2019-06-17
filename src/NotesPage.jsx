@@ -119,7 +119,7 @@ const NotesPage = ({ cards, classes }) => {
 
         <div className={classNames(classes.layout, classes.cardGrid)}>
           {/* End hero unit */}
-          <Grid container spacing={40}>
+          <Grid container spacing={4}>
             {cardElements}
           </Grid>
         </div>
