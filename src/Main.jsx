@@ -4,8 +4,7 @@ import { BrowserRouter, Switch, Route, Link, Redirect } from 'react-router-dom';
 
 import EditorPage from './EditorPage';
 import NotesPage from './NotesPage';
-import DropboxLogin from './DropboxLogin';
-import { syncWithDropbox } from './LocalStorageHelper';
+import DropboxSyncButton from './DropboxSyncButton';
 
 const getTabValue = path => {
     if (path.indexOf('/editor') === 0) return 'editor';
@@ -16,35 +15,11 @@ const getTabValue = path => {
 const Main = ({ ytAPI }) => {
     const [lastVideoId, setLastVideoId] = useState(null);
 
-    const [dbxSetupState, setDbxSetupState] = useState('init');
-
     if (!ytAPI) return null;
-
-    const handleTokenSubmit = async accessToken => {
-        try {
-            await syncWithDropbox(accessToken);
-            setDbxSetupState('complete');
-        } catch (err) {
-            setDbxSetupState('failed');
-        }
-    };
 
     return (
         <BrowserRouter>
             <Switch>
-                <Route
-                    path="/dropbox_oauth"
-                    render={() => {
-                        if (process.env.REACT_APP_DISABLE_DROPBOX) {
-                            return <Redirect to={'/editor/'} />;
-                        }
-
-                        if (['complete', 'failed'].includes(dbxSetupState))
-                            return <Redirect to="/editor" />;
-
-                        return <DropboxLogin handleTokenSubmit={handleTokenSubmit} />;
-                    }}
-                />
                 <Route
                     path="/"
                     render={({ location }) => (
@@ -69,6 +44,7 @@ const Main = ({ ytAPI }) => {
                                         to="/saved_notes"
                                     />
                                 </Tabs>
+                                <DropboxSyncButton />
                             </Paper>
                             <Switch>
                                 <Route path="/saved_notes" render={() => <NotesPage />} />
@@ -99,11 +75,7 @@ const Main = ({ ytAPI }) => {
                                     }}
                                 />
 
-                                {/* Redirect to dropbox oauth token input page otherwise */}
-                                <Route
-                                    path="/"
-                                    render={props => <Redirect to={'/dropbox_oauth/'} />}
-                                />
+                                <Route path="/" render={props => <Redirect to="/saved_notes" />} />
                             </Switch>
                         </>
                     )}
