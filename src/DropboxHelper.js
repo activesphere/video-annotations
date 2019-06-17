@@ -15,7 +15,7 @@ export const save = async noteData => {
         return null;
     }
 
-    if (!noteData.videoId || !noteData.videoTitle) {
+    if (!noteData.videoId) {
         // console.warn('No videoId or videoTitle given');
         return null;
     }
@@ -75,7 +75,11 @@ export const downloadNotes = async () => {
 };
 
 export const init = async accessToken => {
-    const client = new Dropbox({ accessToken, clientId: process.env.REACT_APP_DROPBOX_KEY });
+    const client = new Dropbox({
+        accessToken,
+        clientId: process.env.REACT_APP_DROPBOX_KEY,
+        fetch: window.fetch,
+    });
 
     dbx = client;
 
