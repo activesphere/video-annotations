@@ -1,30 +1,60 @@
-import debounce from '../utils/debounce';
-import * as LS from '../LocalStorageHelper';
+import throttle from '../utils/throttle';
+import { save as saveToLocalStorage } from '../LocalStorageHelper';
+import { save as saveToDropbox } from '../DropboxHelper';
 
-const debouncedSaveNote = debounce((videoId, noteData) => {
-    LS.saveNoteWithId(videoId, noteData);
-}, 3000);
+const ThrottleIntervalMS = 3000;
 
 class AutosavePlugin {
     constructor(view, videoId) {
+        this.didSaveToDropbox = false;
+        this.lastNoteData = null;
+
+        this.throttledSave = throttle(ThrottleIntervalMS, noteData => {
+            saveToLocalStorage(noteData);
+
+            this.promise = saveToDropbox(noteData);
+
+            this.promise
+                .then(() => {
+                    this.didSaveToDropbox = true;
+                })
+                .catch(() => {
+                    console.log('Error while saving to dropbox'); // eslint-disable-line no-console
+                });
+        });
+
+        window.onbeforeunload = this.beforeUnload;
+
         this.view = view;
         this.videoId = videoId;
         this.update(view, null);
     }
 
-    update() {
-        const docJSON = this.view.state.doc.toJSON();
+    beforeUnload = () => {
+        this.throttledSave.cancelPendingCall();
 
-        const noteData = {
+        if (this.lastNoteData) {
+            this.throttledSave.callOriginal(this.lastNoteData);
+        }
+    };
+
+    update() {
+        this.docJSON = this.view.state.doc.toJSON();
+
+        this.lastNoteData = {
             videoId: this.videoId,
-            docJSON,
+            docJSON: this.docJSON,
             timeOfSave: Date.now() / 1000.0,
         };
 
-        debouncedSaveNote(this.videoId, noteData);
+        this.didSaveToDropbox = false;
+
+        this.throttledSave.update(this.lastNoteData);
     }
 
-    destroy() {}
+    destroy() {
+        window.removeEventListener('beforeunload', this.beforeUnload);
+    }
 }
 
 export default AutosavePlugin;
