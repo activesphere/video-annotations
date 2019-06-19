@@ -8,9 +8,9 @@ const VIDEO_ID_TO_NOTE_DATA = 'video_id_to_note_data';
 // We cache the whole id to note-data map as a a JS object. We pass it around, store note data into it,
 // and flush it to local storage on route change or window close.
 const readMapFromLocalStorage = () => {
-    const strMap = localStorage.getItem(VIDEO_ID_TO_NOTE_DATA);
+  const strMap = localStorage.getItem(VIDEO_ID_TO_NOTE_DATA);
 
-    return strMap ? JSON.parse(strMap) : {};
+  return strMap ? JSON.parse(strMap) : {};
 };
 
 const idToNoteData = readMapFromLocalStorage();
@@ -18,67 +18,67 @@ const idToNoteData = readMapFromLocalStorage();
 const DROPBOX_UPLOAD_BATCH_LIMIT = 4;
 
 const flushToLocalStorage = idToNoteData => {
-    localStorage.setItem(VIDEO_ID_TO_NOTE_DATA, JSON.stringify(idToNoteData));
+  localStorage.setItem(VIDEO_ID_TO_NOTE_DATA, JSON.stringify(idToNoteData));
 };
 
 const batchDropboxUpload = async (notes, promiseFn, limit) => {
-    let remaining = [...notes];
-    while (remaining.length) {
-        const sliceLength = Math.min(limit, remaining.length);
-        const promises = remaining.slice(0, sliceLength).map(promiseFn);
-        await Promise.all(promises);
-        remaining = remaining.slice(sliceLength);
-    }
+  let remaining = [...notes];
+  while (remaining.length) {
+    const sliceLength = Math.min(limit, remaining.length);
+    const promises = remaining.slice(0, sliceLength).map(promiseFn);
+    await Promise.all(promises);
+    remaining = remaining.slice(sliceLength);
+  }
 };
 
 export const loadNoteWithId = videoId => idToNoteData[videoId] || {};
 
 export const deleteNoteWithId = videoId => {
-    if (!idToNoteData[videoId]) return;
+  if (!idToNoteData[videoId]) return;
 
-    delete idToNoteData[videoId];
-    flushToLocalStorage(idToNoteData);
+  delete idToNoteData[videoId];
+  flushToLocalStorage(idToNoteData);
 };
 
 export const save = noteData => {
-    if (!noteData.videoId) return;
+  if (!noteData.videoId) return;
 
-    idToNoteData[noteData.videoId] = noteData;
-    flushToLocalStorage(idToNoteData);
+  idToNoteData[noteData.videoId] = noteData;
+  flushToLocalStorage(idToNoteData);
 };
 
 export const getNoteMenuItemsForCards = () => Object.values(idToNoteData);
 
 // Update dropbox file or localstorage note depending on which one is older.
 export async function syncWithDropbox(accessToken) {
-    await dbx.init(accessToken);
+  await dbx.init(accessToken);
 
-    if (!dbx.isInitialized()) {
-        return;
+  if (!dbx.isInitialized()) {
+    return;
+  }
+
+  const contentsList = await dbx.downloadNotes();
+
+  const dbxNotes = contentsList.map(x => JSON.parse(x));
+
+  // Notes to be uploaded
+  const uploadNotes = [];
+
+  const keys = unique([...Object.keys(idToNoteData), ...dbxNotes.map(x => x.videoId)]);
+
+  for (const videoId of keys) {
+    const lsData = idToNoteData[videoId];
+    const dbxData = dbxNotes.find(x => x.videoId === videoId);
+
+    if (lsData && (!dbxData || dbxData.timeOfSave < lsData.timeOfSave)) {
+      uploadNotes.push(lsData);
     }
 
-    const contentsList = await dbx.downloadNotes();
-
-    const dbxNotes = contentsList.map(x => JSON.parse(x));
-
-    // Notes to be uploaded
-    const uploadNotes = [];
-
-    const keys = unique([...Object.keys(idToNoteData), ...dbxNotes.map(x => x.videoId)]);
-
-    for (const videoId of keys) {
-        const lsData = idToNoteData[videoId];
-        const dbxData = dbxNotes.find(x => x.videoId === videoId);
-
-        if (lsData && (!dbxData || dbxData.timeOfSave < lsData.timeOfSave)) {
-            uploadNotes.push(lsData);
-        }
-
-        if (dbxData && (!lsData || lsData.timeOfSave < dbxData.timeOfSave)) {
-            idToNoteData[videoId] = dbxData;
-        }
+    if (dbxData && (!lsData || lsData.timeOfSave < dbxData.timeOfSave)) {
+      idToNoteData[videoId] = dbxData;
     }
+  }
 
-    await batchDropboxUpload(uploadNotes, dbx.save, DROPBOX_UPLOAD_BATCH_LIMIT);
-    flushToLocalStorage(idToNoteData);
+  await batchDropboxUpload(uploadNotes, dbx.save, DROPBOX_UPLOAD_BATCH_LIMIT);
+  flushToLocalStorage(idToNoteData);
 }

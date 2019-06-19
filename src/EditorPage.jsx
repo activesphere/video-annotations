@@ -13,262 +13,259 @@ import AppConfig from './AppConfig';
 
 const YOUTUBE_API_KEY = process.env.REACT_APP_YOUTUBE_API_KEY;
 if (!YOUTUBE_API_KEY) {
-    alert('REACT_APP_YOUTUBE_API_KEY required in .env file');
+  alert('REACT_APP_YOUTUBE_API_KEY required in .env file');
 }
 
 const ytNameOfPlayerState = {
-    '-1': 'unstarted',
-    '0': 'ended',
-    '1': 'playing',
-    '2': 'paused',
-    '3': 'buffering',
-    '5': 'video_cued',
+  '-1': 'unstarted',
+  '0': 'ended',
+  '1': 'playing',
+  '2': 'paused',
+  '3': 'buffering',
+  '5': 'video_cued',
 };
 
 class YoutubePlayerController {
-    constructor(YT, playerApi) {
-        if (!playerApi) {
-            throw new Error('playerApi is null');
-        }
-        this.YT = YT;
-        this.playerApi = playerApi;
-        this.currentVideoId = null;
-        this.currentVideoTitle = null;
-        this.currentPlayerState = 'unstarted';
+  constructor(YT, playerApi) {
+    if (!playerApi) {
+      throw new Error('playerApi is null');
+    }
+    this.YT = YT;
+    this.playerApi = playerApi;
+    this.currentVideoId = null;
+    this.currentVideoTitle = null;
+    this.currentPlayerState = 'unstarted';
+  }
+
+  setVideoTitle() {
+    if (this.currentVideoId === null) {
+      return;
     }
 
-    setVideoTitle() {
-        if (this.currentVideoId === null) {
-            return;
-        }
+    this.currentVideoTitle = null;
 
-        this.currentVideoTitle = null;
+    getYoutubeTitle(this.currentVideoId, YOUTUBE_API_KEY, (err, title) => {
+      if (!err) {
+        this.currentVideoTitle = title;
+      } else {
+        return new Error(`Failed to retrive title of video - ${this.currentVideoId}`);
+      }
+    });
+  }
 
-        getYoutubeTitle(this.currentVideoId, YOUTUBE_API_KEY, (err, title) => {
-            if (!err) {
-                this.currentVideoTitle = title;
-            } else {
-                return new Error(`Failed to retrive title of video - ${this.currentVideoId}`);
-            }
-        });
+  getPlayerState() {
+    return this.playerApi.getPlayerState();
+  }
+
+  playVideo(videoId = null) {
+    if (!videoId && !this.currentVideoId) {
+      return;
     }
 
-    getPlayerState() {
-        return this.playerApi.getPlayerState();
+    this.currentVideoId = videoId ? videoId : this.currentVideoId;
+
+    this.playerApi.playVideo(this.currentVideoId);
+  }
+
+  loadAndPlayVideo(videoId) {
+    this.currentVideoId = videoId;
+    this.currentVideoTitle = null;
+    this.playerApi.cueVideoById(this.currentVideoId, 0);
+    this.playerApi.playVideo(this.currentVideoId);
+    this.setVideoTitle();
+  }
+
+  pauseVideo() {
+    this.playerApi.pauseVideo(this.currentVideoId);
+  }
+
+  // Returns state after toggle
+  togglePause() {
+    if (this.currentPlayerState === 'paused') {
+      this.playVideo();
+      return 'playing';
+    } else if (this.currentPlayerState === 'playing') {
+      this.pauseVideo();
+      return 'paused';
     }
+    return null;
+  }
 
-    playVideo(videoId = null) {
-        if (!videoId && !this.currentVideoId) {
-            return;
-        }
+  addToCurrentTime(seconds) {
+    const currentTime = this.playerApi.getCurrentTime();
+    this.playerApi.seekTo(Math.max(currentTime + seconds, 0));
+  }
 
-        this.currentVideoId = videoId ? videoId : this.currentVideoId;
+  getCurrentTime() {
+    return this.playerApi && this.playerApi.getCurrentTime ? this.playerApi.getCurrentTime() : null;
+  }
 
-        this.playerApi.playVideo(this.currentVideoId);
-    }
+  getVideoTitle() {
+    return this.currentVideoTitle;
+  }
 
-    loadAndPlayVideo(videoId) {
-        this.currentVideoId = videoId;
-        this.currentVideoTitle = null;
-        this.playerApi.cueVideoById(this.currentVideoId, 0);
-        this.playerApi.playVideo(this.currentVideoId);
-        this.setVideoTitle();
-    }
-
-    pauseVideo() {
-        this.playerApi.pauseVideo(this.currentVideoId);
-    }
-
-    // Returns state after toggle
-    togglePause() {
-        if (this.currentPlayerState === 'paused') {
-            this.playVideo();
-            return 'playing';
-        } else if (this.currentPlayerState === 'playing') {
-            this.pauseVideo();
-            return 'paused';
-        }
-        return null;
-    }
-
-    addToCurrentTime(seconds) {
-        const currentTime = this.playerApi.getCurrentTime();
-        this.playerApi.seekTo(Math.max(currentTime + seconds, 0));
-    }
-
-    getCurrentTime() {
-        return this.playerApi && this.playerApi.getCurrentTime
-            ? this.playerApi.getCurrentTime()
-            : null;
-    }
-
-    getVideoTitle() {
-        return this.currentVideoTitle;
-    }
-
-    seekTo(timeInSeconds) {
-        this.playerApi.seekTo(timeInSeconds);
-    }
+  seekTo(timeInSeconds) {
+    this.playerApi.seekTo(timeInSeconds);
+  }
 }
 
 // The commands from console are send via the App component
 class EditorPage extends Component {
-    static propTypes = {
-        startingVideoId: PropTypes.string,
-        startingPopperMessage: PropTypes.string,
+  static propTypes = {
+    startingVideoId: PropTypes.string,
+    startingPopperMessage: PropTypes.string,
+  };
+
+  static defaultProps = {
+    startingVideoId: null,
+    startingPopperMessage: null,
+  };
+
+  static contextType = SnackbarContext;
+
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      editorCommand: null,
+      infoText: null,
+      infoLastTime: null,
+      selectedOption: null,
+      startingPopperMessage: this.props.startingPopperMessage,
+      videoId: null,
     };
 
-    static defaultProps = {
-        startingVideoId: null,
-        startingPopperMessage: null,
-    };
+    // We keep a handle to the youtube player. This is the player API object, not the dom
+    // element itself.
+    this.ytPlayerController = null;
+    this.doVideoCommand = this.doVideoCommand.bind(this);
 
-    static contextType = SnackbarContext;
+    this.iframeRef = React.createRef();
+  }
 
-    constructor(props) {
-        super(props);
+  tellPluginToRemovePauseOverlay = () => {
+    window.frames[0].postMessage({ type: AppConfig.RemovePauseOverlayMessage }, '*');
+  };
 
-        this.state = {
-            editorCommand: null,
-            infoText: null,
-            infoLastTime: null,
-            selectedOption: null,
-            startingPopperMessage: this.props.startingPopperMessage,
-            videoId: null,
-        };
+  doVideoCommand(command, params) {
+    const currentTime = this.ytPlayerController.getCurrentTime();
 
-        // We keep a handle to the youtube player. This is the player API object, not the dom
-        // element itself.
-        this.ytPlayerController = null;
-        this.doVideoCommand = this.doVideoCommand.bind(this);
+    switch (command) {
+      case 'playVideo':
+        this.ytPlayerController.playVideo();
+        break;
 
-        this.iframeRef = React.createRef();
-    }
+      case 'pauseVideo':
+        this.ytPlayerController.pauseVideo();
+        this.tellPluginToRemovePauseOverlay();
+        break;
 
-    tellPluginToRemovePauseOverlay = () => {
-        window.frames[0].postMessage({ type: AppConfig.RemovePauseOverlayMessage }, '*');
-    };
+      case 'restartVideo':
+        this.ytPlayerController.seekTo(0);
+        break;
 
-    doVideoCommand(command, params) {
-        const currentTime = this.ytPlayerController.getCurrentTime();
-
-        switch (command) {
-            case 'playVideo':
-                this.ytPlayerController.playVideo();
-                break;
-
-            case 'pauseVideo':
-                this.ytPlayerController.pauseVideo();
-                this.tellPluginToRemovePauseOverlay();
-                break;
-
-            case 'restartVideo':
-                this.ytPlayerController.seekTo(0);
-                break;
-
-            case 'togglePause':
-                const playState = this.ytPlayerController.togglePause();
-                if (playState === 'paused') {
-                    this.tellPluginToRemovePauseOverlay();
-                }
-                break;
-
-            case 'addToCurrentTime':
-                this.ytPlayerController.addToCurrentTime(params.secondsToAdd);
-                break;
-
-            case 'seekToTime':
-                if (params.videoTime) {
-                    this.ytPlayerController.seekTo(params.videoTime);
-                }
-                break;
-
-            case 'currentTime':
-                break;
-
-            default:
-                break;
+      case 'togglePause':
+        const playState = this.ytPlayerController.togglePause();
+        if (playState === 'paused') {
+          this.tellPluginToRemovePauseOverlay();
         }
+        break;
 
-        return currentTime;
-    }
+      case 'addToCurrentTime':
+        this.ytPlayerController.addToCurrentTime(params.secondsToAdd);
+        break;
 
-    currentVideoInfo() {
-        const info = { videoId: null, videoTime: null, videoTitle: null };
-        if (this.ytPlayerController) {
-            info.videoId = this.ytPlayerController.currentVideoId;
-            info.videoTime = this.ytPlayerController.getCurrentTime();
-            info.videoTitle = this.ytPlayerController.getVideoTitle();
+      case 'seekToTime':
+        if (params.videoTime) {
+          this.ytPlayerController.seekTo(params.videoTime);
         }
-        // console.log('Current video info =', info);
-        return info;
+        break;
+
+      case 'currentTime':
+        break;
+
+      default:
+        break;
     }
 
-    componentDidMount() {
-        const { ytAPI } = this.props;
-        if (this.iframeRef.current) {
-            let ytPlayerApi = null;
+    return currentTime;
+  }
 
-            const { startingVideoId } = this.props;
+  currentVideoInfo() {
+    const info = { videoId: null, videoTime: null, videoTitle: null };
+    if (this.ytPlayerController) {
+      info.videoId = this.ytPlayerController.currentVideoId;
+      info.videoTime = this.ytPlayerController.getCurrentTime();
+      info.videoTitle = this.ytPlayerController.getVideoTitle();
+    }
+    // console.log('Current video info =', info);
+    return info;
+  }
 
-            ytPlayerApi = new ytAPI.Player(this.iframeRef.current, {
-                height: '100%',
-                width: '100%',
-                events: {
-                    onStateChange: newState => {
-                        this.ytPlayerController.currentPlayerState =
-                            ytNameOfPlayerState[newState.data];
-                    },
+  componentDidMount() {
+    const { ytAPI } = this.props;
+    if (this.iframeRef.current) {
+      let ytPlayerApi = null;
 
-                    onReady: () => {
-                        this.ytPlayerController = new YoutubePlayerController(ytAPI, ytPlayerApi);
-                        if (startingVideoId) {
-                            this.ytPlayerController.loadAndPlayVideo(startingVideoId);
-                            // console.log('Loading video and note for ', this.props.startingVideoId);
-                            const videoId = this.props.startingVideoId;
+      const { startingVideoId } = this.props;
 
-                            this.context.openSnackbar({
-                                message: `Loading video: ${videoId}`,
-                                autoHideDuration: 1000,
-                            });
+      ytPlayerApi = new ytAPI.Player(this.iframeRef.current, {
+        height: '100%',
+        width: '100%',
+        events: {
+          onStateChange: newState => {
+            this.ytPlayerController.currentPlayerState = ytNameOfPlayerState[newState.data];
+          },
 
-                            this.setState({ videoId });
-                        }
-                    },
-                },
-            });
-        }
+          onReady: () => {
+            this.ytPlayerController = new YoutubePlayerController(ytAPI, ytPlayerApi);
+            if (startingVideoId) {
+              this.ytPlayerController.loadAndPlayVideo(startingVideoId);
+              // console.log('Loading video and note for ', this.props.startingVideoId);
+              const videoId = this.props.startingVideoId;
 
-        if (this.state.startingPopperMessage) {
-            this.context.openSnackbar({ message: this.state.startingPopperMessage });
-            setTimeout(() => {
-                this.setState({ startingPopperMessage: null });
-            });
-        }
+              this.context.openSnackbar({
+                message: `Loading video: ${videoId}`,
+                autoHideDuration: 1000,
+              });
+
+              this.setState({ videoId });
+            }
+          },
+        },
+      });
     }
 
-    render() {
-        const { match } = this.props;
-        const videoId = match.params.videoId || '';
-
-        return (
-            <div className="two-panel-div">
-                <div className="left-panel">
-                    <VideoPathInput currentVideoId={videoId} />
-                    <IFrameStyleWrapper>
-                        <div ref={this.iframeRef} id={AppConfig.YoutubeIframeId} />
-                    </IFrameStyleWrapper>
-                </div>
-                <EditorComponent
-                    parentApp={this}
-                    doCommand={this.doVideoCommand}
-                    editorCommand={this.state.editorCommand}
-                    showInfo={this.props.showInfo}
-                    videoId={videoId}
-                />
-            </div>
-        );
+    if (this.state.startingPopperMessage) {
+      this.context.openSnackbar({ message: this.state.startingPopperMessage });
+      setTimeout(() => {
+        this.setState({ startingPopperMessage: null });
+      });
     }
+  }
+
+  render() {
+    const { match } = this.props;
+    const videoId = match.params.videoId || '';
+
+    return (
+      <div className="two-panel-div">
+        <div className="left-panel">
+          <VideoPathInput currentVideoId={videoId} />
+          <IFrameStyleWrapper>
+            <div ref={this.iframeRef} id={AppConfig.YoutubeIframeId} />
+          </IFrameStyleWrapper>
+        </div>
+        <EditorComponent
+          parentApp={this}
+          doCommand={this.doVideoCommand}
+          editorCommand={this.state.editorCommand}
+          showInfo={this.props.showInfo}
+          videoId={videoId}
+        />
+      </div>
+    );
+  }
 }
 
 export default withRouter(EditorPage);

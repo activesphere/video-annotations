@@ -1,8 +1,8 @@
 export default {
-    'control+p': 'togglePause',
-    'control+t': 'putTimestamp',
-    'control+s': 'saveNote',
-    'control+shift+right': 'videoForward',
-    'control+shift+left': 'videoBackward',
-    'control+shift+i': 'captureFrame',
+  'control+p': 'togglePause',
+  'control+t': 'putTimestamp',
+  'control+s': 'saveNote',
+  'control+shift+right': 'videoForward',
+  'control+shift+left': 'videoBackward',
+  'control+shift+i': 'captureFrame',
 };

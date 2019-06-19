@@ -11,15 +11,15 @@ import theme from './mui_theme';
 import useLoadYTAPI from './useLoadYTAPI';
 
 const App = () => {
-    const { ytAPI } = useLoadYTAPI();
+  const { ytAPI } = useLoadYTAPI();
 
-    return (
-        <MuiThemeProvider theme={theme}>
-            <SnackbarContextProvider>
-                <Main ytAPI={ytAPI} />
-            </SnackbarContextProvider>
-        </MuiThemeProvider>
-    );
+  return (
+    <MuiThemeProvider theme={theme}>
+      <SnackbarContextProvider>
+        <Main ytAPI={ytAPI} />
+      </SnackbarContextProvider>
+    </MuiThemeProvider>
+  );
 };
 
 ReactDOM.render(<App />, document.getElementById(AppConfig.VidAnnotRootId));
