@@ -69,20 +69,10 @@ const NotesPage = ({ cards, classes }) => {
               <Typography gutterBottom variant="h5" component="h2">
                 {videoTitle}
               </Typography>
-              <Typography>
-                This is a media card. You can use this section to describe the content.
-              </Typography>
             </CardContent>
             <CardActions>
               <Button size="small" color="primary" component={Link} to={`/editor/${videoId}`}>
-                Edit note
-              </Button>
-              <Button
-                size="small"
-                color="primary"
-                onClick={() => window.open(makeYoutubeUrl(videoId))}
-              >
-                Open Video
+                Edit
               </Button>
               <Button
                 size="small"
@@ -92,7 +82,7 @@ const NotesPage = ({ cards, classes }) => {
                   setNumCards(numCards - 1);
                 }}
               >
-                Delete note
+                Delete
               </Button>
             </CardActions>
           </Card>
@@ -105,20 +95,7 @@ const NotesPage = ({ cards, classes }) => {
     <>
       <CssBaseline />
       <main>
-        {/* Hero unit */}
-        <div className={classes.heroUnit}>
-          <div className={classes.heroContent}>
-            <Typography component="h1" variant="h2" align="center" color="textPrimary" gutterBottom>
-              Saved Notes
-            </Typography>
-            <Typography variant="h6" align="center" color="textSecondary" paragraph>
-              All the videos you saved notes for.
-            </Typography>
-          </div>
-        </div>
-
         <div className={classNames(classes.layout, classes.cardGrid)}>
-          {/* End hero unit */}
           <Grid container spacing={4}>
             {cardElements}
           </Grid>
