@@ -52,18 +52,8 @@ const DropboxSyncButton = () => {
   };
 
   return (
-    <Grid spacing={1} alignItems="flex-end">
+    <Grid direction="row">
       <Grid item>
-        {dbxSetupState === 'init' && showTokenInput && (
-          <>
-            <IconButton onClick={handleTokenSubmit} area-label="save">
-              <CheckCircleIcon />
-            </IconButton>
-            <IconButton onClick={toggleTokenInput} area-label="cancel">
-              <CancelIcon />
-            </IconButton>
-          </>
-        )}
         {dbxSetupState === 'init' && !showTokenInput && (
           <IconButton onClick={toggleTokenInput} area-label="setup dropbox">
             <CloudOffIcon />
@@ -71,17 +61,22 @@ const DropboxSyncButton = () => {
         )}
         {dbxSetupState === 'loading' && <CircularProgress size={24} className={classes.progress} />}
         {dbxSetupState === 'complete' && <CloudDoneIcon />}
+        {dbxSetupState === 'init' &&
+          showTokenInput && [
+            <IconButton onClick={handleTokenSubmit} area-label="save">
+              <CheckCircleIcon />
+            </IconButton>,
+            <IconButton onClick={toggleTokenInput} area-label="cancel">
+              <CancelIcon />
+            </IconButton>,
+            <TextField
+              autoComplete="dropbox-access-token"
+              onChange={e => setToken(e.target.value)}
+              id="input-with-icon-grid"
+              label="Dropbox access token"
+            />,
+          ]}
       </Grid>
-      {showTokenInput && (
-        <Grid item>
-          <TextField
-            autoComplete="dropbox-access-token"
-            onChange={e => setToken(e.target.value)}
-            id="input-with-icon-grid"
-            label="Dropbox access token"
-          />
-        </Grid>
-      )}
     </Grid>
   );
 };
