@@ -2,6 +2,7 @@ import './Main.css';
 
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
+import { Paper } from '@material-ui/core';
 
 import EditorComponent from './EditorComponent';
 import VideoPathInput from './VideoPathInput';
@@ -255,13 +256,26 @@ class EditorPage extends Component {
     const info = this.currentVideoInfo();
 
     return (
-      <div className="two-panel-div">
-        <div className="left-panel">
-          <VideoPathInput currentVideoId={videoId} />
-          <IFrameStyleWrapper>
-            <div ref={this.iframeRef} id={AppConfig.YoutubeIframeId} />
-          </IFrameStyleWrapper>
-        </div>
+      <div
+        style={{
+          display: 'flex',
+          direction: 'row',
+          justifyContent: 'flex-start',
+        }}
+      >
+        <IFrameStyleWrapper>
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+            }}
+            ref={this.iframeRef}
+            id={AppConfig.YoutubeIframeId}
+          />
+        </IFrameStyleWrapper>
         <EditorComponent
           parentApp={this}
           doCommand={this.doVideoCommand}
