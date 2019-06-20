@@ -5,6 +5,7 @@ import { BrowserRouter, Switch, Route, Link, Redirect } from 'react-router-dom';
 import EditorPage from './EditorPage';
 import NotesPage from './NotesPage';
 import DropboxSyncButton from './DropboxSyncButton';
+import AppBar from './AppBar';
 
 const getTabValue = (path: string) => {
   if (path.indexOf('/editor') === 0) return 'editor';
@@ -24,18 +25,7 @@ const Main = ({ ytAPI }: { ytAPI: any }) => {
           path="/"
           render={({ location }) => (
             <>
-              <Paper elevation={0}>
-                <Tabs
-                  indicatorColor="primary"
-                  textColor="primary"
-                  value={getTabValue(location.pathname)}
-                  centered
-                >
-                  <Tab value="editor" label="Editor" component={Link} to="/editor" />
-                  <Tab value="notes" label="Saved notes" component={Link} to="/saved_notes" />
-                </Tabs>
-                <DropboxSyncButton />
-              </Paper>
+              <AppBar location={location} />
               <Switch>
                 <Route path="/saved_notes" render={() => <NotesPage />} />
                 <Route
