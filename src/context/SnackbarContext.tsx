@@ -1,27 +1,17 @@
-// @flow
 import * as React from 'react';
 import Snackbar from '@material-ui/core/Snackbar';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import CloseIcon from '@material-ui/icons/Close';
 
-type OpenSnackbarProps = {
-  message: React.Node,
-  id: string,
-  action?: React.Node,
-  autoHideDuration?: number,
-  autoHide?: boolean,
-  dismissable?: boolean,
-};
+export const SnackbarContext = React.createContext({});
 
-type Value = {
-  openSnackbar?: OpenSnackbarProps => void,
-  closeSnackbar?: (event: ?Event, reason: string) => void,
-};
+interface ButtonProps {
+  size: string;
+  onClick: (e: any) => void;
+}
 
-export const SnackbarContext = React.createContext<Value>({});
-
-const DismissButton = ({ size, ...restProps }) => {
+const DismissButton = ({ size, ...restProps }: ButtonProps) => {
   if (size === 'small') {
     return (
       <IconButton key="close" aria-label="Close" color="inherit" {...restProps}>
@@ -37,17 +27,17 @@ const DismissButton = ({ size, ...restProps }) => {
   );
 };
 
-type State = {
-  open: boolean,
-  message: React.Node,
-  action?: React.Node,
-  id: string,
-  autoHide: boolean,
-  autoHideDuration: number | null,
-  dismissable: boolean,
-};
+interface SnackbarState {
+  open: boolean;
+  message: string;
+  id: string;
+  autoHide: boolean;
+  autoHideDuration: number | undefined;
+  dismissable: boolean;
+  action: () => {};
+}
 
-export class SnackbarContextProvider extends React.Component<{ children: React.Node }, State> {
+export class SnackbarContextProvider extends React.Component {
   state = {
     open: false,
     message: '',
@@ -65,7 +55,7 @@ export class SnackbarContextProvider extends React.Component<{ children: React.N
     autoHide,
     autoHideDuration,
     dismissable,
-  }: OpenSnackbarProps) => {
+  }: SnackbarState) => {
     this.setState({
       open: true,
       message,
@@ -77,11 +67,7 @@ export class SnackbarContextProvider extends React.Component<{ children: React.N
     });
   };
 
-  closeSnackbar = (event: ?Event, reason: string) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-
+  closeSnackbar = (_event: any) => {
     this.setState({ open: false });
   };
 
@@ -105,7 +91,7 @@ export class SnackbarContextProvider extends React.Component<{ children: React.N
           }}
           open={this.state.open}
           autoHideDuration={
-            this.state.autoHide ? this.state.autoHideDuration || defaultAutoHideDuration : null
+            this.state.autoHide ? this.state.autoHideDuration || defaultAutoHideDuration : void 0
           }
           onClose={this.closeSnackbar}
           ContentProps={{
