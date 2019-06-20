@@ -1,10 +1,9 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 
-import { syncWithDropbox } from './LocalStorageHelper';
 import IconButton from '@material-ui/core/IconButton';
 import CloudOffIcon from '@material-ui/icons/CloudOff';
-import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
+/* import CloudDownloadIcon from '@material-ui/icons/CloudDownload'; */
 import CloudDoneIcon from '@material-ui/icons/CloudDone';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import CancelIcon from '@material-ui/icons/Cancel';
@@ -31,23 +30,20 @@ const DropboxSyncButton = () => {
 
   const [dbxSetupState, setDbxSetupState] = useState(setupState);
   const [showTokenInput, setTokenInput] = useState(false);
-  const [token, updateToken] = useState(sessionToken);
 
   const setToken = token => {
-    updateToken(token);
     session.set('dbxToken', token);
   };
 
   const classes = useStyles();
 
-  const toggleTokenInput = useCallback(() => setTokenInput(state => !state));
+  const toggleTokenInput = () => setTokenInput(state => !state);
 
   const handleTokenSubmit = async () => {
     setTokenInput(false);
     setDbxSetupState('loading');
 
     try {
-      await syncWithDropbox(token);
       setDbxSetupState('complete');
     } catch (err) {
       setDbxSetupState('failed');
