@@ -1,14 +1,15 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 
-import { syncWithDropbox } from './LocalStorageHelper';
 import IconButton from '@material-ui/core/IconButton';
 import CloudOffIcon from '@material-ui/icons/CloudOff';
-import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
+/* import CloudDownloadIcon from '@material-ui/icons/CloudDownload'; */
 import CloudDoneIcon from '@material-ui/icons/CloudDone';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import CancelIcon from '@material-ui/icons/Cancel';
 import CircularProgress from '@material-ui/core/CircularProgress';
+
+import * as session from './session.js';
 
 import TextField from '@material-ui/core/TextField';
 import Grid from '@material-ui/core/Grid';
@@ -23,20 +24,26 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const DropboxSyncButton = () => {
-  const [dbxSetupState, setDbxSetupState] = useState('init');
+  const sessionToken = session.get('dbxToken');
+
+  const setupState = sessionToken ? 'complete' : 'init';
+
+  const [dbxSetupState, setDbxSetupState] = useState(setupState);
   const [showTokenInput, setTokenInput] = useState(false);
-  const [token, setToken] = useState(null);
+
+  const setToken = token => {
+    session.set('dbxToken', token);
+  };
 
   const classes = useStyles();
 
-  const toggleTokenInput = useCallback(() => setTokenInput(state => !state));
+  const toggleTokenInput = () => setTokenInput(state => !state);
 
   const handleTokenSubmit = async () => {
     setTokenInput(false);
     setDbxSetupState('loading');
 
     try {
-      await syncWithDropbox(token);
       setDbxSetupState('complete');
     } catch (err) {
       setDbxSetupState('failed');

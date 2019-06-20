@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { EditorState, Plugin } from 'prosemirror-state';
 import { Node } from 'prosemirror-model';
 import { EditorView } from 'prosemirror-view';
@@ -14,7 +14,7 @@ import TimestampImagePlugin, {
   getTimestampValueUnderCursor,
 } from './prosemirror-plugins/TimestampImagePlugin';
 import AutosavePlugin from './prosemirror-plugins/AutosavePlugin';
-import { loadNoteWithId } from './LocalStorageHelper';
+import { loadNote } from './LocalStorageHelper';
 import AppConfig from './AppConfig';
 import secondsToHhmmss from './utils/secondsToHhmmsss';
 
@@ -23,10 +23,22 @@ const floorOrZero = n => (Number.isNaN(n) ? 0 : Math.floor(n));
 const EditorComponent = props => {
   const editorView = useRef(null);
 
-  const { doCommand, parentApp, videoId } = props;
+  const { doCommand, parentApp, videoId, videoTitle } = props;
+
+  const [notes, setNotes] = useState(null);
+  const [isLoading, setLoading] = useState(true);
+
+  /* make async call */
+  useEffect(() => {
+    (async () => {
+      const notes = await loadNote(videoId);
+      setNotes(notes);
+      setLoading(false);
+    })();
+  }, [videoId, setNotes]);
 
   useEffect(() => {
-    if (!videoId) {
+    if (!videoId || !notes || isLoading || !videoTitle) {
       return;
     }
 
@@ -35,7 +47,7 @@ const EditorComponent = props => {
     });
 
     const autosavePlugin = new Plugin({
-      view: editorView => new AutosavePlugin(editorView, videoId),
+      view: editorView => new AutosavePlugin(editorView, videoId, videoTitle),
     });
 
     // Prosemirror command that toggles the selected text to be marked a timestamp.
@@ -147,7 +159,9 @@ const EditorComponent = props => {
 
     const editorElement = document.getElementById('__editor__');
 
-    const { docJSON } = loadNoteWithId(videoId);
+    if (isLoading || !notes) return null;
+
+    const { docJSON } = notes;
 
     const doc = !docJSON
       ? DOMParser.fromSchema(EditorSchema).parse(content)
@@ -184,7 +198,7 @@ const EditorComponent = props => {
       window.removeEventListener('message', gotResponseFromExtension);
       editorView.current.destroy();
     };
-  }, [doCommand, parentApp, videoId]);
+  }, [doCommand, parentApp, videoId, notes, isLoading, videoTitle]);
 
   return (
     <>

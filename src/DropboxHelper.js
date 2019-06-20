@@ -3,93 +3,90 @@ import { Dropbox } from 'dropbox';
 import readBlobAsString from './utils/readBlobAsString';
 import pathJoin from './utils/pathJoin';
 import dropboxConfig from './dropboxConfig';
+import isYouTubeId from './isYouTubeId';
+import * as session from './session';
 
 const NOTES_FOLDER_PATH = pathJoin(dropboxConfig.notesFolderParent, dropboxConfig.notesFolderName);
 
-let dbx;
+const getDbx = (() => {
+  let db;
 
-export const isInitialized = () => !!dbx;
+  return () => {
+    if (db) return db;
+
+    const accessToken = session.get('dbxToken');
+    db = new Dropbox({
+      accessToken,
+      clientId: process.env.REACT_APP_DROPBOX_KEY,
+      fetch: window.fetch,
+    });
+
+    return db;
+  };
+})();
 
 export const save = async noteData => {
-  if (!dbx) {
-    return null;
-  }
+  const dbx = getDbx();
 
-  if (!noteData.videoId) {
-    // console.warn('No videoId or videoTitle given');
-    return null;
-  }
+  if (!dbx || !noteData.videoId) return null;
 
-  // Using the videoId itself as the file name. Will make it difficult to find the note by
-  // hand (not a likely scenario for the end user, just mentioning anyway).
-  const fileName = noteData.videoId;
-
-  const filePath = pathJoin(NOTES_FOLDER_PATH, fileName);
-  const writeMode = { '.tag': 'overwrite' };
+  const fileName = `${noteData.videoId} - ${noteData.title}.json`;
 
   return dbx.filesUpload({
     contents: JSON.stringify(noteData),
-    mode: writeMode,
-    path: filePath,
+    mode: { '.tag': 'overwrite' },
+    path: pathJoin(NOTES_FOLDER_PATH, fileName),
     autorename: false,
   });
 };
 
-const batchDownloadNotes = async (notePaths, promiseFn) => {
-  const { downloadsPerBatch } = dropboxConfig;
+export const downloadNote = async id => {
+  const dbx = getDbx();
 
-  while (notePaths.length !== 0) {
-    const sliceLength = Math.min(downloadsPerBatch, notePaths.length);
-    const promises = notePaths.slice(0, sliceLength).map(promiseFn);
-    await Promise.all(promises);
-    notePaths = notePaths.slice(sliceLength);
-  }
+  const { matches } = await dbx.filesSearch({
+    path: NOTES_FOLDER_PATH,
+    query: `${id} - `,
+    mode: 'filename',
+  });
+
+  const { metadata } = matches.find(({ metadata }) => {
+    if (metadata['.tag'] !== 'file' || !metadata.is_downloadable) return false;
+
+    if (!metadata.name.match(new RegExp(`^${id} - `))) return false;
+
+    return true;
+  });
+
+  const path = metadata.path_display;
+
+  const { fileBlob } = await dbx.filesDownload({ path });
+
+  const content = await readBlobAsString(fileBlob);
+
+  return JSON.parse(content);
 };
 
-export const downloadNotes = async () => {
-  if (!isInitialized()) {
-    console.warn('Dropbox NOT initialized.'); // eslint-disable-line no-console
-    return;
-  }
+export const listNotes = async () => {
+  const dbx = getDbx();
 
   const listFolderResult = await dbx.filesListFolder({
     path: NOTES_FOLDER_PATH,
     recursive: true,
   });
 
-  const notePaths = listFolderResult.entries
-    .filter(x => x['.tag'] === 'file')
-    .map(entry => entry.path_display);
+  const notePaths = listFolderResult.entries.filter(x => x['.tag'] === 'file');
 
-  const contentList = [];
+  return notePaths
+    .map(({ name, path_display }) => {
+      const parts = name.split(' - ');
 
-  await batchDownloadNotes(notePaths, async path => {
-    // console.log('downloading note', path);
-    const downloadInfo = await dbx.filesDownload({ path });
-    const { fileBlob } = downloadInfo;
-    const content = await readBlobAsString(fileBlob);
-    contentList.push(content);
-  });
+      const id = parts[0];
+      const title = parts
+        .slice(1)
+        .join(' - ')
+        .replace(/.json$/, '');
 
-  return contentList;
-};
-
-export const init = async accessToken => {
-  const client = new Dropbox({
-    accessToken,
-    clientId: process.env.REACT_APP_DROPBOX_KEY,
-    fetch: window.fetch,
-  });
-
-  dbx = client;
-
-  const { entries } = await dbx.filesListFolder({ path: dropboxConfig.notesFolderParent });
-
-  const notesFolderExists = entries.some(
-    entry => entry.name === dropboxConfig.notesFolderName && entry['.tag'] === 'folder'
-  );
-
-  if (!notesFolderExists) {
-    await dbx.filesCreateFolder({ path: NOTES_FOLDER_PATH });
-  }
+      return { id, title };
+    })
+    .filter(({ id, title }) => isYouTubeId(id));
 };

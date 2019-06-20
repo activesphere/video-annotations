@@ -246,7 +246,13 @@ class EditorPage extends Component {
 
   render() {
     const { match } = this.props;
-    const videoId = match.params.videoId || '';
+    const videoId = match.params.videoId;
+
+    if (!videoId) {
+      return <VideoPathInput currentVideoId={videoId} />;
+    }
+
+    const info = this.currentVideoInfo();
 
     return (
       <div className="two-panel-div">
@@ -262,6 +268,7 @@ class EditorPage extends Component {
           editorCommand={this.state.editorCommand}
           showInfo={this.props.showInfo}
           videoId={videoId}
+          videoTitle={info.videoTitle}
         />
       </div>
     );

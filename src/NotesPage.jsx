@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Button,
   Card,
@@ -17,19 +17,6 @@ import { getNoteMenuItemsForCards, deleteNoteWithId } from './LocalStorageHelper
 import { Link } from 'react-router-dom';
 import seedrandom from 'seedrandom';
 
-function makeYoutubeUrl(videoId, videoTimeInSeconds) {
-  if (!videoTimeInSeconds) {
-    return `http://www.youtube.com/watch?v=${videoId}`;
-  }
-
-  // Seconds to mmss
-  let remainingSeconds = videoTimeInSeconds;
-  let minutes = Math.floor(remainingSeconds / 60);
-  remainingSeconds = remainingSeconds % 60;
-  const mmss = `${minutes}m${remainingSeconds.toFixed(0)}s`;
-  return `http://www.youtube.com/watch?v=${videoId}&t=${mmss}`;
-}
-
 function makeYoutubeImageUrl(videoId, imageNumber = 1) {
   if (!videoId) {
     return '';
@@ -37,12 +24,18 @@ function makeYoutubeImageUrl(videoId, imageNumber = 1) {
   return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
 }
 
-const NotesPage = ({ cards, classes }) => {
-  if (!cards) {
-    cards = getNoteMenuItemsForCards();
-  }
+const NotesPage = ({ classes }) => {
+  const [cards, setCards] = useState(null);
 
-  const [numCards, setNumCards] = useState(cards.length);
+  useEffect(() => {
+    if (cards) return;
+
+    getNoteMenuItemsForCards().then(res => setCards(res || []));
+  });
+
+  if (!cards) {
+    return 'Loading';
+  }
 
   const rng = seedrandom(`${cards.length}`);
 
@@ -55,44 +48,33 @@ const NotesPage = ({ cards, classes }) => {
   }
 
   // Creating an array of card elements from the note info
-  const cardElements = cards.map(({ videoId, videoTitle }, index) => {
+  const cardElements = cards.map(({ id, title }, index) => {
     return (
-      <Slide key={videoId} direction={directions[index]} in={true} mountOnEnter unmountOnExit>
+      <Slide key={id} direction={directions[index]} in={true} mountOnEnter unmountOnExit>
         <Grid item sm={6} md={4} lg={3}>
           <Card className={classes.card}>
             <CardMedia
               className={classes.cardMedia}
-              image={makeYoutubeImageUrl(videoId)}
-              title={videoTitle}
+              image={makeYoutubeImageUrl(id)}
+              title={title}
             />
             <CardContent className={classes.cardContent}>
-              <Typography gutterBottom variant="h5" component="h2">
-                {videoTitle}
-              </Typography>
-              <Typography>
-                This is a media card. You can use this section to describe the content.
+              <Typography variant="h5" component="h2">
+                {title}
               </Typography>
             </CardContent>
             <CardActions>
-              <Button size="small" color="primary" component={Link} to={`/editor/${videoId}`}>
-                Edit note
-              </Button>
-              <Button
-                size="small"
-                color="primary"
-                onClick={() => window.open(makeYoutubeUrl(videoId))}
-              >
-                Open Video
+              <Button size="small" color="primary" component={Link} to={`/editor/${id}`}>
+                Edit
               </Button>
               <Button
                 size="small"
                 color="primary"
                 onClick={() => {
-                  deleteNoteWithId(videoId);
-                  setNumCards(numCards - 1);
+                  deleteNoteWithId(id);
                 }}
               >
-                Delete note
+                Delete
               </Button>
             </CardActions>
           </Card>
@@ -105,20 +87,7 @@ const NotesPage = ({ cards, classes }) => {
     <>
       <CssBaseline />
       <main>
-        {/* Hero unit */}
-        <div className={classes.heroUnit}>
-          <div className={classes.heroContent}>
-            <Typography component="h1" variant="h2" align="center" color="textPrimary" gutterBottom>
-              Saved Notes
-            </Typography>
-            <Typography variant="h6" align="center" color="textSecondary" paragraph>
-              All the videos you saved notes for.
-            </Typography>
-          </div>
-        </div>
-
         <div className={classNames(classes.layout, classes.cardGrid)}>
-          {/* End hero unit */}
           <Grid container spacing={4}>
             {cardElements}
           </Grid>
