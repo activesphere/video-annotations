@@ -2,8 +2,8 @@
 // Joins path segments.  Preserves initial "/" and resolves ".." and "."
 // Does not support using ".." to go above/outside the root.
 // This means that join("foo", "../../bar") will not resolve to "../bar"
-export default function pathJoin(...args) {
-  let parts = [];
+export default function pathJoin(...args: string[]) {
+  let parts: string[] = [];
   for (let i = 0; i < args.length; i++) {
     parts = parts.concat(args[i].split('/'));
   }

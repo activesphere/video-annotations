@@ -8,7 +8,7 @@ const dropboxConfig = {
   notesFolderName: 'vid-annot-notes',
 
   // Number of concurrent downloads of note files to download from dropbox
-  downloadsPerBatch: parseInt(process.env.REACT_APP_DROPBOX_DOWNLOADS_PER_BATCH),
+  downloadsPerBatch: parseInt(process.env.REACT_APP_DROPBOX_DOWNLOADS_PER_BATCH || '4'),
 };
 
 // Dropbox expects root folder path to be specified as empty string.

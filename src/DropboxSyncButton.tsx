@@ -9,7 +9,7 @@ import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import CancelIcon from '@material-ui/icons/Cancel';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
-import * as session from './session.js';
+import * as session from './session';
 
 import TextField from '@material-ui/core/TextField';
 import Grid from '@material-ui/core/Grid';
@@ -28,16 +28,17 @@ const DropboxSyncButton = () => {
 
   const setupState = sessionToken ? 'complete' : 'init';
 
-  const [dbxSetupState, setDbxSetupState] = useState(setupState);
-  const [showTokenInput, setTokenInput] = useState(false);
+  const [dbxSetupState, setDbxSetupState] = useState<string>(setupState);
+  const [showTokenInput, setTokenInput] = useState<boolean>();
 
-  const setToken = token => {
+  const setToken = (token: string) => {
     session.set('dbxToken', token);
   };
 
   const classes = useStyles();
 
-  const toggleTokenInput = () => setTokenInput(state => !state);
+  // @ts-ignore
+  const toggleTokenInput = () => setTokenInput(prevState => !prevState);
 
   const handleTokenSubmit = async () => {
     setTokenInput(false);

@@ -9,7 +9,7 @@ import * as session from './session';
 const NOTES_FOLDER_PATH = pathJoin(dropboxConfig.notesFolderParent, dropboxConfig.notesFolderName);
 
 const getDbx = (() => {
-  let db;
+  let db: any;
 
   return () => {
     if (db) return db;
@@ -25,7 +25,12 @@ const getDbx = (() => {
   };
 })();
 
-export const save = async noteData => {
+interface Video {
+  videoId: string;
+  title: string;
+}
+
+export const save = async (noteData: Video) => {
   const dbx = getDbx();
 
   if (!dbx || !noteData.videoId) return null;
@@ -40,7 +45,7 @@ export const save = async noteData => {
   });
 };
 
-export const downloadNote = async id => {
+export const downloadNote = async (id: string) => {
   const dbx = getDbx();
 
   const { matches } = await dbx.filesSearch({
@@ -49,7 +54,7 @@ export const downloadNote = async id => {
     mode: 'filename',
   });
 
-  const { metadata } = matches.find(({ metadata }) => {
+  const { metadata } = matches.find(({ metadata }: any) => {
     if (metadata['.tag'] !== 'file' || !metadata.is_downloadable) return false;
 
     if (!metadata.name.match(new RegExp(`^${id} - `))) return false;
@@ -63,13 +68,21 @@ export const downloadNote = async id => {
 
   const content = await readBlobAsString(fileBlob);
 
+  if (!content) return null;
+
   return JSON.parse(content);
 };
+
+interface DropboxEntries {
+  name: string;
+  path_display: string;
+  '.tag': string;
+}
 
 export const listNotes = async () => {
   const dbx = getDbx();
 
-  const listFolderResult = await dbx.filesListFolder({
+  const listFolderResult: { entries: DropboxEntries[] } = await dbx.filesListFolder({
     path: NOTES_FOLDER_PATH,
     recursive: true,
   });
@@ -77,7 +90,7 @@ export const listNotes = async () => {
   const notePaths = listFolderResult.entries.filter(x => x['.tag'] === 'file');
 
   return notePaths
-    .map(({ name, path_display }) => {
+    .map(({ name }) => {
       const parts = name.split(' - ');
 
       const id = parts[0];
@@ -88,5 +101,5 @@ export const listNotes = async () => {
 
       return { id, title };
     })
-    .filter(({ id, title }) => isYouTubeId(id));
+    .filter(({ id }) => isYouTubeId(id));
 };

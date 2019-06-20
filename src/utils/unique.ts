@@ -1,5 +1,5 @@
-export default arr => {
-  const u = {};
+export default (arr: Array<string>) => {
+    const u: { [index: string]: number } = {};
   const a = [];
 
   for (const v of arr) {

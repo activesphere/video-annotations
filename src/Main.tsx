@@ -6,13 +6,13 @@ import EditorPage from './EditorPage';
 import NotesPage from './NotesPage';
 import DropboxSyncButton from './DropboxSyncButton';
 
-const getTabValue = path => {
+const getTabValue = (path: string) => {
   if (path.indexOf('/editor') === 0) return 'editor';
   if (path.indexOf('/saved_notes') === 0) return 'notes';
   return null;
 };
 
-const Main = ({ ytAPI }) => {
+const Main = ({ ytAPI }: { ytAPI: any }) => {
   const [lastVideoId, setLastVideoId] = useState(null);
 
   if (!ytAPI) return null;
@@ -58,7 +58,7 @@ const Main = ({ ytAPI }) => {
                   }}
                 />
 
-                <Route path="/" render={props => <Redirect to="/saved_notes" />} />
+                <Route path="/" render={() => <Redirect to="/saved_notes" />} />
               </Switch>
             </>
           )}

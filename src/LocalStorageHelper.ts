@@ -10,19 +10,19 @@ const readMapFromLocalStorage = () => {
 
 const idToNoteData = readMapFromLocalStorage();
 
-export const loadNoteWithId = videoId => idToNoteData[videoId] || {};
+export const loadNoteWithId = (videoId: string) => idToNoteData[videoId] || {};
 
-export const loadNote = videoId => {
+export const loadNote = (videoId: string) => {
   return dbx.downloadNote(videoId);
 };
 
-export const deleteNoteWithId = videoId => {
+export const deleteNoteWithId = (videoId: string) => {
   if (!idToNoteData[videoId]) return;
 
   delete idToNoteData[videoId];
 };
 
-export const save = noteData => {
+export const save = (noteData: any) => {
   if (!noteData.videoId) return;
   return dbx.save(noteData);
 };

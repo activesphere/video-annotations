@@ -1,4 +1,4 @@
-export default function secondsToHhmmss(seconds) {
+export default function secondsToHhmmss(seconds: number) {
   let remainingSeconds = seconds;
 
   let hours = Math.floor(remainingSeconds / 3600);

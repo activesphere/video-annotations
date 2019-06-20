@@ -1,24 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { Redirect } from 'react-router-dom';
 import getYouTubeID from 'get-youtube-id';
-import { withStyles } from '@material-ui/core/styles';
+import { makeStyles, createStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 
-const isYouTubeID = str => str && str.length === 11;
+const isYouTubeID = (str: string) => str && str.length === 11;
 
-const styles = {
-  root: {
-    marginLeft: 8,
-    flex: 1,
-  },
-};
+const useStyles = makeStyles(() =>
+  createStyles({
+    root: {
+      marginLeft: 8,
+      flex: 1,
+    },
+  })
+);
 
-const VideoPathInput = ({ classes, currentVideoId = null }) => {
+const VideoPathInput = ({ currentVideoId = null }) => {
+  const classes = useStyles();
   const [text, setText] = useState(currentVideoId || '');
   const [isValidVideoId, setIsValidVideoId] = useState(false);
 
-  const onChange = e => {
-    const { value } = e.target;
+  const onChange: React.ChangeEventHandler<HTMLTextAreaElement> = e => {
+    const value = e.target.value;
     const videoId = isYouTubeID(value) ? value : getYouTubeID(value);
     setText(value);
 
@@ -45,9 +48,9 @@ const VideoPathInput = ({ classes, currentVideoId = null }) => {
       className={classes.root}
       placeholder="Paste video id or path here"
       onChange={onChange}
-      spellCheck="false"
+      spellCheck={false}
     />
   );
 };
 
-export default withStyles(styles)(VideoPathInput);
+export default VideoPathInput;

@@ -11,21 +11,80 @@ import {
   Slide,
 } from '@material-ui/core';
 import classNames from 'classnames';
-import { withStyles } from '@material-ui/core/styles';
+import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
 
 import { getNoteMenuItemsForCards, deleteNoteWithId } from './LocalStorageHelper';
 import { Link } from 'react-router-dom';
 import seedrandom from 'seedrandom';
 
-function makeYoutubeImageUrl(videoId, imageNumber = 1) {
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    appBar: {
+      position: 'relative',
+    },
+    icon: {
+      marginRight: theme.spacing(2),
+    },
+    heroUnit: {
+      backgroundColor: theme.palette.background.paper,
+    },
+    heroContent: {
+      maxWidth: 600,
+      margin: '0 auto',
+      padding: `${theme.spacing(4)}px 0 ${theme.spacing(2)}px`,
+    },
+    heroButtons: {
+      marginTop: theme.spacing(4),
+    },
+    layout: {
+      width: 'auto',
+      marginLeft: theme.spacing(3),
+      marginRight: theme.spacing(3),
+      [theme.breakpoints.up(1100 + theme.spacing(3) * 2)]: {
+        width: 1100,
+        marginLeft: 'auto',
+        marginRight: 'auto',
+      },
+    },
+    cardGrid: {
+      padding: `${theme.spacing(8)}px 0`,
+    },
+    card: {
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+    },
+    cardMedia: {
+      paddingTop: '56.25%', // 16:9
+    },
+    cardContent: {
+      flexGrow: 1,
+    },
+    footer: {
+      backgroundColor: theme.palette.background.paper,
+      padding: theme.spacing(6),
+    },
+  })
+);
+
+function makeYoutubeImageUrl(videoId: string) {
   if (!videoId) {
     return '';
   }
+
   return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
 }
 
-const NotesPage = ({ classes }) => {
-  const [cards, setCards] = useState(null);
+interface Card {
+  id: string;
+  title: string;
+}
+
+type Directions = 'left' | 'right' | 'up' | 'down';
+
+const NotesPage = () => {
+  const classes = useStyles();
+  const [cards, setCards] = useState<Card[] | null>(null);
 
   useEffect(() => {
     if (cards) return;
@@ -34,13 +93,13 @@ const NotesPage = ({ classes }) => {
   });
 
   if (!cards) {
-    return 'Loading';
+    return <div>Loading</div>;
   }
 
   const rng = seedrandom(`${cards.length}`);
 
   // Generate random slide-in directions for each card
-  const directions = ['left', 'right', 'up', 'down'];
+  const directions: Directions[] = ['left', 'right', 'up', 'down'];
   const directionOfCard = [];
   for (let i = 0; i < cards.length; ++i) {
     const d = rng.int32() % directions.length;
@@ -97,52 +156,4 @@ const NotesPage = ({ classes }) => {
   );
 };
 
-const styles = theme => ({
-  appBar: {
-    position: 'relative',
-  },
-  icon: {
-    marginRight: theme.spacing(2),
-  },
-  heroUnit: {
-    backgroundColor: theme.palette.background.paper,
-  },
-  heroContent: {
-    maxWidth: 600,
-    margin: '0 auto',
-    padding: `${theme.spacing(4)}px 0 ${theme.spacing(2)}px`,
-  },
-  heroButtons: {
-    marginTop: theme.spacing(4),
-  },
-  layout: {
-    width: 'auto',
-    marginLeft: theme.spacing(3),
-    marginRight: theme.spacing(3),
-    [theme.breakpoints.up(1100 + theme.spacing(3) * 2)]: {
-      width: 1100,
-      marginLeft: 'auto',
-      marginRight: 'auto',
-    },
-  },
-  cardGrid: {
-    padding: `${theme.spacing(8)}px 0`,
-  },
-  card: {
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  cardMedia: {
-    paddingTop: '56.25%', // 16:9
-  },
-  cardContent: {
-    flexGrow: 1,
-  },
-  footer: {
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(6),
-  },
-});
-
-export default withStyles(styles)(NotesPage);
+export default NotesPage;
