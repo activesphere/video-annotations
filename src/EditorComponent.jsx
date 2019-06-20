@@ -203,9 +203,7 @@ const EditorComponent = props => {
   return (
     <>
       <div id="__editor__" />
-      <div id="__content__">
-        <p>Hello, World!</p>
-      </div>
+      <div id="__content__" />
     </>
   );
 };

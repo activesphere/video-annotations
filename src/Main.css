@@ -2,39 +2,6 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto+Mono');
 @import url('https://prosemirror.net/css/editor.css');
 
-body,
-html {
-    width: 100%;
-    height: 100%;
-    font-size: 16px;
-    background-color: whitesmoke;
-}
-
-.two-panel-div {
-    height: 100%;
-    width: 90%;
-    height: 100%;
-    padding: 10px;
-    display: grid;
-    grid-template-columns: 40vw 50vw;
-    grid-column-gap: 1vw;
-}
-
-.left-panel {
-    display: grid;
-    grid-column-start: 1;
-    grid-column-end: 2;
-
-    grid-template-rows: 10% 50% 15%;
-}
-
-.youtube-player {
-    border: 2px #000000;
-    border-radius: 0.2em;
-    padding: 2px;
-    box-shadow: 2px 2px 1px 1px purple;
-}
-
 .ProseMirror {
     grid-column-start: 2;
     grid-column-end: 3;
