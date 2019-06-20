@@ -22,9 +22,6 @@ const useStyles = makeStyles((theme: Theme) =>
     grow: {
       flexGrow: 1,
     },
-    sectionDesktop: {
-      display: 'flex',
-    },
     tab: {
       display: 'flex',
       justifyContent: 'center',
@@ -68,9 +65,7 @@ const PrimarySearchAppBar = ({ location }: { location: Location }) => {
             />
           </Tabs>
           <div className={classes.grow} />
-          <div className={classes.sectionDesktop}>
             <DropboxSyncButton />
-          </div>
         </Toolbar>
       </AppBar>
     </div>
