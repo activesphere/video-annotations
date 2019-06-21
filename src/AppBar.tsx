@@ -38,9 +38,9 @@ const PrimarySearchAppBar = ({ location }: { location: Location }) => {
 
   return (
     <div className={classes.grow}>
-      <AppBar position="static">
+      <AppBar color="inherit" position="static">
         <Toolbar>
-          <Tabs value={getTabValue(location.pathname)}>
+          <Tabs indicatorColor="primary" value={getTabValue(location.pathname)}>
             <Tab
               value="editor"
               label={
@@ -65,7 +65,7 @@ const PrimarySearchAppBar = ({ location }: { location: Location }) => {
             />
           </Tabs>
           <div className={classes.grow} />
-            <DropboxSyncButton />
+          <DropboxSyncButton />
         </Toolbar>
       </AppBar>
     </div>

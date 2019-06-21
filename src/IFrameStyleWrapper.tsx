@@ -10,7 +10,7 @@ const useStyles = makeStyles((theme: Theme) =>
       zIndex: 1,
       position: 'sticky',
       top: 0,
-      margin: theme.spacing(1),
+      margin: theme.spacing(2),
     },
     media: {
       position: 'relative',
