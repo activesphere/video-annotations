@@ -6,9 +6,9 @@ import {
   CardContent,
   CardMedia,
   Typography,
-  CssBaseline,
   Grid,
 } from '@material-ui/core';
+import CardActionArea from '@material-ui/core/CardActionArea';
 import classNames from 'classnames';
 import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
 
@@ -51,6 +51,10 @@ const useStyles = makeStyles((theme: Theme) =>
       height: '100%',
       display: 'flex',
       flexDirection: 'column',
+      justifyContent: 'space-between',
+    },
+    contentAction: {
+      height: '100%',
     },
     cardMedia: {
       paddingTop: '56.25%', // 16:9
@@ -94,46 +98,39 @@ const NotesPage = () => {
     return <div>Loading</div>;
   }
 
-  const cardElements = cards.map(({ id, title }, index) => {
-    return (
-      <Grid item sm={6} md={4} lg={3}>
-        <Card className={classes.card}>
+  const cardElements = cards.map(({ id, title }, index) => (
+    <Grid key={id} item sm={6} md={4} lg={3}>
+      <Card onClick={() => console.log('clikc on card')} className={classes.card}>
+        <CardActionArea className={classes.contentAction} component={Link} to={`/v/${id}`}>
           <CardMedia className={classes.cardMedia} image={makeYoutubeImageUrl(id)} title={title} />
           <CardContent className={classes.cardContent}>
             <Typography variant="h5" component="h2">
               {title}
             </Typography>
           </CardContent>
-          <CardActions>
-            <Button size="small" color="primary" component={Link} to={`/v/${id}`}>
-              Edit
-            </Button>
-            <Button
-              size="small"
-              color="primary"
-              onClick={() => {
-                deleteNoteWithId(id);
-              }}
-            >
-              Delete
-            </Button>
-          </CardActions>
-        </Card>
-      </Grid>
-    );
-  });
+        </CardActionArea>
+        <CardActions>
+          <Button
+            size="small"
+            color="primary"
+            onClick={e => {
+              e.stopPropagation();
+              deleteNoteWithId(id);
+            }}
+          >
+            Delete
+          </Button>
+        </CardActions>
+      </Card>
+    </Grid>
+  ));
 
   return (
-    <>
-      <CssBaseline />
-      <main>
-        <div className={classNames(classes.layout, classes.cardGrid)}>
-          <Grid container spacing={4}>
-            {cardElements}
-          </Grid>
-        </div>
-      </main>
-    </>
+    <main className={classNames(classes.layout, classes.cardGrid)}>
+      <Grid container direction="row" spacing={4}>
+        {cardElements}
+      </Grid>
+    </main>
   );
 };
 

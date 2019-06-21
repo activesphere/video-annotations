@@ -52,7 +52,7 @@ const DropboxSyncButton = () => {
   };
 
   return (
-    <Grid direction="row">
+    <Grid>
       <Grid item>
         {dbxSetupState === 'init' && !showTokenInput && (
           <IconButton onClick={toggleTokenInput} area-label="setup dropbox">
