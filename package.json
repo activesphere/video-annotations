@@ -65,7 +65,7 @@
         "reactjs-popup": "^1.3.2",
         "redux": "^4.0.1",
         "slug": "1.1.0",
-        "typescript": "3.5.2"
+        "typescript": "3.5.0"
     },
     "scripts": {
         "eslint": "eslint \"src/**/*.js{,x}\" && eslint \"extension/*.js\"",
