@@ -8,8 +8,10 @@ import VideoPathInput from './VideoPathInput';
 import getYoutubeTitle from 'get-youtube-title';
 import PropTypes from 'prop-types';
 import IFrameStyleWrapper from './IFrameStyleWrapper';
+import TimeBar from './TimeBar';
 import { SnackbarContext } from './context/SnackbarContext';
 import AppConfig from './AppConfig';
+import { IntervalPropType, intervalIsLessThan, insertInterval } from './Interval';
 
 const YOUTUBE_API_KEY = process.env.REACT_APP_YOUTUBE_API_KEY;
 if (!YOUTUBE_API_KEY) {
@@ -133,6 +135,7 @@ class EditorPage extends Component {
       selectedOption: null,
       startingPopperMessage: this.props.startingPopperMessage,
       videoId: null,
+      intervals: [],
     };
 
     // We keep a handle to the youtube player. This is the player API object, not the dom
@@ -177,6 +180,7 @@ class EditorPage extends Component {
 
       case 'seekToTime':
         if (params.videoTime) {
+          console.log('Seeking to time', params.videoTime);
           this.ytPlayerController.seekTo(params.videoTime);
         }
         break;
