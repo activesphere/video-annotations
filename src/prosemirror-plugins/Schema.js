@@ -8,38 +8,7 @@ const brDOM = ['br'];
 
 const NodeSpecs = {
   doc: {
-    content: '(block | withTimeRange)+',
-  },
-
-  withTimeRange: {
-    attrs: {
-      startTime: { default: 0 },
-      endTime: { default: 0 },
-      fullLength: { default: 1 },
-    },
-
     content: 'block+',
-
-    draggable: true,
-
-    defining: true,
-
-    toDOM: node => {
-      return ['div', { gutter: 'yes', ...node.attrs }, 0];
-    },
-
-    parseDOM: [
-      {
-        tag: 'div[gutter=yes]',
-        getAttrs: domNode => {
-          return {
-            startTime: domNode.getAttribute('startTime'),
-            endTime: domNode.getAttribute('endTime'),
-            fullLength: domNode.getAttribute('fullLength'),
-          };
-        },
-      },
-    ],
   },
 
   paragraph: {

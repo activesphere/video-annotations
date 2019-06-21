@@ -12,19 +12,12 @@ import { makeStyles, createStyles } from '@material-ui/core/styles';
 
 import EditorSchema, { ImageNodeType } from './prosemirror-plugins/Schema';
 import ImageNodeView from './prosemirror-plugins/ImageNodeView';
-import WithTimeRangeView from './prosemirror-plugins/WithTimeRangeView';
-import TimestampImagePlugin, {
-  getTimestampValueUnderCursor,
-} from './prosemirror-plugins/TimestampImagePlugin';
 import AutosavePlugin from './prosemirror-plugins/AutosavePlugin';
 import { loadNote } from './LocalStorageHelper';
-import { keycodeOfCommandName, commandNameOfKeycode } from './keycodeMap';
-import { buildMenuItems } from 'prosemirror-example-setup';
-import { wrapInTimeRangeMenuItem } from './prosemirror-plugins/WrapInTimeRange';
+import { commandNameOfKeycode } from './keycodeMap';
 
 import AppConfig from './AppConfig';
 import secondsToHhmmss from './utils/secondsToHhmmsss';
-import { loadNoteWithId } from './LocalStorageHelper';
 import { findTextNodes } from 'prosemirror-utils';
 
 const useStyles = makeStyles(theme =>
@@ -36,6 +29,28 @@ const useStyles = makeStyles(theme =>
 );
 
 const floorOrZero = n => (Number.isNaN(n) ? 0 : Math.floor(n));
+
+// Helper function to get the underlying timestamp value from current selection, if one exists in
+// the selection.
+function getTimestampValueUnderCursor(state) {
+  const { selection } = state;
+
+  const { $from, $to } = selection;
+  const marks = [...$from.marks(), ...$to.marks()];
+
+  const times = [];
+
+  for (const mark of marks) {
+    if (mark.type.name === 'timestamp') {
+      times.push(mark.attrs.videoTime);
+    }
+  }
+
+  return {
+    haveTimestamp: times.length !== 0,
+    videoTime: Math.floor(times[0]),
+  };
+}
 
 const EditorComponent = props => {
   const editorView = useRef(null);
@@ -59,10 +74,6 @@ const EditorComponent = props => {
     if (!videoId || isLoading || !videoTitle) {
       return;
     }
-
-    const timestemapImagePlugin = new Plugin({
-      view: editorView => new TimestampImagePlugin(editorView),
-    });
 
     const autosavePlugin = new Plugin({
       view: editorView => new AutosavePlugin(editorView, videoId),
@@ -96,9 +107,7 @@ const EditorComponent = props => {
         const fragment = state.doc.cut(selection.from, selection.to);
         const textNodes = findTextNodes(fragment);
 
-        // console.log('Text nodes =', textNodes);
-
-        if (textNodes.length == 1) {
+        if (textNodes.length === 1) {
           const text = textNodes[0].node.text;
 
           const match = text.trim().match(timestampRegex);
@@ -109,7 +118,9 @@ const EditorComponent = props => {
           const videoTime =
             parseFloat(match[1]) * 3600 + parseFloat(match[2]) * 60 + parseFloat(match[3]);
 
-          const mark = EditorSchema.marks.timestamp.create({ videoTime });
+          const mark = EditorSchema.marks.timestamp.create({
+            videoTime,
+          });
           const textNode = EditorSchema.text(secondsToHhmmss(videoTime), [mark]);
 
           if (dispatch) {
@@ -126,7 +137,6 @@ const EditorComponent = props => {
       const { haveTimestamp, videoTime } = getTimestampValueUnderCursor(state);
 
       if (haveTimestamp) {
-        console.log('videoTime to seek to =', secondsToHhmmss(videoTime));
         doCommand('seekToTime', { videoTime });
       }
 
@@ -141,7 +151,9 @@ const EditorComponent = props => {
       }
 
       // Create text node with the timestamp mark
-      const mark = EditorSchema.marks.timestamp.create({ videoTime });
+      const mark = EditorSchema.marks.timestamp.create({
+        videoTime,
+      });
       const text = EditorSchema.text(secondsToHhmmss(videoTime), [mark]);
 
       if (dispatch) {
@@ -152,26 +164,6 @@ const EditorComponent = props => {
     };
 
     const debugPrint = (state, dispatch) => {
-      const { selection } = state;
-      const { $from, $to } = selection;
-
-      console.log('$from.parent', $from.parent, $from.parent.attrs);
-      console.log('$to.parent', $to.parent, $to.parent.attrs);
-
-      const printDescendant = (node, pos, parent, index) => {
-        console.log('Descendant node -', node);
-        if (node.isLeaf) {
-          return false;
-        }
-        return true;
-      };
-
-      // console.log('-=-=-=-=-=-= $from.nodesBetween -=-=-=-=-=-=');
-      // $from.parent.nodesBetween(0, $from.parent.nodeSize, printDescendant);
-
-      // console.log('-=-=-=-=-=-= $to.nodesBetween -=-=-=-=-=-=');
-      // $to.parent.nodesBetween(0, $to.parent.nodeSize, printDescendant);
-
       return true;
     };
 
@@ -232,47 +224,6 @@ const EditorComponent = props => {
       return state.tr.insertText('', start, end);
     });
 
-    const MakeTimestampInputRule = new InputRule(
-      /@([0-9]{1,2})\.([0-9]{1,2})\.([0-9]{1,2}) /,
-      (state, match, start, end) => {
-        const videoTime =
-          parseFloat(match[1]) * 3600 + parseFloat(match[2]) * 60 + parseFloat(match[3]);
-        const mark = EditorSchema.marks.timestamp.create({ videoTime });
-        console.log('Match =', match);
-        // const text = EditorSchema.text(match[0].substring(0, match[0].length - 1), [mark]);
-        const text = EditorSchema.text(secondsToHhmmss(videoTime), [mark]);
-        console.log('Matched text =', match[0], 'start, end =', start, end);
-        console.log('text =', text);
-        return state.tr.insertText(text);
-      }
-    );
-
-    /*
-    const placeIntervalWidget = (state, dispatch) => {
-      const { $from } = state.selection;
-      const index = $from.index();
-
-      console.log('placeIntervalWidget');
-
-      if (!$from.parent.canReplaceWith(index, index, IntervalSliderNodeType)) {
-        console.log('canReplaceWith = false');
-        return false;
-      }
-
-      if (dispatch) {
-        console.log('dispatch');
-        const node = IntervalSliderNodeType.create({
-          onChange: newDelta => {
-            console.log('newDelta =', newDelta);
-          },
-        });
-        dispatch(state.tr.replaceSelectionWith(node));
-      }
-
-      return true;
-    };
-    */
-
     const commandFunctions = {
       toggle_pause: () => doCommand('togglePause'),
       mark_selection_as_timestamp: toggleTimestampMark,
@@ -285,13 +236,9 @@ const EditorComponent = props => {
 
     const keymapObject = Object.fromEntries(
       Object.entries(commandNameOfKeycode).map(([keycode, commandName]) => {
-        console.log(keycode, commandName);
         return [keycode, commandFunctions[commandName]];
       })
     );
-
-    const menu = buildMenuItems(EditorSchema);
-    menu.insertMenu.content.push(wrapInTimeRangeMenuItem);
 
     const content = document.getElementById('__content__');
 
@@ -311,22 +258,18 @@ const EditorComponent = props => {
         plugins: [
           keymap(keymapObject),
 
-          timestampImagePlugin,
-
           autosavePlugin,
 
-          inputRules({ rules: [ToggleVideoPauseInputRule, MakeTimestampInputRule] }),
-          ...exampleSetup({ schema: EditorSchema, menuContent: menu.fullMenu }),
+          inputRules({
+            rules: [ToggleVideoPauseInputRule],
+          }),
+          ...exampleSetup({ schema: EditorSchema }),
         ],
       }),
 
       nodeViews: {
         inlineImage: (node, view, getPos) => {
           return new ImageNodeView(node, view, getPos);
-        },
-
-        withTimeRange: (node, view, getPos) => {
-          return new WithTimeRangeView(node, view, getPos);
         },
       },
     });
