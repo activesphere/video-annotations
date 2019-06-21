@@ -7,6 +7,8 @@ import { keymap } from 'prosemirror-keymap';
 import { InputRule, inputRules } from 'prosemirror-inputrules';
 import { toggleMark } from 'prosemirror-commands';
 import { DOMParser } from 'prosemirror-model';
+import Paper from '@material-ui/core/Paper';
+import { makeStyles, createStyles } from '@material-ui/core/styles';
 
 import EditorSchema, { ImageNodeType } from './prosemirror-plugins/Schema';
 import ImageNodeView from './prosemirror-plugins/ImageNodeView';
@@ -18,10 +20,19 @@ import { loadNote } from './LocalStorageHelper';
 import AppConfig from './AppConfig';
 import secondsToHhmmss from './utils/secondsToHhmmsss';
 
+const useStyles = makeStyles(theme =>
+  createStyles({
+    editor: {
+      margin: theme.spacing(2),
+    },
+  })
+);
+
 const floorOrZero = n => (Number.isNaN(n) ? 0 : Math.floor(n));
 
 const EditorComponent = props => {
   const editorView = useRef(null);
+  const classes = useStyles();
 
   const { doCommand, parentApp, videoId, videoTitle } = props;
 
@@ -155,8 +166,6 @@ const EditorComponent = props => {
       return state.tr.insertText('', start, end);
     });
 
-    const content = document.getElementById('__content__');
-
     const editorElement = document.getElementById('__editor__');
 
     if (isLoading || !notes) return null;
@@ -164,7 +173,7 @@ const EditorComponent = props => {
     const { docJSON } = notes;
 
     const doc = !docJSON
-      ? DOMParser.fromSchema(EditorSchema).parse(content)
+      ? DOMParser.fromSchema(EditorSchema).parse(editorElement)
       : Node.fromJSON(EditorSchema, docJSON);
 
     editorView.current = new EditorView(editorElement, {
@@ -201,10 +210,9 @@ const EditorComponent = props => {
   }, [doCommand, parentApp, videoId, notes, isLoading, videoTitle]);
 
   return (
-    <>
+    <Paper className={classes.editor}>
       <div id="__editor__" />
-      <div id="__content__" />
-    </>
+    </Paper>
   );
 };
 
