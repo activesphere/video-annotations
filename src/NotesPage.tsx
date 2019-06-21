@@ -69,13 +69,7 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-function makeYoutubeImageUrl(videoId: string) {
-  if (!videoId) {
-    return '';
-  }
-
-  return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-}
+const toYTUrl = (id: string) => `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
 
 interface Card {
   id: string;
@@ -99,12 +93,12 @@ const NotesPage = () => {
   }
 
   const cardElements = cards.map(({ id, title }, index) => (
-    <Grid key={id} item sm={6} md={4} lg={3}>
+    <Grid key={id} item sm={6} md={4} lg={4}>
       <Card onClick={() => console.log('clikc on card')} className={classes.card}>
         <CardActionArea className={classes.contentAction} component={Link} to={`/v/${id}`}>
-          <CardMedia className={classes.cardMedia} image={makeYoutubeImageUrl(id)} title={title} />
+          <CardMedia className={classes.cardMedia} image={toYTUrl(id)} title={title} />
           <CardContent className={classes.cardContent}>
-            <Typography variant="h5" component="h2">
+            <Typography variant="h6" component="h2">
               {title}
             </Typography>
           </CardContent>
@@ -112,7 +106,6 @@ const NotesPage = () => {
         <CardActions>
           <Button
             size="small"
-            color="primary"
             onClick={e => {
               e.stopPropagation();
               deleteNoteWithId(id);
