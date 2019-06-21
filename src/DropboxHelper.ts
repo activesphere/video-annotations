@@ -54,13 +54,19 @@ export const downloadNote = async (id: string) => {
     mode: 'filename',
   });
 
-  const { metadata } = matches.find(({ metadata }: any) => {
+  if (!matches || !matches.length) return null;
+
+  const file = matches.find(({ metadata }: any) => {
     if (metadata['.tag'] !== 'file' || !metadata.is_downloadable) return false;
 
     if (!metadata.name.match(new RegExp(`^${id} - `))) return false;
 
     return true;
   });
+
+  if (!file) return null;
+
+  const { metadata } = file;
 
   const path = metadata.path_display;
 

@@ -49,7 +49,7 @@ const EditorComponent = props => {
   }, [videoId, setNotes]);
 
   useEffect(() => {
-    if (!videoId || !notes || isLoading || !videoTitle) {
+    if (!videoId || isLoading || !videoTitle) {
       return;
     }
 
@@ -168,9 +168,9 @@ const EditorComponent = props => {
 
     const editorElement = document.getElementById('__editor__');
 
-    if (isLoading || !notes) return null;
+    if (isLoading) return null;
 
-    const { docJSON } = notes;
+    const { docJSON } = notes || {};
 
     const doc = !docJSON
       ? DOMParser.fromSchema(EditorSchema).parse(editorElement)
@@ -207,7 +207,7 @@ const EditorComponent = props => {
       window.removeEventListener('message', gotResponseFromExtension);
       editorView.current.destroy();
     };
-  }, [doCommand, parentApp, videoId, notes, isLoading, videoTitle]);
+  }, [doCommand, parentApp, videoId, isLoading, videoTitle]);
 
   return (
     <Paper className={classes.editor}>
