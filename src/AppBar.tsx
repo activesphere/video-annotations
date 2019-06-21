@@ -1,25 +1,16 @@
 import React, { useState } from 'react';
 import classnames from 'classnames';
-import { fade, makeStyles, Theme, createStyles } from '@material-ui/core/styles';
+import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
 import DropboxSyncButton from './DropboxSyncButton';
-import FolderIcon from '@material-ui/icons/Folder';
-import SlideshowIcon from '@material-ui/icons/Slideshow';
+import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
 import SearchIcon from '@material-ui/icons/Search';
 import InputBase from '@material-ui/core/InputBase';
+import Button from '@material-ui/core/Button';
 
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
 import { Link } from 'react-router-dom';
 import { Location } from 'history';
-
-const getTabValue = (path: string) => {
-  if (path.indexOf('/editor') === 0) return 'editor';
-  if (path.indexOf('/saved_notes') === 0) return 'notes';
-  return null;
-};
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -76,6 +67,9 @@ const useStyles = makeStyles((theme: Theme) =>
     icon: {
       margin: theme.spacing(1),
     },
+    smallFont: {
+      fontSize: '1rem',
+    },
   })
 );
 
@@ -85,35 +79,17 @@ const PrimarySearchAppBar = ({ location }: { location: Location }) => {
   const searchFocus = () => setSearchFocus(true);
   const searchBlur = () => setSearchFocus(false);
 
+  const isHome = location.pathname === '/';
+
   return (
     <AppBar color="inherit" position="static">
       <Toolbar className={classes.root}>
-        <Tabs indicatorColor="primary" value={getTabValue(location.pathname)}>
-          <Tab
-            className={classes.tab}
-            value="editor"
-            label={
-              <div className={classes.tabContent}>
-                <SlideshowIcon className={classes.icon} />
-                Edit
-              </div>
-            }
-            component={Link}
-            to="/editor"
-          />
-          <Tab
-            className={classes.tab}
-            value="notes"
-            label={
-              <div className={classes.tabContent}>
-                <FolderIcon className={classes.icon} />
-                Notes
-              </div>
-            }
-            component={Link}
-            to="/saved_notes"
-          />
-        </Tabs>
+        {!isHome && (
+          <Button size="small" component={Link} to="/">
+            <ArrowBackIosIcon className={classes.smallFont} fontSize="small" />
+            List
+          </Button>
+        )}
         <div className={classnames(classes.search, searchFocused && classes.searchFullWidth)}>
           <div className={classes.searchIcon}>
             <SearchIcon />

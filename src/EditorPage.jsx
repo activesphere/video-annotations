@@ -2,7 +2,6 @@ import './Main.css';
 
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
-import { Paper } from '@material-ui/core';
 
 import EditorComponent from './EditorComponent';
 import VideoPathInput from './VideoPathInput';

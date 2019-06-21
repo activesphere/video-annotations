@@ -8,14 +8,12 @@ import {
   Typography,
   CssBaseline,
   Grid,
-  Slide,
 } from '@material-ui/core';
 import classNames from 'classnames';
 import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
 
 import { getNoteMenuItemsForCards, deleteNoteWithId } from './LocalStorageHelper';
 import { Link } from 'react-router-dom';
-import seedrandom from 'seedrandom';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -96,49 +94,32 @@ const NotesPage = () => {
     return <div>Loading</div>;
   }
 
-  const rng = seedrandom(`${cards.length}`);
-
-  // Generate random slide-in directions for each card
-  const directions: Directions[] = ['left', 'right', 'up', 'down'];
-  const directionOfCard = [];
-  for (let i = 0; i < cards.length; ++i) {
-    const d = rng.int32() % directions.length;
-    directionOfCard.push(d);
-  }
-
-  // Creating an array of card elements from the note info
   const cardElements = cards.map(({ id, title }, index) => {
     return (
-      <Slide key={id} direction={directions[index]} in={true} mountOnEnter unmountOnExit>
-        <Grid item sm={6} md={4} lg={3}>
-          <Card className={classes.card}>
-            <CardMedia
-              className={classes.cardMedia}
-              image={makeYoutubeImageUrl(id)}
-              title={title}
-            />
-            <CardContent className={classes.cardContent}>
-              <Typography variant="h5" component="h2">
-                {title}
-              </Typography>
-            </CardContent>
-            <CardActions>
-              <Button size="small" color="primary" component={Link} to={`/editor/${id}`}>
-                Edit
-              </Button>
-              <Button
-                size="small"
-                color="primary"
-                onClick={() => {
-                  deleteNoteWithId(id);
-                }}
-              >
-                Delete
-              </Button>
-            </CardActions>
-          </Card>
-        </Grid>
-      </Slide>
+      <Grid item sm={6} md={4} lg={3}>
+        <Card className={classes.card}>
+          <CardMedia className={classes.cardMedia} image={makeYoutubeImageUrl(id)} title={title} />
+          <CardContent className={classes.cardContent}>
+            <Typography variant="h5" component="h2">
+              {title}
+            </Typography>
+          </CardContent>
+          <CardActions>
+            <Button size="small" color="primary" component={Link} to={`/v/${id}`}>
+              Edit
+            </Button>
+            <Button
+              size="small"
+              color="primary"
+              onClick={() => {
+                deleteNoteWithId(id);
+              }}
+            >
+              Delete
+            </Button>
+          </CardActions>
+        </Card>
+      </Grid>
     );
   });
 
