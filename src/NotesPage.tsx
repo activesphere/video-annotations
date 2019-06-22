@@ -61,6 +61,9 @@ const useStyles = makeStyles((theme: Theme) =>
     cardContent: {
       flexGrow: 1,
     },
+    secondaryButton: {
+      color: theme.palette.grey[500],
+    },
     footer: {
       backgroundColor: theme.palette.background.paper,
       padding: theme.spacing(6),
@@ -93,7 +96,7 @@ const NotesPage = () => {
 
   const cardElements = cards.map(({ id, title }, index) => (
     <Grid key={id} item sm={6} md={4} lg={4}>
-      <Card onClick={() => console.log('clikc on card')} className={classes.card}>
+      <Card className={classes.card}>
         <CardActionArea className={classes.contentAction} component={Link} to={`/v/${id}`}>
           <CardMedia className={classes.cardMedia} image={toYTUrl(id)} title={title} />
           <CardContent className={classes.cardContent}>
@@ -104,6 +107,18 @@ const NotesPage = () => {
         </CardActionArea>
         <CardActions>
           <Button
+            variant="outlined"
+            disableRipple
+            color="primary"
+            size="small"
+            component={Link}
+            to={`/v/${id}`}
+          >
+            Note
+          </Button>
+          <Button
+            className={classes.secondaryButton}
+            disableRipple
             size="small"
             onClick={e => {
               e.stopPropagation();

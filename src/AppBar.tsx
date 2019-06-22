@@ -5,7 +5,7 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import DropboxSyncButton from './DropboxSyncButton';
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
-import SearchIcon from '@material-ui/icons/Search';
+import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import InputBase from '@material-ui/core/InputBase';
 import Button from '@material-ui/core/Button';
 
@@ -46,6 +46,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     inputRoot: {
       color: 'inherit',
+      width: '100%',
     },
     inputInput: {
       padding: theme.spacing(1, 1, 1, 7),
@@ -92,12 +93,12 @@ const PrimarySearchAppBar = ({ location }: { location: Location }) => {
         )}
         <div className={classnames(classes.search, searchFocused && classes.searchFullWidth)}>
           <div className={classes.searchIcon}>
-            <SearchIcon />
+            <AddCircleOutlineIcon />
           </div>
           <InputBase
             onFocus={searchFocus}
             onBlur={searchBlur}
-            placeholder="Add…"
+            placeholder="https://youtube.com/watch?v=..."
             classes={{
               root: classes.inputRoot,
               input: classes.inputInput,
