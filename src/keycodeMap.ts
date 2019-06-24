@@ -1,4 +1,4 @@
-import fromPairs from './utils/fromPairs';
+import fromPairs from './utils/fromEntries';
 
 const keycodeOfCommandName: { [s: string]: string } = {
 	toggle_pause: 'Ctrl-p',
@@ -14,4 +14,4 @@ const commandNameOfKeycode = fromPairs(
 	Object.entries(keycodeOfCommandName).map(([commandName, keycode]) => [keycode, commandName])
 );
 
-export { keycodeOfCommandName, commandNameOfKeycode };
+export { commandNameOfKeycode };
