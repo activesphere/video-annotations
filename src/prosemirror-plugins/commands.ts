@@ -77,39 +77,33 @@ export function makeCmdPutTimestampText(doCommand: (cmd: String) => number) {
 }
 
 // Command that converts selected text the form 'hh:mm:ss' into a timestamp.
-const cmdTurnTextToTimestamp = (state, dispatch) => {
+export const textToTimestamp = (state: State, dispatch: any) => {
   const { selection } = state;
 
-  if (!selection.empty) {
-    const fragment = state.doc.cut(selection.from, selection.to);
-    const textNodes = findTextNodes(fragment);
+  if (selection.empty) return true;
 
-    if (textNodes.length === 1) {
-      const text = textNodes[0].node.text;
+  const fragment = state.doc.cut(selection.from, selection.to);
+  const textNodes = findTextNodes(fragment);
 
-      const match = text.trim().match(timestampRegex);
-      if (!match) {
-        return true;
-      }
+  if (textNodes.length !== 1) return true;
 
-      const videoTime =
-        parseFloat(match[1]) * 3600 + parseFloat(match[2]) * 60 + parseFloat(match[3]);
+  const text = textNodes[0].node.text;
+  if (!text) return true;
 
-      const mark = EditorSchema.marks.timestamp.create({
-        videoTime,
-      });
-      const textNode = EditorSchema.text(secondsToHhmmss(videoTime), [mark]);
+  const match = text.trim().match(timestampRegex);
+  if (!match) return true;
 
-      if (dispatch) {
-        dispatch(state.tr.replaceSelectionWith(textNode, false));
-      }
-    }
+  const videoTime = parseFloat(match[1]) * 3600 + parseFloat(match[2]) * 60 + parseFloat(match[3]);
+
+  const mark = EditorSchema.marks.timestamp.create({ videoTime });
+  const textNode = EditorSchema.text(secondsToHhmmss(videoTime), [mark]);
+
+  if (dispatch) {
+    dispatch(state.tr.replaceSelectionWith(textNode, false));
   }
 
   return true;
 };
-
-export { cmdTurnTextToTimestamp };
 
 // Returns an editor command that simply tells the extension to capture the current frame. Does not
 // apply any transaction to the state. Also returns a function that handles the response from the

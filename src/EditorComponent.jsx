@@ -17,10 +17,10 @@ import { commandNameOfKeycode } from './keycodeMap';
 import {
   makeCmdToggleTimestampMark,
   makeCmdPutTimestampText,
-  cmdTurnTextToTimestamp,
+  textToTimestamp,
   makeCmdTellExtensionToCaptureFrame,
-  makeCmdSeekToTimestamp,
-} from './prosemirror-plugins/Commands';
+  mkSeekToTimestamp,
+} from './prosemirror-plugins/commands';
 
 const useStyles = makeStyles(theme =>
   createStyles({
@@ -63,7 +63,7 @@ const EditorComponent = props => {
       extensionResponseHandler,
     } = makeCmdTellExtensionToCaptureFrame(doCommand, parentApp.currentVideoInfo, editorView);
 
-    const cmdSeekToTimestamp = makeCmdSeekToTimestamp(doCommand);
+    const seekToTimestamp = mkSeekToTimestamp(doCommand);
 
     window.addEventListener('message', extensionResponseHandler, false);
 
@@ -81,10 +81,10 @@ const EditorComponent = props => {
       toggle_pause: () => doCommand('togglePause'),
       mark_selection_as_timestamp: cmdToggleTimestampMark,
       put_timestamp: cmdPutTimestampText,
-      seek_to_timestamp: cmdSeekToTimestamp,
+      seek_to_timestamp: seekToTimestamp,
       capture_frame: cmdTellExtensionToCaptureFrame,
       debug_print: cmdDebugPrint,
-      turn_text_to_timestamp: cmdTurnTextToTimestamp,
+      turn_text_to_timestamp: textToTimestamp,
     };
 
     // Map from keycode to command function
