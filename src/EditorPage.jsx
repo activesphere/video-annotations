@@ -146,7 +146,7 @@ class EditorPage extends Component {
     window.frames[0].postMessage({ type: AppConfig.RemovePauseOverlayMessage }, '*');
   };
 
-  doVideoCommand(command, params) {
+  doVideoCommand = (command, params) => {
     const currentTime = this.ytPlayerController.getCurrentTime();
 
     switch (command) {
@@ -188,18 +188,17 @@ class EditorPage extends Component {
     }
 
     return currentTime;
-  }
+  };
 
-  currentVideoInfo() {
+  currentVideoInfo = () => {
     const info = { videoId: null, videoTime: null, videoTitle: null };
     if (this.ytPlayerController) {
       info.videoId = this.ytPlayerController.currentVideoId;
       info.videoTime = this.ytPlayerController.getCurrentTime();
       info.videoTitle = this.ytPlayerController.getVideoTitle();
     }
-    // console.log('Current video info =', info);
     return info;
-  }
+  };
 
   componentDidMount() {
     const { ytAPI } = this.props;
