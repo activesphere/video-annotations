@@ -108,11 +108,7 @@ export const textToTimestamp = (state: State, dispatch: any) => {
 // Returns an editor command that simply tells the extension to capture the current frame. Does not
 // apply any transaction to the state. Also returns a function that handles the response from the
 // extension.
-export function makeCmdTellExtensionToCaptureFrame(
-  doCommand: (cmd: string) => any,
-  getCurrentVideoInfo: any,
-  refEditorView: any
-) {
+export function makeCmdTellExtensionToCaptureFrame(getCurrentVideoInfo: any, refEditorView: any) {
   return {
     cmdTellExtensionToCaptureFrame: () => {
       const { videoId } = getCurrentVideoInfo();
@@ -122,7 +118,7 @@ export function makeCmdTellExtensionToCaptureFrame(
       return true;
     },
 
-    extensionResponseHandler: (e: any) => {
+    insertImageForTime: (e: any, videoTime: number) => {
       if (e.data.type !== AppConfig.CaptureCurrentFrameResponse || !refEditorView.current) {
         return;
       }
@@ -143,14 +139,12 @@ export function makeCmdTellExtensionToCaptureFrame(
         return;
       }
 
-      const videoTime = floorOrZero(doCommand('currentTime'));
-
       const newState = state.apply(
         state.tr.replaceSelectionWith(
           ImageNodeType.create({
             source,
             outerWidth,
-            videoTime,
+            videoTime: floorOrZero(videoTime),
             origWidth,
             origHeight,
           })

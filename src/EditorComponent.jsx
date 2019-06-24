@@ -60,12 +60,14 @@ const EditorComponent = props => {
 
     const {
       cmdTellExtensionToCaptureFrame,
-      extensionResponseHandler,
-    } = makeCmdTellExtensionToCaptureFrame(doCommand, parentApp.currentVideoInfo, editorView);
+      insertImageForTime,
+    } = makeCmdTellExtensionToCaptureFrame(parentApp.currentVideoInfo, editorView);
+
+    const messageHandler = e => insertImageForTime(e, doCommand('currentTime'));
 
     const seekToTimestamp = mkSeekToTimestamp(doCommand);
 
-    window.addEventListener('message', extensionResponseHandler, false);
+    window.addEventListener('message', messageHandler, false);
 
     const cmdDebugPrint = (state, dispatch) => {
       return true;
@@ -131,7 +133,7 @@ const EditorComponent = props => {
     });
 
     return () => {
-      window.removeEventListener('message', extensionResponseHandler);
+      window.removeEventListener('message', messageHandler);
       editorView.current.destroy();
     };
   }, [doCommand, parentApp, videoId, isLoading, videoTitle]);
