@@ -98,7 +98,6 @@ const EditorComponent = props => {
       view: editorView => new AutosavePlugin(editorView, videoId),
     });
 
-    const content = document.getElementById('__content__');
     const editorElement = document.getElementById('__editor__');
 
     if (isLoading) return null;
