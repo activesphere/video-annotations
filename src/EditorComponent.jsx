@@ -9,17 +9,18 @@ import { DOMParser } from 'prosemirror-model';
 import Paper from '@material-ui/core/Paper';
 import { makeStyles, createStyles } from '@material-ui/core/styles';
 
+import AppConfig from './AppConfig';
 import EditorSchema from './prosemirror-plugins/Schema';
 import ImageNodeView from './prosemirror-plugins/ImageNodeView';
 import AutosavePlugin from './prosemirror-plugins/AutosavePlugin';
 import { loadNote } from './LocalStorageHelper';
-import { commandNameOfKeycode } from './keycodeMap';
+import keycodes from './keycodeMap';
 import {
-  makeCmdToggleTimestampMark,
-  makeCmdPutTimestampText,
-  textToTimestamp,
-  makeCmdTellExtensionToCaptureFrame,
+  insertImageForTime,
+  mkInsertTimestampStr,
   mkSeekToTimestamp,
+  mkToggleTimestampMark,
+  textToTimestamp,
 } from './prosemirror-plugins/commands';
 
 const useStyles = makeStyles(theme =>
@@ -53,19 +54,23 @@ const EditorComponent = props => {
       return;
     }
 
+    const currentTimestamp = () => doCommand('currentTime');
+
     // Commands
-    const cmdToggleTimestampMark = makeCmdToggleTimestampMark(doCommand);
+    const messageHandler = e => {
+      if (e.data.type !== AppConfig.CaptureCurrentFrameResponse || !editorView.current) return;
 
-    const cmdPutTimestampText = makeCmdPutTimestampText(doCommand);
+      insertImageForTime(e, currentTimestamp(), editorView.current);
+    };
 
-    const {
-      cmdTellExtensionToCaptureFrame,
-      insertImageForTime,
-    } = makeCmdTellExtensionToCaptureFrame(parentApp.currentVideoInfo, editorView);
+    const onCaptureFrame = () => {
+      const { videoId } = parentApp.currentVideoInfo();
+      if (videoId) {
+        window.frames[0].postMessage({ type: AppConfig.CaptureCurrentFrameMessage }, '*');
+      }
 
-    const messageHandler = e => insertImageForTime(e, doCommand('currentTime'));
-
-    const seekToTimestamp = mkSeekToTimestamp(doCommand);
+      return true;
+    };
 
     window.addEventListener('message', messageHandler, false);
 
@@ -77,20 +82,17 @@ const EditorComponent = props => {
 
     const cmdFunctions = {
       toggle_pause: () => doCommand('togglePause'),
-      mark_selection_as_timestamp: cmdToggleTimestampMark,
-      put_timestamp: cmdPutTimestampText,
-      seek_to_timestamp: seekToTimestamp,
-      capture_frame: cmdTellExtensionToCaptureFrame,
+      mark_selection_as_timestamp: mkToggleTimestampMark(currentTimestamp),
+      put_timestamp: mkInsertTimestampStr(currentTimestamp),
+      seek_to_timestamp: mkSeekToTimestamp(videoTime => doCommand('seekToTime', { videoTime })),
+      capture_frame: onCaptureFrame,
       debug_print: () => true,
       turn_text_to_timestamp: textToTimestamp,
     };
 
-    // Map from keycode to command function
-    const keymapObject = Object.fromEntries(
-      Object.entries(commandNameOfKeycode).map(([keycode, cmdName]) => {
-        return [keycode, cmdFunctions[cmdName]];
-      })
-    );
+    const keymapObject = Object.keys(keycodes)
+      .map(k => [keycodes[k], cmdFunctions[k]])
+      .reduce((acc, [key, val]) => ({ ...acc, [key]: val }), {});
 
     const autosavePlugin = new Plugin({
       view: editorView => new AutosavePlugin(editorView, videoId),

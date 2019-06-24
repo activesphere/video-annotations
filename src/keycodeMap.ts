@@ -1,6 +1,4 @@
-import fromEntries from './utils/fromEntries';
-
-const keycodeOfCommandName: { [s: string]: string } = {
+const keycodes: { [s: string]: string } = {
   toggle_pause: 'Ctrl-p',
   mark_selection_as_timestamp: 'Ctrl-t',
   turn_text_to_timestamp: 'Ctrl-y',
@@ -10,8 +8,4 @@ const keycodeOfCommandName: { [s: string]: string } = {
   debug_print: 'Ctrl-d',
 };
 
-const commandNameOfKeycode = fromEntries(
-  Object.entries(keycodeOfCommandName).map(([cmd, keycode]) => [keycode, cmd])
-);
-
-export { commandNameOfKeycode };
+export default keycodes;

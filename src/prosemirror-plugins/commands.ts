@@ -1,9 +1,10 @@
-import AppConfig from '../AppConfig';
 import secondsToHhmmss from '../utils/secondsToHhmmsss';
 import EditorSchema, { ImageNodeType } from './Schema';
 
 import { toggleMark } from 'prosemirror-commands';
 import { findTextNodes } from 'prosemirror-utils';
+import { EditorState } from 'prosemirror-state';
+import { EditorView } from 'prosemirror-view';
 
 const floorOrZero = (n: number) => (Number.isNaN(n) ? 0 : Math.floor(n));
 
@@ -13,19 +14,12 @@ type State = any;
 
 // Helper function to get the underlying timestamp value from current selection, if one exists in
 // the selection.
-function getTimestampValueUnderCursor(state: State) {
+function timestampUnderCursor(state: EditorState) {
   const { selection } = state;
-
   const { $from, $to } = selection;
   const marks = [...$from.marks(), ...$to.marks()];
 
-  const times = [];
-
-  for (const mark of marks) {
-    if (mark.type.name === 'timestamp') {
-      times.push(mark.attrs.videoTime);
-    }
-  }
+  const times = marks.filter(m => m.type.name === 'timestamp').map(m => m.attrs.videoTime);
 
   return {
     haveTimestamp: times.length !== 0,
@@ -33,19 +27,17 @@ function getTimestampValueUnderCursor(state: State) {
   };
 }
 
+type GetVideoTime = () => number;
+
 // Returns a command that toggles the selected text to be marked a timestamp.
-export function makeCmdToggleTimestampMark(doCommand: (cmd: string) => number) {
+export function mkToggleTimestampMark(videoTimestamp: () => number) {
   return (state: State, dispatch: any) => {
     const { selection } = state;
-    const videoTime = doCommand('currentTime');
+    const videoTime = videoTimestamp();
 
-    if (selection.empty) {
-      return false;
-    }
+    if (selection.empty) return false;
 
-    if (Number.isNaN(videoTime)) {
-      return true;
-    }
+    if (Number.isNaN(videoTime)) return true;
 
     return toggleMark(EditorSchema.marks.timestamp, {
       videoTime: Math.floor(videoTime),
@@ -53,31 +45,27 @@ export function makeCmdToggleTimestampMark(doCommand: (cmd: string) => number) {
   };
 }
 
-// Returns a command that puts the current time in 'hh:mm:ss' format into the editor.
-export function makeCmdPutTimestampText(doCommand: (cmd: String) => number) {
-  return (state: State, dispatch: any) => {
-    const videoTime = doCommand('currentTime');
+// Puts the current time in 'hh:mm:ss' format into the editor.
+export const mkInsertTimestampStr = (getVideoTime: GetVideoTime) => (
+  state: EditorState,
+  dispatch: any
+) => {
+  const videoTime = getVideoTime();
+  if (Number.isNaN(videoTime)) return true;
 
-    if (Number.isNaN(videoTime)) {
-      return true;
-    }
+  // Create text node with the timestamp mark
+  const mark = EditorSchema.marks.timestamp.create({ videoTime });
+  const text = EditorSchema.text(secondsToHhmmss(videoTime), [mark]);
 
-    // Create text node with the timestamp mark
-    const mark = EditorSchema.marks.timestamp.create({
-      videoTime,
-    });
-    const text = EditorSchema.text(secondsToHhmmss(videoTime), [mark]);
+  if (dispatch) {
+    dispatch(state.tr.replaceSelectionWith(text, false));
+  }
 
-    if (dispatch) {
-      dispatch(state.tr.replaceSelectionWith(text, false));
-    }
-
-    return true;
-  };
-}
+  return true;
+};
 
 // Command that converts selected text the form 'hh:mm:ss' into a timestamp.
-export const textToTimestamp = (state: State, dispatch: any) => {
+export const textToTimestamp = (state: EditorState, dispatch: any) => {
   const { selection } = state;
 
   if (selection.empty) return true;
@@ -108,61 +96,42 @@ export const textToTimestamp = (state: State, dispatch: any) => {
 // Returns an editor command that simply tells the extension to capture the current frame. Does not
 // apply any transaction to the state. Also returns a function that handles the response from the
 // extension.
-export function makeCmdTellExtensionToCaptureFrame(getCurrentVideoInfo: any, refEditorView: any) {
-  return {
-    cmdTellExtensionToCaptureFrame: () => {
-      const { videoId } = getCurrentVideoInfo();
-      if (videoId) {
-        window.frames[0].postMessage({ type: AppConfig.CaptureCurrentFrameMessage }, '*');
-      }
-      return true;
-    },
+export const insertImageForTime = (e: any, videoTime: number, view: EditorView) => {
+  const { data } = e;
+  const { dataURL: source, width: origWidth, height: origHeight } = data;
 
-    insertImageForTime: (e: any, videoTime: number) => {
-      if (e.data.type !== AppConfig.CaptureCurrentFrameResponse || !refEditorView.current) {
-        return;
-      }
+  // Initial width is same as that of original image
+  const outerWidth = `${origWidth}px`;
 
-      const { data } = e;
-      const { dataURL: source, width: origWidth, height: origHeight } = data;
+  const { state } = view;
 
-      // Initial width is same as that of original image
-      const outerWidth = `${origWidth}px`;
+  const { $from } = state.selection;
+  const index = $from.index();
 
-      const view = refEditorView.current;
-      const { state } = view;
+  if (!$from.parent.canReplaceWith(index, index, ImageNodeType)) {
+    return;
+  }
 
-      const { $from } = state.selection;
-      const index = $from.index;
+  const newState = state.apply(
+    state.tr.replaceSelectionWith(
+      ImageNodeType.create({
+        source,
+        outerWidth,
+        videoTime: floorOrZero(videoTime),
+        origWidth,
+        origHeight,
+      })
+    )
+  );
 
-      if (!$from.parent.canReplaceWith(index, index, ImageNodeType)) {
-        return;
-      }
+  view.updateState(newState);
+};
 
-      const newState = state.apply(
-        state.tr.replaceSelectionWith(
-          ImageNodeType.create({
-            source,
-            outerWidth,
-            videoTime: floorOrZero(videoTime),
-            origWidth,
-            origHeight,
-          })
-        )
-      );
-
-      view.updateState(newState);
-    },
-  };
-}
-
-export const mkSeekToTimestamp = (doCommand: (cmd: string, params: any) => void) => (
-  state: State
-) => {
-  const { haveTimestamp, videoTime } = getTimestampValueUnderCursor(state);
+export const mkSeekToTimestamp = (seekTo: (ts: number) => void) => (state: EditorState) => {
+  const { haveTimestamp, videoTime } = timestampUnderCursor(state);
 
   if (haveTimestamp) {
-    doCommand('seekToTime', { videoTime });
+    seekTo(videoTime);
   }
 
   return true;
