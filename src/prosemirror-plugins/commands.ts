@@ -35,12 +35,11 @@ function getTimestampValueUnderCursor(state) {
 export function makeCmdToggleTimestampMark(doCommand) {
   return (state, dispatch) => {
     const { selection } = state;
+    const videoTime = doCommand('currentTime');
 
     if (selection.empty) {
       return false;
     }
-
-    const videoTime = doCommand('currentTime');
 
     if (Number.isNaN(videoTime)) {
       return true;
@@ -164,15 +163,14 @@ export function makeCmdTellExtensionToCaptureFrame(doCommand, getCurrentVideoInf
 }
 
 // Prosemirror command that retrieves underlying timestamp value from the selection.
-export function makeCmdSeekToTimestamp(doCommand) {
-  return (state, dispatch) => {
+
+export const mkSeekToTimestamp = doCommand => (state, dispatch) => {
     const { haveTimestamp, videoTime } = getTimestampValueUnderCursor(state);
 
     if (haveTimestamp) {
-      console.log('Seeking to time -', secondsToHhmmss(videoTime));
-      doCommand('seekToTime', { videoTime });
+        console.log('Seeking to time -', secondsToHhmmss(videoTime));
+        doCommand('seekToTime', { videoTime });
     }
 
     return true;
-  };
 }
