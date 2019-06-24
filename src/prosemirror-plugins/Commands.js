@@ -169,6 +169,7 @@ export function makeCmdSeekToTimestamp(doCommand) {
     const { haveTimestamp, videoTime } = getTimestampValueUnderCursor(state);
 
     if (haveTimestamp) {
+      console.log('Seeking to time -', secondsToHhmmss(videoTime));
       doCommand('seekToTime', { videoTime });
     }
 
