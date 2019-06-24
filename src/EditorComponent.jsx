@@ -69,10 +69,6 @@ const EditorComponent = props => {
 
     window.addEventListener('message', messageHandler, false);
 
-    const cmdDebugPrint = (state, dispatch) => {
-      return true;
-    };
-
     // Pause input rule. Typing "#." will toggle pause.
     const ToggleVideoPauseInputRule = new InputRule(/#\.$/, (state, match, start, end) => {
       doCommand('togglePause');
@@ -85,7 +81,7 @@ const EditorComponent = props => {
       put_timestamp: cmdPutTimestampText,
       seek_to_timestamp: seekToTimestamp,
       capture_frame: cmdTellExtensionToCaptureFrame,
-      debug_print: cmdDebugPrint,
+      debug_print: () => true,
       turn_text_to_timestamp: textToTimestamp,
     };
 
