@@ -127,7 +127,6 @@ class EditorPage extends Component {
     super(props);
 
     this.state = {
-      editorCommand: null,
       infoText: null,
       infoLastTime: null,
       selectedOption: null,
@@ -278,7 +277,6 @@ class EditorPage extends Component {
         <EditorComponent
           parentApp={this}
           doCommand={this.doVideoCommand}
-          editorCommand={this.state.editorCommand}
           showInfo={this.props.showInfo}
           videoId={videoId}
           videoTitle={info.videoTitle}
