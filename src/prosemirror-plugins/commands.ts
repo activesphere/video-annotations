@@ -5,13 +5,15 @@ import EditorSchema, { ImageNodeType } from './Schema';
 import { toggleMark } from 'prosemirror-commands';
 import { findTextNodes } from 'prosemirror-utils';
 
-const floorOrZero = n => (Number.isNaN(n) ? 0 : Math.floor(n));
+const floorOrZero = (n: number) => (Number.isNaN(n) ? 0 : Math.floor(n));
 
 const timestampRegex = /^([0-9]{1,2})[.:]([0-9]{1,2})[.:]([0-9]{1,2})$/;
 
+type State = any;
+
 // Helper function to get the underlying timestamp value from current selection, if one exists in
 // the selection.
-function getTimestampValueUnderCursor(state) {
+function getTimestampValueUnderCursor(state: State) {
   const { selection } = state;
 
   const { $from, $to } = selection;
@@ -32,8 +34,8 @@ function getTimestampValueUnderCursor(state) {
 }
 
 // Returns a command that toggles the selected text to be marked a timestamp.
-export function makeCmdToggleTimestampMark(doCommand) {
-  return (state, dispatch) => {
+export function makeCmdToggleTimestampMark(doCommand: (cmd: string) => number) {
+  return (state: State, dispatch: any) => {
     const { selection } = state;
     const videoTime = doCommand('currentTime');
 
@@ -52,8 +54,8 @@ export function makeCmdToggleTimestampMark(doCommand) {
 }
 
 // Returns a command that puts the current time in 'hh:mm:ss' format into the editor.
-export function makeCmdPutTimestampText(doCommand) {
-  return (state, dispatch) => {
+export function makeCmdPutTimestampText(doCommand: (cmd: String) => number) {
+  return (state: State, dispatch: any) => {
     const videoTime = doCommand('currentTime');
 
     if (Number.isNaN(videoTime)) {
@@ -112,9 +114,13 @@ export { cmdTurnTextToTimestamp };
 // Returns an editor command that simply tells the extension to capture the current frame. Does not
 // apply any transaction to the state. Also returns a function that handles the response from the
 // extension.
-export function makeCmdTellExtensionToCaptureFrame(doCommand, getCurrentVideoInfo, refEditorView) {
+export function makeCmdTellExtensionToCaptureFrame(
+  doCommand: (cmd: string) => any,
+  getCurrentVideoInfo: any,
+  refEditorView: any
+) {
   return {
-    cmdTellExtensionToCaptureFrame: (_state, _dispatch) => {
+    cmdTellExtensionToCaptureFrame: () => {
       const { videoId } = getCurrentVideoInfo();
       if (videoId) {
         window.frames[0].postMessage({ type: AppConfig.CaptureCurrentFrameMessage }, '*');
@@ -122,7 +128,7 @@ export function makeCmdTellExtensionToCaptureFrame(doCommand, getCurrentVideoInf
       return true;
     },
 
-    extensionResponseHandler: e => {
+    extensionResponseHandler: (e: any) => {
       if (e.data.type !== AppConfig.CaptureCurrentFrameResponse || !refEditorView.current) {
         return;
       }
@@ -162,15 +168,14 @@ export function makeCmdTellExtensionToCaptureFrame(doCommand, getCurrentVideoInf
   };
 }
 
-// Prosemirror command that retrieves underlying timestamp value from the selection.
+export const mkSeekToTimestamp = (doCommand: (cmd: string, params: any) => void) => (
+  state: State
+) => {
+  const { haveTimestamp, videoTime } = getTimestampValueUnderCursor(state);
 
-export const mkSeekToTimestamp = doCommand => (state, dispatch) => {
-    const { haveTimestamp, videoTime } = getTimestampValueUnderCursor(state);
+  if (haveTimestamp) {
+    doCommand('seekToTime', { videoTime });
+  }
 
-    if (haveTimestamp) {
-        console.log('Seeking to time -', secondsToHhmmss(videoTime));
-        doCommand('seekToTime', { videoTime });
-    }
-
-    return true;
-}
+  return true;
+};
