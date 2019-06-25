@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import classnames from 'classnames';
+import { withRouter } from 'react-router-dom';
 import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -113,4 +114,4 @@ const PrimarySearchAppBar = ({ location }: { location: Location }) => {
   );
 };
 
-export default PrimarySearchAppBar;
+export default withRouter(PrimarySearchAppBar);

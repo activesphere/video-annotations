@@ -10,26 +10,17 @@ const Main = ({ ytAPI }: { ytAPI: any }) => {
 
   return (
     <BrowserRouter>
+      <AppBar />
       <Switch>
         <Route
-          path="/"
-          render={({ location }) => (
-            <>
-              <AppBar location={location} />
-              <Switch>
-                <Route
-                  path="/v/:videoId"
-                  render={({
-                    match: {
-                      params: { videoId },
-                    },
-                  }) => <EditorPage key={videoId} ytAPI={ytAPI} startingVideoId={videoId} />}
-                />
-                <Route path="/" component={NotesPage} />
-              </Switch>
-            </>
-          )}
+          path="/v/:videoId"
+          render={({
+            match: {
+              params: { videoId },
+            },
+          }) => <EditorPage key={videoId} ytAPI={ytAPI} startingVideoId={videoId} />}
         />
+        <Route path="/" component={NotesPage} />
       </Switch>
     </BrowserRouter>
   );
