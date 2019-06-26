@@ -20,23 +20,6 @@ const useStyles = makeStyles((theme: Theme) =>
     grow: {
       flexGrow: 1,
     },
-    tab: {
-      minWidth: '6rem',
-      fontWeight: theme.typography.fontWeightRegular,
-      marginRight: theme.spacing(4),
-      minHeight: '2rem',
-      paddingBottom: 0,
-      paddingTop: 0,
-    },
-    tabContent: {
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      margin: 0,
-    },
-    icon: {
-      margin: theme.spacing(1),
-    },
     smallFont: {
       fontSize: '1rem',
     },
