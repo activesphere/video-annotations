@@ -23,6 +23,10 @@ import {
   textToTimestamp,
 } from './prosemirror-plugins/commands';
 
+import 'prosemirror-view/style/prosemirror.css';
+import 'prosemirror-menu/style/menu.css';
+import './editor-styles.css';
+
 const useStyles = makeStyles(theme =>
   createStyles({
     editor: {
