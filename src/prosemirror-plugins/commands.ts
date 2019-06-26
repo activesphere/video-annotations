@@ -1,10 +1,12 @@
 import secondsToHhmmss from '../utils/secondsToHhmmsss';
 import EditorSchema, { ImageNodeType } from './Schema';
+import { startTimeMark, endTimeMark } from './timemarker';
 
-import { toggleMark } from 'prosemirror-commands';
-import { findTextNodes } from 'prosemirror-utils';
-import { EditorState } from 'prosemirror-state';
+import { toggleMark, wrapIn } from 'prosemirror-commands';
+import { findTextNodes, findParentNode } from 'prosemirror-utils';
+import { EditorState, Selection } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
+import { Node } from 'prosemirror-model';
 
 const floorOrZero = (n: number) => (Number.isNaN(n) ? 0 : Math.floor(n));
 
@@ -128,6 +130,115 @@ export const mkSeekToTimestamp = (seekTo: (ts: number) => void) => (state: Edito
 
   if (haveTimestamp) {
     seekTo(videoTime);
+  }
+
+  return true;
+};
+
+const getTextFromSelection = (state: EditorState) => {
+  const { selection } = state;
+
+  if (selection.empty) {
+    return '';
+  }
+
+  const fragment = state.doc.cut(selection.from, selection.to);
+  const textNodes = findTextNodes(fragment);
+
+  const text = textNodes.reduce((acc, { node }) => acc + node.text, '');
+
+  return text;
+};
+
+function findTimeRange(selection: Selection) {
+  const { $from, $to } = selection;
+
+  if (!$from.parent.eq($to.parent)) {
+    console.log('findTimeRange - not same parent');
+  }
+}
+
+// Regex can match ':20' instead of just '20'.
+const parseTimeUnit = (s: string) => parseFloat(s[0] === ':' ? s.substring(1, s.length) : s);
+
+function secondsFromTimeMark(match: any) {
+  let secs = 0;
+  console.log('match =', match);
+  if (match[4] !== undefined) {
+    console.log('match[4] !== undefined');
+    secs += parseTimeUnit(match[4]);
+    secs += parseTimeUnit(match[3]) * 60;
+    secs += parseTimeUnit(match[1]) * 3600;
+    console.log('secs =', secs);
+  } else if (match[3] !== undefined) {
+    secs += parseTimeUnit(match[3]);
+    secs += parseTimeUnit(match[1]) * 60;
+  } else {
+    if (match[1] === undefined) {
+      console.warn('Unexpected time mark -', match[0]);
+      return 0;
+    }
+    secs = parseTimeUnit(match[1]);
+  }
+  return secs;
+}
+
+export const mkWrapInTimeBlock = (videoDuration: number) => (state: EditorState, dispatch: any) => {
+  console.log('WrapInTimeBlock');
+
+  const { selection } = state;
+
+  const predicate = (node: Node) => node.type !== EditorSchema.nodes.time_block;
+  const parent = findParentNode(predicate)(selection);
+
+  console.log('parent =', parent);
+  console.log('Block range');
+
+  const { $from, $to } = selection;
+
+  const nodeRange = $from.blockRange($to);
+
+  if (!nodeRange) {
+    return true;
+  }
+
+  const { $from: rangeFrom, $to: rangeTo } = nodeRange;
+
+  console.log('nodeRange.from node =', rangeFrom.node());
+  console.log('nodeRange.to node =', rangeTo.node());
+  console.log('Text in selection =', getTextFromSelection(state));
+
+  // Search for time start and end marker
+  {
+    const text = getTextFromSelection(state);
+
+    const startTimeMatch = text.match(startTimeMark);
+    if (!startTimeMatch) {
+      return true;
+    }
+
+    const endTimeMatch = text.match(endTimeMark);
+    if (!endTimeMatch) {
+      return true;
+    }
+
+    // Check they do form a proper block
+
+    if (startTimeMatch.index! >= endTimeMatch.index!) {
+      return true;
+    }
+
+    const startTime = secondsFromTimeMark(startTimeMatch);
+    const endTime = secondsFromTimeMark(endTimeMatch);
+
+    console.log('startTime =', startTime, 'endTime =', endTime, 'videoDuration =', videoDuration);
+
+    // Wrap in time_block
+    return wrapIn(EditorSchema.nodes.time_block, {
+      startTime,
+      endTime,
+      videoDuration,
+    })(state, dispatch);
   }
 
   return true;
