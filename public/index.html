@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" />
-		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-		<meta name="theme-color" content="#000000" />
-		<link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-		<title>Annotator</title>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="theme-color" content="#000000" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <title>Annotator</title>
 
-		<!--
+    <!--
         <script type="text/x-mathjax-config">
             MathJax.Hub.Config({
               extensions: ["tex2jax.js"],
@@ -27,36 +27,36 @@
             src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js"
         ></script>
     	-->
-	</head>
-	<body>
-		<script>
-			/**
-			 * @see https://github.com/streamich/react-use/issues/73
-			 * To detect you are in IE (for this case) by checking typeof(Event) which is
-			 * 'function' for all except IE where it is 'object'.
-			 * You can then safely polyfill the Event constructor using the approach above.
-			 * In IE11 it seems to be safe to set window.Event = CustomEvent.
-			 */
-			(function() {
-				if (typeof window.Event === 'function') return false; //If not IE
+  </head>
+  <body>
+    <script>
+      /**
+       * @see https://github.com/streamich/react-use/issues/73
+       * To detect you are in IE (for this case) by checking typeof(Event) which is
+       * 'function' for all except IE where it is 'object'.
+       * You can then safely polyfill the Event constructor using the approach above.
+       * In IE11 it seems to be safe to set window.Event = CustomEvent.
+       */
+      (function() {
+        if (typeof window.Event === 'function') return false; //If not IE
 
-				function CustomEvent(event, params) {
-					params = params || {
-						bubbles: false,
-						cancelable: false,
-						detail: undefined,
-					};
-					var evt = document.createEvent('CustomEvent');
-					evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
-					return evt;
-				}
+        function CustomEvent(event, params) {
+          params = params || {
+            bubbles: false,
+            cancelable: false,
+            detail: undefined,
+          };
+          var evt = document.createEvent('CustomEvent');
+          evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
+          return evt;
+        }
 
-				CustomEvent.prototype = window.Event.prototype;
+        CustomEvent.prototype = window.Event.prototype;
 
-				window.Event = CustomEvent;
-			})();
-		</script>
-		<div id="__vid_annot_root__"></div>
-		<!-- <div id="__saved_notes_root__"></div> -->
-	</body>
+        window.Event = CustomEvent;
+      })();
+    </script>
+    <div id="__vid_annot_root__"></div>
+    <!-- <div id="__saved_notes_root__"></div> -->
+  </body>
 </html>
