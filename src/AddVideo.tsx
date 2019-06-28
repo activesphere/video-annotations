@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import classnames from 'classnames';
+import { withRouter, RouteComponentProps } from 'react-router-dom';
 import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import InputBase from '@material-ui/core/InputBase';
+import isYouTubeURL from './utils/isYouTubeURL';
+import parseYouTubeId from './parseYouTubeId';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -39,11 +42,19 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-const AddVideo = () => {
+const AddVideo = ({ history }: RouteComponentProps) => {
   const classes = useStyles();
   const [searchFocused, setSearchFocus] = useState(false);
   const searchFocus = () => setSearchFocus(true);
   const searchBlur = () => setSearchFocus(false);
+
+  const onChange = (value: string) => {
+    if (!isYouTubeURL(value)) return;
+    const videoId = parseYouTubeId(value);
+    if (!videoId) return;
+
+    history.push(`/v/${videoId}`);
+  };
 
   return (
     <div className={classnames(classes.search, searchFocused && classes.searchFullWidth)}>
@@ -51,6 +62,7 @@ const AddVideo = () => {
         <AddCircleOutlineIcon />
       </div>
       <InputBase
+        onChange={e => onChange(e.target.value)}
         onFocus={searchFocus}
         onBlur={searchBlur}
         placeholder="https://youtube.com/watch?v=..."
@@ -64,4 +76,4 @@ const AddVideo = () => {
   );
 };
 
-export default AddVideo;
+export default withRouter(AddVideo);
