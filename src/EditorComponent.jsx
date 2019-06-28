@@ -139,7 +139,7 @@ const EditorComponent = props => {
       window.removeEventListener('message', messageHandler);
       editorView.current.destroy();
     };
-  }, [doCommand, parentApp, videoId, isLoading, videoTitle]);
+  }, [doCommand, parentApp, videoId, isLoading, videoTitle, notes]);
 
   return (
     <Paper className={classes.editor}>
