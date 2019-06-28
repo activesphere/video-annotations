@@ -16,15 +16,13 @@ export const loadNote = (videoId: string) => {
   return dbx.downloadNote(videoId);
 };
 
-export const deleteNoteWithId = (videoId: string) => {
-  if (!idToNoteData[videoId]) return;
-
-  delete idToNoteData[videoId];
+export const deleteNoteWithId = (filename: string) => {
+  return dbx.deleteFile(filename);
 };
 
-export const save = (noteData: any) => {
+export const save = (name: string, noteData: any) => {
   if (!noteData.videoId) return;
-  return dbx.save(noteData);
+  return dbx.save(name, noteData);
 };
 
 export const getNoteMenuItemsForCards = () => {

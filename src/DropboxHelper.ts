@@ -45,6 +45,16 @@ export const save = async (noteData: Video) => {
   });
 };
 
+export const deleteFile = async (filename: string) => {
+  const dbx = getDbx();
+
+  if (!dbx || !filename) return null;
+
+  const path = pathJoin(NOTES_FOLDER_PATH, filename);
+
+  return dbx.filesDelete({ path });
+};
+
 export const downloadNote = async (id: string) => {
   const dbx = getDbx();
 

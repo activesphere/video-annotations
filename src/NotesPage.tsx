@@ -76,6 +76,7 @@ const toYTUrl = (id: string) => `https://img.youtube.com/vi/${id}/hqdefault.jpg`
 interface Card {
   id: string;
   title: string;
+  filename: string;
 }
 
 type Directions = 'left' | 'right' | 'up' | 'down';
@@ -83,6 +84,25 @@ type Directions = 'left' | 'right' | 'up' | 'down';
 const NotesPage = () => {
   const classes = useStyles();
   const [cards, setCards] = useState<Card[] | null>(null);
+  const [deleting, setDeleting] = useState<string[]>([]);
+
+  const deleteNote = (name: string) => {
+    setDeleting(deleting => deleting.concat([name]));
+  };
+
+  const isDeleting = (name: string) => deleting.indexOf(name) !== -1;
+
+  const hasDeleted = (name: string) => {
+    setDeleting(deleting => deleting.filter(f => f !== name));
+  };
+
+  const onDelete = async (filename: string) => {
+    deleteNote(filename);
+    deleteNoteWithId(filename).then(() => {
+      hasDeleted(filename);
+      setCards(cards => (cards ? cards.filter(c => c.filename !== filename) : cards));
+    });
+  };
 
   useEffect(() => {
     if (cards) return;
@@ -94,7 +114,7 @@ const NotesPage = () => {
     return <div>Loading</div>;
   }
 
-  const cardElements = cards.map(({ id, title }, index) => (
+  const cardElements = cards.map(({ id, title, filename }, index) => (
     <Grid key={id} item sm={6} md={4} lg={4}>
       <Card className={classes.card}>
         <CardActionArea className={classes.contentAction} component={Link} to={`/v/${id}`}>
@@ -107,6 +127,7 @@ const NotesPage = () => {
         </CardActionArea>
         <CardActions>
           <Button
+            disabled={isDeleting(filename)}
             variant="outlined"
             disableRipple
             color="primary"
@@ -117,12 +138,13 @@ const NotesPage = () => {
             Note
           </Button>
           <Button
+            disabled={isDeleting(filename)}
             className={classes.secondaryButton}
             disableRipple
             size="small"
             onClick={e => {
               e.stopPropagation();
-              deleteNoteWithId(id);
+              onDelete(filename);
             }}
           >
             Delete
