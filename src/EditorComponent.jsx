@@ -99,7 +99,8 @@ const EditorComponent = props => {
       .reduce((acc, [key, val]) => ({ ...acc, [key]: val }), {});
 
     const autosavePlugin = new Plugin({
-      view: editorView => new AutosavePlugin(editorView, videoId, videoTitle),
+      view: editorView =>
+        new AutosavePlugin(editorView, notes ? notes.name : null, videoId, videoTitle),
     });
 
     const editorElement = document.getElementById('__editor__');
