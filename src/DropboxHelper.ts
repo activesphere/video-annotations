@@ -30,7 +30,7 @@ interface Video {
   title: string;
 }
 
-export const save = async (noteData: Video) => {
+export const save = async (name: string, noteData: Video) => {
   const dbx = getDbx();
 
   if (!dbx || !noteData.videoId) return null;
@@ -40,9 +40,19 @@ export const save = async (noteData: Video) => {
   return dbx.filesUpload({
     contents: JSON.stringify(noteData),
     mode: { '.tag': 'overwrite' },
-    path: pathJoin(NOTES_FOLDER_PATH, fileName),
+    path: pathJoin(NOTES_FOLDER_PATH, name || fileName),
     autorename: false,
   });
+};
+
+export const deleteFile = async (filename: string) => {
+  const dbx = getDbx();
+
+  if (!dbx || !filename) return null;
+
+  const path = pathJoin(NOTES_FOLDER_PATH, filename);
+
+  return dbx.filesDelete({ path });
 };
 
 export const downloadNote = async (id: string) => {
@@ -74,7 +84,7 @@ export const downloadNote = async (id: string) => {
 
   if (!content) return null;
 
-  return JSON.parse(content);
+  return { ...JSON.parse(content), name: metadata.name };
 };
 
 interface DropboxEntries {
@@ -103,7 +113,7 @@ export const listNotes = async () => {
         .join(' - ')
         .replace(/.json$/, '');
 
-      return { id, title };
+      return { id, title, filename: name };
     })
     .filter(({ id }) => isYouTubeId(id));
 };

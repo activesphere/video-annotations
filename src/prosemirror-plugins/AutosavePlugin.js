@@ -4,12 +4,12 @@ import { save } from '../LocalStorageHelper';
 const ThrottleIntervalMS = 3000;
 
 class AutosavePlugin {
-  constructor(view, videoId, title) {
+  constructor(view, name, videoId, title) {
     this.didSaveToDropbox = false;
     this.lastNoteData = null;
 
     this.throttledSave = throttle(noteData => {
-      this.promise = save(noteData);
+      this.promise = save(name, noteData);
 
       this.promise
         .then(() => {
