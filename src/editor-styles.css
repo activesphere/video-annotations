@@ -2,3 +2,21 @@ timestamp {
   color: #008080;
   font-style: underline;
 }
+
+
+.ProseMirror {
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+  outline: none;
+}
+
+.ProseMirror-menubar-wrapper {
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.ProseMirror-menubar {
+  padding: 16px 0;
+}

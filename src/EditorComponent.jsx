@@ -29,8 +29,13 @@ import './editor-styles.css';
 
 const useStyles = makeStyles(theme =>
   createStyles({
-    editor: {
+    editorWrapper: {
       margin: theme.spacing(2),
+    },
+    editor: {
+      height: '100%',
+      marginLeft: theme.spacing(2),
+      marginRight: theme.spacing(2),
     },
   })
 );
@@ -142,8 +147,8 @@ const EditorComponent = props => {
   }, [doCommand, parentApp, videoId, isLoading, videoTitle, notes]);
 
   return (
-    <Paper className={classes.editor}>
-      <div id="__editor__" />
+    <Paper className={classes.editorWrapper}>
+      <div id="__editor__" className={classes.editor} />
     </Paper>
   );
 };
