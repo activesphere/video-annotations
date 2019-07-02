@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
+import Paper from '@material-ui/core/Paper';
 
 import EditorComponent from './EditorComponent';
 import VideoPathInput from './VideoPathInput';
@@ -253,13 +254,13 @@ class EditorPage extends Component {
     return (
       <div
         style={{
-          display: 'flex',
-          direction: 'row',
-          justifyContent: 'flex-start',
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gridGap: '1rem',
         }}
       >
         <IFrameStyleWrapper>
-          <div
+          <Paper
             style={{
               position: 'absolute',
               top: 0,
