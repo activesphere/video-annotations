@@ -35,7 +35,7 @@ export const save = async (name: string, noteData: Video) => {
 
   if (!dbx || !noteData.videoId) return null;
 
-  const fileName = `${noteData.videoId} - ${noteData.title}.json`;
+  const fileName = `${noteData.videoId} - ${encodeURIComponent(noteData.title)}.json`;
 
   return dbx.filesUpload({
     contents: JSON.stringify(noteData),
@@ -113,7 +113,7 @@ export const listNotes = async () => {
         .join(' - ')
         .replace(/.json$/, '');
 
-      return { id, title, filename: name };
+        return { id, title: decodeURIComponent(title), filename: name };
     })
     .filter(({ id }) => isYouTubeId(id));
 };
