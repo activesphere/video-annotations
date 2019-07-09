@@ -14,6 +14,7 @@ module.exports = {
     new CopyPlugin([
       { from: './manifest.json', to: 'manifest.json' },
       { from: './va.png', to: 'va.png' },
+      { from: './yt-override.css', to: 'yt-override.css' },
     ]),
   ],
 };

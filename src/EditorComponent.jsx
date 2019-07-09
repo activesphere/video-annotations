@@ -44,26 +44,26 @@ const EditorComponent = props => {
   const editorView = useRef(null);
   const classes = useStyles();
 
-  const { doCommand, parentApp, videoId, videoTitle } = props;
+  const { player: playerRef, videoId, videoTitle } = props;
+
+  const player = playerRef.current;
 
   const [notes, setNotes] = useState(null);
   const [isLoading, setLoading] = useState(true);
 
-  /* make async call */
   useEffect(() => {
     (async () => {
       const notes = await loadNote(videoId);
+
       setNotes(notes);
       setLoading(false);
     })();
   }, [videoId, setNotes]);
 
   useEffect(() => {
-    if (!videoId || isLoading || !videoTitle) {
-      return;
-    }
+    if (!videoId || isLoading || !videoTitle) return;
 
-    const currentTimestamp = () => doCommand('currentTime');
+    const currentTimestamp = () => player.getCurrentTime();
 
     // Commands
     const messageHandler = e => {
@@ -73,10 +73,7 @@ const EditorComponent = props => {
     };
 
     const onCaptureFrame = () => {
-      const { videoId } = parentApp.currentVideoInfo();
-      if (videoId) {
-        window.frames[0].postMessage({ type: AppConfig.CaptureCurrentFrameMessage }, '*');
-      }
+      window.frames[0].postMessage({ type: AppConfig.CaptureCurrentFrameMessage }, '*');
 
       return true;
     };
@@ -85,15 +82,15 @@ const EditorComponent = props => {
 
     // Pause input rule. Typing "#." will toggle pause.
     const ToggleVideoPauseInputRule = new InputRule(/#\.$/, (state, match, start, end) => {
-      doCommand('togglePause');
+      player.togglePause();
       return state.tr.insertText('', start, end);
     });
 
     const cmdFunctions = {
-      toggle_pause: () => doCommand('togglePause'),
+      toggle_pause: () => player.togglePause(),
       mark_selection_as_timestamp: mkToggleTimestampMark(currentTimestamp),
       put_timestamp: mkInsertTimestampStr(currentTimestamp),
-      seek_to_timestamp: mkSeekToTimestamp(videoTime => doCommand('seekToTime', { videoTime })),
+      seek_to_timestamp: mkSeekToTimestamp(videoTime => player.seek(videoTime)),
       capture_frame: onCaptureFrame,
       debug_print: () => true,
       turn_text_to_timestamp: textToTimestamp,
@@ -144,7 +141,7 @@ const EditorComponent = props => {
       window.removeEventListener('message', messageHandler);
       editorView.current.destroy();
     };
-  }, [doCommand, parentApp, videoId, isLoading, videoTitle, notes]);
+  }, [player, videoId, isLoading, videoTitle, notes]);
 
   return (
     <Paper className={classes.editorWrapper}>

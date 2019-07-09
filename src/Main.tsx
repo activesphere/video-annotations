@@ -22,7 +22,7 @@ const Main = ({ ytAPI }: { ytAPI: any }) => {
               match: {
                 params: { videoId },
               },
-            }) => <EditorPage key={videoId} ytAPI={ytAPI} startingVideoId={videoId} />}
+            }) => <EditorPage key={videoId} ytAPI={ytAPI} videoId={videoId} />}
           />
           <Route path="/" component={NotesPage} />
         </Switch>

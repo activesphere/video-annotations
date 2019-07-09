@@ -5,7 +5,7 @@ import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import InputBase from '@material-ui/core/InputBase';
 import isYouTubeURL from './utils/isYouTubeURL';
-import parseYouTubeId from './parseYouTubeId';
+import parseYouTubeId from './youtube/parseId';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

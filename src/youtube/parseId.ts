@@ -1,8 +1,9 @@
-import isYouTubeId from './isYouTubeId';
+import isYouTubeId from './isId';
 
 export default (str: string) => {
+    if (!str) return null;
+
     const match = str.match(/[a-zA-Z0-9_-]{11}$/);
-    console.log('match', match);
 
     if (!match || !match.length) return null;
 
