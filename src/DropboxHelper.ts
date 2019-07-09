@@ -3,7 +3,7 @@ import { Dropbox } from 'dropbox';
 import readBlobAsString from './utils/readBlobAsString';
 import pathJoin from './utils/pathJoin';
 import dropboxConfig from './dropboxConfig';
-import isYouTubeId from './isYouTubeId';
+import isYouTubeId from './youtube/isId';
 import * as session from './session';
 
 const NOTES_FOLDER_PATH = pathJoin(dropboxConfig.notesFolderParent, dropboxConfig.notesFolderName);
