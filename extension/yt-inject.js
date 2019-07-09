@@ -31,20 +31,10 @@ const sendVideoDataURL = () => {
   }
 };
 
-const removeVideoOverlay = () => {
-  const elements = document.getElementsByClassName('ytp-pause-overlay');
-  for (const element of elements) {
-    element.parentNode.removeChild(element);
-  }
-};
-
 const onMessage = e => {
   switch (e.data.type) {
     case AppConfig.CaptureCurrentFrameMessage:
       sendVideoDataURL();
-      break;
-    case AppConfig.RemovePauseOverlayMessage:
-      removeVideoOverlay();
       break;
     default:
   }
