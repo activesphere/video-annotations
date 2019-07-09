@@ -40,15 +40,15 @@ const useStyles = makeStyles(theme =>
   })
 );
 
-const EditorComponent = props => {
-  const editorView = useRef(null);
+const EditorComponent = (props: any) => {
+  const editorView = useRef<EditorView>();
   const classes = useStyles();
 
   const { player: playerRef, videoId, videoTitle } = props;
 
   const player = playerRef.current;
 
-  const [notes, setNotes] = useState(null);
+  const [notes, setNotes] = useState<any>();
   const [isLoading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -66,7 +66,7 @@ const EditorComponent = props => {
     const currentTimestamp = () => player.getCurrentTime();
 
     // Commands
-    const messageHandler = e => {
+    const messageHandler = (e: any) => {
       if (e.data.type !== AppConfig.CaptureCurrentFrameResponse || !editorView.current) return;
 
       insertImageForTime(e, currentTimestamp(), editorView.current);
@@ -86,7 +86,7 @@ const EditorComponent = props => {
       return state.tr.insertText('', start, end);
     });
 
-    const cmdFunctions = {
+    const cmdFunctions: { [s: string]: (state: any, dispatch: any) => any } = {
       toggle_pause: () => player.togglePause(),
       mark_selection_as_timestamp: mkToggleTimestampMark(currentTimestamp),
       put_timestamp: mkInsertTimestampStr(currentTimestamp),
@@ -97,8 +97,8 @@ const EditorComponent = props => {
     };
 
     const keymapObject = Object.keys(keycodes)
-      .map(k => [keycodes[k], cmdFunctions[k]])
-      .reduce((acc, [key, val]) => ({ ...acc, [key]: val }), {});
+      .map((k: string) => ({ key: keycodes[k], val: cmdFunctions[k] }))
+      .reduce((acc, { key, val }) => ({ ...acc, [key]: val }), {});
 
     const autosavePlugin = new Plugin({
       view: editorView =>
@@ -107,9 +107,9 @@ const EditorComponent = props => {
 
     const editorElement = document.getElementById('__editor__');
 
-    if (isLoading) return null;
+    if (isLoading || !editorElement) return;
 
-    const { docJSON } = notes || {};
+    const { docJSON } = notes || { docJSON: null };
 
     const doc = !docJSON
       ? DOMParser.fromSchema(EditorSchema).parse(editorElement)
@@ -139,7 +139,7 @@ const EditorComponent = props => {
 
     return () => {
       window.removeEventListener('message', messageHandler);
-      editorView.current.destroy();
+      editorView.current && editorView.current.destroy();
     };
   }, [player, videoId, isLoading, videoTitle, notes]);
 
