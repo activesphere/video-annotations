@@ -1,15 +1,18 @@
 import AppConfig from '../src/AppConfig';
 
-const toImageData = video => {
+const toImageData = (video: any) => {
   const { offsetWidth: width, offsetHeight: height } = video;
   const c = document.createElement('canvas');
   c.style.position = 'fixed';
-  c.style.top = 0;
-  c.style.right = 0;
+  c.style.top = '0px';
+  c.style.right = '0px';
   c.width = width;
   c.height = height;
+
   const canvasContext = c.getContext('2d');
-  canvasContext.drawImage(video, 0, 0, width, height);
+  if (canvasContext) {
+    canvasContext.drawImage(video, 0, 0, width, height);
+  }
 
   const dataURL = c.toDataURL('image/png');
 
@@ -31,12 +34,9 @@ const sendVideoDataURL = () => {
   }
 };
 
-const onMessage = e => {
-  switch (e.data.type) {
-    case AppConfig.CaptureCurrentFrameMessage:
-      sendVideoDataURL();
-      break;
-    default:
+const onMessage = (e: any) => {
+  if (e.data.type === AppConfig.CaptureCurrentFrameMessage) {
+    sendVideoDataURL();
   }
 };
 
