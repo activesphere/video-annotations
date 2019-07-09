@@ -5,7 +5,7 @@ class ImageNodeView {
   constructor(node, view, getPos) {
     const outerDOM = document.createElement('span');
     outerDOM.style.position = 'relative';
-    outerDOM.style.width = node.attrs.outerWidth;
+    outerDOM.style.maxWidth = node.attrs.outerWidth;
     outerDOM.style.display = 'inline-block';
     // outerDOM.style.lineHeight = '0';
 
