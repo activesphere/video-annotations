@@ -3,7 +3,7 @@ import EditorSchema, { ImageNodeType } from './Schema';
 import { startTimeMark, endTimeMark } from './timemarker';
 
 import { toggleMark, wrapIn } from 'prosemirror-commands';
-import { findTextNodes, findParentNode } from 'prosemirror-utils';
+import { findTextNodes, findParentNode, findChildren } from 'prosemirror-utils';
 import { EditorState, Selection } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { Node } from 'prosemirror-model';
@@ -182,6 +182,25 @@ function secondsFromTimeMark(match: any) {
   }
   return secs;
 }
+
+// A command that unwraps all time_block nodes in current selection
+export const unwrapAllTimeBlocks = (state: EditorState, dispatch: any) => {
+  console.log('UnwrapAllTimeBlocks');
+
+  const { selection } = state;
+  const { $from, $to } = selection;
+
+  const nodeRange = $from.blockRange($to);
+
+  const containerNode = nodeRange!.$from.node();
+
+  const startOffset = nodeRange!.$from.parentOffset;
+  const startChild = containerNode!.child(startOffset);
+
+  console.log('startChild =', startChild);
+
+  return true;
+};
 
 export const mkWrapInTimeBlock = (videoDuration: number) => (state: EditorState, dispatch: any) => {
   console.log('WrapInTimeBlock');

@@ -14,7 +14,7 @@ function toHex(value: number) {
   value = clamp255(value);
   value = Math.floor(value) % 255;
   let hex = value.toString(16);
-  if (hex.length != 2) {
+  if (hex.length !== 2) {
     hex = '0' + hex;
   }
   return hex;
@@ -64,11 +64,11 @@ class TimeBlockNodeView implements NodeView {
       return false;
     }
 
-    this.dom.style.backgroundColor = intervalHtmlColor(
-      node.attrs.startTime,
-      node.attrs.endTime,
-      node.attrs.videoDuration
-    );
+    const color = intervalHtmlColor(node.attrs.startTime, node.attrs.endTime, node.attrs.duration);
+    console.log('color =', color);
+
+    this.dom.style.backgroundColor = color;
+    this.dom.style.marginLeft = '10px';
 
     return true;
   }

@@ -4,7 +4,7 @@ import { Node } from 'prosemirror-model';
 import { EditorView } from 'prosemirror-view';
 import { exampleSetup } from 'prosemirror-example-setup';
 import { keymap } from 'prosemirror-keymap';
-import { InputRule, inputRules } from 'prosemirror-inputrules';
+import { inputRules } from 'prosemirror-inputrules';
 import { DOMParser } from 'prosemirror-model';
 import Paper from '@material-ui/core/Paper';
 import { makeStyles, createStyles } from '@material-ui/core/styles';
@@ -23,12 +23,14 @@ import {
   mkToggleTimestampMark,
   textToTimestamp,
   mkWrapInTimeBlock,
+  unwrapAllTimeBlocks,
 } from './prosemirror-plugins/commands';
 import {
   mkToggleVideoPauseInputRule,
   ItalicStartTimeInputRule,
   ItalicEndTimeInputRule,
 } from './prosemirror-plugins/inputrules';
+import { InputRule } from 'prosemirror-inputrules';
 
 import 'prosemirror-view/style/prosemirror.css';
 import 'prosemirror-menu/style/menu.css';
@@ -101,6 +103,7 @@ const EditorComponent = (props: any) => {
       capture_frame: onCaptureFrame,
       turn_text_to_timestamp: textToTimestamp,
       wrap_in_time_block: mkWrapInTimeBlock(videoDuration),
+      unwrap_all_time_blocks: unwrapAllTimeBlocks,
     };
 
     const keymapObject = Object.keys(keycodes)
