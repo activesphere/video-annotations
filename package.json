@@ -13,6 +13,7 @@
 		"@types/prosemirror-commands": "1.0.1",
 		"@types/prosemirror-inputrules": "1.0.2",
 		"@types/prosemirror-keymap": "1.0.1",
+		"@types/prosemirror-model": "1.7.2",
 		"@types/prosemirror-state": "1.2.3",
 		"@types/react": "16.8.22",
 		"@types/react-dom": "16.8.4",
