@@ -93,15 +93,9 @@ export const textToTimestamp = (state: EditorState, dispatch: any) => {
   return true;
 };
 
-// Returns an editor command that simply tells the extension to capture the current frame. Does not
-// apply any transaction to the state. Also returns a function that handles the response from the
-// extension.
 export const insertImageForTime = (e: any, videoTime: number, view: EditorView) => {
   const { data } = e;
-  const { dataURL: source, width: origWidth, height: origHeight } = data;
-
-  // Initial width is same as that of original image
-  const outerWidth = `${origWidth}px`;
+  const { dataURL: src, width, height } = data;
 
   const { state } = view;
 
@@ -115,11 +109,13 @@ export const insertImageForTime = (e: any, videoTime: number, view: EditorView) 
   const newState = state.apply(
     state.tr.replaceSelectionWith(
       ImageNodeType.create({
-        source,
-        outerWidth,
-        videoTime: floorOrZero(videoTime),
-        origWidth,
-        origHeight,
+        src,
+        width,
+        height,
+        data: {
+          maxWidth: width, // max width is initial width
+          ts: floorOrZero(videoTime),
+        },
       })
     )
   );

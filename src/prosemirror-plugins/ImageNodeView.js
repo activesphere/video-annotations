@@ -3,35 +3,28 @@ const floorOrZero = n => (Number.isNaN(n) ? 0 : Math.floor(n));
 // Custom node view that allows you to resize images.
 class ImageNodeView {
   constructor(node, view, getPos) {
+    const { src } = node.attrs;
+
+    const { maxWidth, width, height, ts } = node.attrs.data || {};
+
     const outerDOM = document.createElement('span');
-    outerDOM.style.position = 'relative';
-    outerDOM.style.maxWidth = node.attrs.outerWidth;
-    outerDOM.style.display = 'inline-block';
+    outerDOM.className = 'vid-grab';
+    outerDOM.style.maxWidth = `${maxWidth}px`;
     // outerDOM.style.lineHeight = '0';
 
     const img = document.createElement('img');
-    img.setAttribute('src', node.attrs.source);
-    img.setAttribute('videoTime', node.attrs.videoTime);
-    img.style.width = '100%';
+    img.className = 'vid-grab__img';
+    img.setAttribute('src', src);
 
     const resizeHandleDOM = document.createElement('span');
-    resizeHandleDOM.style.position = 'absolute';
-    resizeHandleDOM.style.bottom = '0px';
-    resizeHandleDOM.style.right = '0px';
-    resizeHandleDOM.style.width = '10px';
-    resizeHandleDOM.style.height = '10px';
-    resizeHandleDOM.style.border = '3px solid black';
-    resizeHandleDOM.style.borderTop = 'none';
-    resizeHandleDOM.style.borderLeft = 'none';
-    resizeHandleDOM.style.display = 'none';
-    resizeHandleDOM.style.cursor = 'nwse-resize';
+    resizeHandleDOM.className = 'vid-grab__resize';
 
     resizeHandleDOM.onmousedown = e => {
       e.preventDefault();
 
       const startX = e.pageX;
 
-      const startWidth = floorOrZero(parseFloat(node.attrs.outerWidth.match(/(.+)px/)[1]));
+      const startWidth = floorOrZero(maxWidth);
 
       let newWidthInPixels = startWidth;
 
@@ -52,10 +45,13 @@ class ImageNodeView {
 
         const tr = view.state.tr
           .setNodeMarkup(getPos(), null, {
-            source: node.attrs.source,
-            outerWidth: outerDOM.style.width,
-            origWidth: node.attrs.origWidth,
-            origHeight: node.attrs.origHeight,
+            src,
+            data: {
+              maxWidth,
+              ts,
+            },
+            width,
+            height,
           })
           .setSelection(view.state.selection);
 
@@ -66,22 +62,18 @@ class ImageNodeView {
       document.addEventListener('mouseup', onMouseUp);
     };
 
-    outerDOM.appendChild(resizeHandleDOM);
     outerDOM.appendChild(img);
+    outerDOM.appendChild(resizeHandleDOM);
 
     this.dom = outerDOM;
-    this.resizeHandleDOM = resizeHandleDOM;
-    this.img = img;
   }
 
   selectNode() {
-    this.img.classList.add('ProseMirror-selectednode');
-    this.resizeHandleDOM.style.display = '';
+    this.dom.classList.add('vid-grab--focus');
   }
 
   deselectNode() {
-    this.img.classList.remove('ProseMirror-selectednode');
-    this.resizeHandleDOM.style.display = 'none';
+    this.dom.classList.remove('vid-grab--focus');
   }
 }
 
