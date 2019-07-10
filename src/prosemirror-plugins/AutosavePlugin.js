@@ -39,7 +39,7 @@ class AutosavePlugin {
       videoId: this.videoId,
       title: this.title,
       docJSON: this.docJSON,
-      timeOfSave: Date.now() / 1000.0,
+      timeOfSave: new Date().toISOString(),
     };
 
     this.didSaveToDropbox = false;
