@@ -131,9 +131,7 @@ const EditorComponent = (props: any) => {
       }),
 
       nodeViews: {
-        inlineImage: (node, view, getPos) => {
-          return new ImageNodeView(node, view, getPos);
-        },
+        inlineImage: ImageNodeView,
       },
     });
 
