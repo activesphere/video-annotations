@@ -20,3 +20,36 @@ timestamp {
 .ProseMirror-menubar {
   padding: 16px 0;
 }
+
+
+.vid-grab {
+    position: relative;
+    display: inline-block;
+}
+
+.vid-grab img {
+    border: 1px solid lightgray;
+    outline: none;
+    width: 100%;
+}
+
+.vid-grab.vid-grab--focus img {
+    border: 1px solid gray;
+}
+
+.vid-grab .vid-grab__resize {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 10px;
+    height: 10px;
+    border: 3px solid black;
+    border-top: none;
+    border-left: none;
+    cursor: nwse-resize;
+    display: none;
+}
+
+.vid-grab.vid-grab--focus .vid-grab__resize {
+    display: block;
+}

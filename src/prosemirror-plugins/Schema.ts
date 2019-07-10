@@ -1,12 +1,20 @@
-import { Schema } from 'prosemirror-model';
+import { Schema, NodeSpec, MarkSpec } from 'prosemirror-model';
 
-const pDOM = ['p', 0];
-const blockquoteDOM = ['blockquote', 0];
-const hrDOM = ['hr'];
-const preDOM = ['pre', ['code', 0]];
-const brDOM = ['br'];
+type NodeSpecKeys =
+  | 'doc'
+  | 'paragraph'
+  | 'blockquote'
+  | 'horizontal_rule'
+  | 'heading'
+  | 'code_block'
+  | 'text'
+  | 'image'
+  | 'hard_break'
+  | 'inlineImage';
 
-const NodeSpecs = {
+type MarkKeys = 'link' | 'em' | 'strong' | 'code' | 'timestamp';
+
+const NodeSpecs: { [name in NodeSpecKeys]: NodeSpec } = {
   doc: {
     content: 'block+',
   },
@@ -15,9 +23,7 @@ const NodeSpecs = {
     content: 'inline*',
     group: 'block',
     parseDOM: [{ tag: 'p' }],
-    toDOM() {
-      return pDOM;
-    },
+    toDOM: () => ['p', 0],
   },
 
   blockquote: {
@@ -25,17 +31,13 @@ const NodeSpecs = {
     group: 'block',
     defining: true,
     parseDOM: [{ tag: 'blockquote' }],
-    toDOM() {
-      return blockquoteDOM;
-    },
+    toDOM: () => ['blockquote', 0],
   },
 
   horizontal_rule: {
     group: 'block',
     parseDOM: [{ tag: 'hr' }],
-    toDOM() {
-      return hrDOM;
-    },
+    toDOM: () => ['hr'],
   },
 
   heading: {
@@ -63,9 +65,7 @@ const NodeSpecs = {
     code: true,
     defining: true,
     parseDOM: [{ tag: 'pre', preserveWhitespace: 'full' }],
-    toDOM() {
-      return preDOM;
-    },
+    toDOM: () => ['pre', ['code', 0]],
   },
 
   text: {
@@ -85,11 +85,13 @@ const NodeSpecs = {
       {
         tag: 'img[src]',
         getAttrs(dom) {
-          return {
-            src: dom.getAttribute('src'),
-            title: dom.getAttribute('title'),
-            alt: dom.getAttribute('alt'),
-          };
+          if (dom instanceof HTMLElement) {
+            return {
+              src: dom.getAttribute('src'),
+              title: dom.getAttribute('title'),
+              alt: dom.getAttribute('alt'),
+            };
+          }
         },
       },
     ],
@@ -104,45 +106,40 @@ const NodeSpecs = {
     group: 'inline',
     selectable: false,
     parseDOM: [{ tag: 'br' }],
-    toDOM() {
-      return brDOM;
-    },
+    toDOM: () => ['br'],
   },
 
   inlineImage: {
     attrs: {
-      source: '',
-
-      videoTime: { default: 0 },
-
-      origWidth: 100,
-      origHeight: 100,
-      // ^ In pixels. Original dimensions of the image as received from extension. Not using these two *yet*.
-
-      outerWidth: '10px',
+      src: { default: '' },
+      data: {
+        default: null,
+      },
     },
     inline: true,
     group: 'inline',
     draggable: true,
 
-    // toDOM is not used
     toDOM: node => [
-      'span',
+      'img',
       {
-        style: `width: ${node.attrs.outerWidth}`,
-        ...node.attrs,
+        'data-block-video-img': '',
+        src: node.attrs.src,
+        style: `width: ${node.attrs.width}; height: ${node.attrs.height}`,
+        'data-img-data': JSON.stringify(node.attrs),
       },
     ],
     parseDOM: [
       {
-        tag: 'img.inline-image',
+        tag: 'img[data-block-video-img]',
         getAttrs: domNode => {
+          const img = domNode as HTMLImageElement;
+
+          const data = img.getAttribute('data-img-data');
+
           return {
-            source: domNode.getAttribute('source'),
-            videoTime: domNode.getAttribute('videoTime'),
-            outerWidth: domNode.getAttribute('outerWidth'),
-            origWidth: domNode.getAttribute('origWidth'),
-            origHeight: domNode.getAttribute('origHeight'),
+            src: img.getAttribute('src'),
+            data: data ? JSON.parse(data) : null,
           };
         },
       },
@@ -150,11 +147,7 @@ const NodeSpecs = {
   },
 };
 
-const emDOM = ['em', 0];
-const strongDOM = ['strong', 0];
-const codeDOM = ['code', 0];
-
-export const marks = {
+export const marks: { [name in MarkKeys]: MarkSpec } = {
   link: {
     attrs: {
       href: {},
@@ -165,6 +158,8 @@ export const marks = {
       {
         tag: 'a[href]',
         getAttrs(dom) {
+          if (!(dom instanceof HTMLElement)) return;
+
           return { href: dom.getAttribute('href'), title: dom.getAttribute('title') };
         },
       },
@@ -177,9 +172,7 @@ export const marks = {
 
   em: {
     parseDOM: [{ tag: 'i' }, { tag: 'em' }, { style: 'font-style=italic' }],
-    toDOM() {
-      return emDOM;
-    },
+    toDOM: () => ['em', 0],
   },
 
   strong: {
@@ -188,35 +181,37 @@ export const marks = {
       // This works around a Google Docs misbehavior where
       // pasted content will be inexplicably wrapped in `<b>`
       // tags with a font-weight normal.
-      { tag: 'b', getAttrs: node => node.style.fontWeight !== 'normal' && null },
-      { style: 'font-weight', getAttrs: value => /^(bold(er)?|[5-9]\d{2,})$/.test(value) && null },
+      // { tag: 'b', getAttrs: node => node.style.fontWeight !== 'normal' && null },
+      // { style: 'font-weight', getAttrs: value => /^(bold(er)?|[5-9]\d{2,})$/.test(value) && null },
     ],
-    toDOM() {
-      return strongDOM;
-    },
+    toDOM: () => ['strong', 0],
   },
 
   code: {
     parseDOM: [{ tag: 'code' }],
-    toDOM() {
-      return codeDOM;
-    },
+    toDOM: () => ['code', 0],
   },
 
   timestamp: {
-    attrs: { videoTime: 0 },
+    attrs: { videoTime: { default: 0 } },
     toDOM: node => ['timestamp', {}],
     parseDOM: [
       {
         tag: 'timestamp',
-        getAttrs: dom => ({ href: dom.href }),
+        getAttrs: dom => {
+          //          if (!(dom instanceof HTMLLinkElement)) return;
+
+          const link = dom as HTMLLinkElement;
+
+          return { href: link.href };
+        },
       },
     ],
     inclusive: false,
   },
 };
 
-const EditorSchema = new Schema({ nodes: NodeSpecs, marks });
+const EditorSchema = new Schema<NodeSpecKeys, MarkKeys>({ nodes: NodeSpecs, marks });
 
 export default EditorSchema;
 
