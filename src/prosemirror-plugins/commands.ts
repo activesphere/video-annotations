@@ -95,7 +95,7 @@ export const textToTimestamp = (state: EditorState, dispatch: any) => {
 
 export const insertImageForTime = (e: any, videoTime: number, view: EditorView) => {
   const { data } = e;
-  const { dataURL: src, width, height } = data;
+  const { dataURL: src, width } = data;
 
   const { state } = view;
 
@@ -110,8 +110,6 @@ export const insertImageForTime = (e: any, videoTime: number, view: EditorView) 
     state.tr.replaceSelectionWith(
       ImageNodeType.create({
         src,
-        width,
-        height,
         data: {
           maxWidth: width, // max width is initial width
           ts: floorOrZero(videoTime),
