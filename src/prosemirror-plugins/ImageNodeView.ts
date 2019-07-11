@@ -2,8 +2,6 @@ import EditorState from './Schema';
 import { EditorView } from 'prosemirror-view';
 import { Node as ProsemirrorNode } from 'prosemirror-model';
 
-const floorOrZero = (n: number) => (Number.isNaN(n) ? 0 : Math.floor(n));
-
 class ImageNodeView {
   dom: HTMLElement;
   constructor(
@@ -21,7 +19,6 @@ class ImageNodeView {
     const img = document.createElement('img');
     img.className = 'vid-grab';
     img.style.maxWidth = `${maxWidth}px`;
-    img.style.outline = 'none !important';
     img.setAttribute('src', src);
     img.onclick = () => {
       console.log('img ts: ', ts);
