@@ -21,7 +21,7 @@ export const deleteNoteWithId = (filename: string) => {
 };
 
 export const save = (name: string, noteData: any) => {
-  if (!noteData.videoId) return;
+  if (!noteData.videoId) Promise.reject();
   return dbx.save(name, noteData);
 };
 
