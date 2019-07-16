@@ -69,7 +69,7 @@
 		"typescript": "^3.5.2"
 	},
 	"scripts": {
-		"eslint": "eslint \"src/**/*.js{,x}\" && eslint \"extension/*.js\"",
+		"eslint": "eslint \"src/**/*.ts{,x}\" && eslint \"extension/*.ts\"",
 		"start": "yarn eslint && react-scripts start",
 		"build": "yarn eslint && react-scripts build",
 		"test": "yarn eslint && react-scripts test",
