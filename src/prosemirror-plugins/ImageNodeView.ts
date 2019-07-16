@@ -21,7 +21,7 @@ class ImageNodeView {
     img.style.maxWidth = `${maxWidth}px`;
     img.setAttribute('src', src);
     img.onclick = () => {
-      console.log('img ts: ', ts);
+      console.log('timestamp', ts); // eslint-disable-line no-console
     };
 
     this.dom = img;

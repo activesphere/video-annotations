@@ -74,8 +74,6 @@ const YouTubePlayer = ({ api, el, videoId, dispatch }: Props) => {
 
   dispatch({ type: 'resetPlayer' });
 
-  console.log('player', player, api);
-
   return {
     play: () => player.playVideo(),
     pause: () => player.pauseVideo(),
@@ -92,7 +90,6 @@ const YouTubePlayer = ({ api, el, videoId, dispatch }: Props) => {
     load: (videoId: string) => {
       dispatch({ type: 'resetPlayer' });
       fetchTitle(videoId).then(title => {
-        console.log('fetchTitle', title);
         dispatch({ type: 'titleFetched', title });
       });
       player.loadVideoById(videoId);

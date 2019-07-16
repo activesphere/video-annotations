@@ -113,7 +113,7 @@ export const listNotes = async () => {
         .join(' - ')
         .replace(/.json$/, '');
 
-        return { id, title: decodeURIComponent(title), filename: name };
+      return { id, title: decodeURIComponent(title), filename: name };
     })
     .filter(({ id }) => isYouTubeId(id));
 };
