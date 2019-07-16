@@ -31,8 +31,6 @@ type Props = {
 };
 
 const playerStateReducer = (state: State = initialState, action: Action): State => {
-  const { videoId, videoLoaded, titleFetched, title } = state;
-
   switch (action.type) {
     case 'videoLoaded':
       return { ...state, videoLoaded: true };

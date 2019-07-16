@@ -34,7 +34,7 @@ const EditorPage = ({ ytAPI, videoId }: Props) => {
   const classes = useStyles();
   const iframeRef = useRef<HTMLElement>(null);
 
-  const { player, title, isLoading } = usePlayer({ api: ytAPI, videoId, ref: iframeRef });
+  const { player, title } = usePlayer({ api: ytAPI, videoId, ref: iframeRef });
 
   return (
     <div className={classes.root}>
