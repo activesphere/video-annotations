@@ -2,6 +2,7 @@ import { Schema, NodeSpec, MarkSpec } from 'prosemirror-model';
 
 type NodeSpecKeys =
   | 'doc'
+  | 'time_block'
   | 'paragraph'
   | 'blockquote'
   | 'horizontal_rule'
@@ -16,7 +17,17 @@ type MarkKeys = 'link' | 'em' | 'strong' | 'code' | 'timestamp';
 
 const NodeSpecs: { [name in NodeSpecKeys]: NodeSpec } = {
   doc: {
+    content: '(block | time_block)+',
+  },
+
+  time_block: {
+    attrs: {
+      startTime: {},
+      endTime: {},
+      videoDuration: {},
+    },
     content: 'block+',
+    parseDOM: [{ tag: 'time-block' }],
   },
 
   paragraph: {
@@ -53,7 +64,8 @@ const NodeSpecs: { [name in NodeSpecKeys]: NodeSpec } = {
       { tag: 'h5', attrs: { level: 5 } },
       { tag: 'h6', attrs: { level: 6 } },
     ],
-    toDOM(node) {
+
+    toDOM: node => {
       return ['h' + node.attrs.level, 0];
     },
   },
@@ -216,7 +228,6 @@ const EditorSchema = new Schema<NodeSpecKeys, MarkKeys>({ nodes: NodeSpecs, mark
 export default EditorSchema;
 
 const ImageNodeType = EditorSchema.nodes['inlineImage'];
+const TimeBlockNodeType = EditorSchema.nodes['time_block'];
 
-const WithTimeRangeNodeType = EditorSchema.nodes['withTimeRange'];
-
-export { ImageNodeType, WithTimeRangeNodeType };
+export { ImageNodeType };

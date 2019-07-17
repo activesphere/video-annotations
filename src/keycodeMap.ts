@@ -6,6 +6,8 @@ const keycodes: { [s: string]: string } = {
   seek_to_timestamp: 'Ctrl-g',
   capture_frame: 'Ctrl-i',
   debug_print: 'Ctrl-d',
+  wrap_in_time_block: 'Ctrl-o',
+  unwrap_time_blocks: 'Ctrl-p',
 };
 
 export default keycodes;

@@ -4,7 +4,7 @@ import { Node } from 'prosemirror-model';
 import { EditorView } from 'prosemirror-view';
 import { exampleSetup } from 'prosemirror-example-setup';
 import { keymap } from 'prosemirror-keymap';
-import { InputRule, inputRules } from 'prosemirror-inputrules';
+import { inputRules } from 'prosemirror-inputrules';
 import { DOMParser } from 'prosemirror-model';
 import Paper from '@material-ui/core/Paper';
 import { makeStyles, createStyles } from '@material-ui/core/styles';
@@ -12,6 +12,7 @@ import { makeStyles, createStyles } from '@material-ui/core/styles';
 import AppConfig from './AppConfig';
 import EditorSchema from './prosemirror-plugins/Schema';
 import ImageNodeView from './prosemirror-plugins/ImageNodeView';
+import TimeBlockNodeView from './prosemirror-plugins/TimeBlockNodeView';
 import AutosavePlugin from './prosemirror-plugins/AutosavePlugin';
 import { loadNote } from './LocalStorageHelper';
 import keycodes from './keycodeMap';
@@ -21,7 +22,15 @@ import {
   mkSeekToTimestamp,
   mkToggleTimestampMark,
   textToTimestamp,
+  mkWrapInTimeBlock,
+  unwrapAllTimeBlocks,
 } from './prosemirror-plugins/commands';
+import {
+  mkToggleVideoPauseInputRule,
+  ItalicStartTimeInputRule,
+  ItalicEndTimeInputRule,
+} from './prosemirror-plugins/inputrules';
+import { InputRule } from 'prosemirror-inputrules';
 
 import 'prosemirror-view/style/prosemirror.css';
 import 'prosemirror-menu/style/menu.css';
@@ -44,7 +53,7 @@ const EditorComponent = (props: any) => {
   const editorView = useRef<EditorView>();
   const classes = useStyles();
 
-  const { player: playerRef, videoId, videoTitle } = props;
+  const { player: playerRef, videoId, videoTitle, videoDuration } = props;
 
   const player = playerRef.current;
 
@@ -92,8 +101,9 @@ const EditorComponent = (props: any) => {
       put_timestamp: mkInsertTimestampStr(currentTimestamp),
       seek_to_timestamp: mkSeekToTimestamp(videoTime => player.seek(videoTime)),
       capture_frame: onCaptureFrame,
-      debug_print: () => true,
       turn_text_to_timestamp: textToTimestamp,
+      wrap_in_time_block: mkWrapInTimeBlock(videoDuration),
+      unwrap_all_time_blocks: unwrapAllTimeBlocks,
     };
 
     const keymapObject = Object.keys(keycodes)
@@ -124,7 +134,11 @@ const EditorComponent = (props: any) => {
           autosavePlugin,
 
           inputRules({
-            rules: [ToggleVideoPauseInputRule],
+            rules: [
+              // mkToggleVideoPauseInputRule(doCommand),
+              ItalicStartTimeInputRule,
+              ItalicEndTimeInputRule,
+            ],
           }),
           ...exampleSetup({ schema: EditorSchema }),
         ],
@@ -133,6 +147,10 @@ const EditorComponent = (props: any) => {
       nodeViews: {
         inlineImage: (node, view, getPos) => {
           return new ImageNodeView(node, view, getPos);
+        },
+
+        time_block: (node, view, getPos) => {
+          return new TimeBlockNodeView(node, view, getPos);
         },
       },
     });
